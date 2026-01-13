@@ -49,19 +49,19 @@ public final class Constants {
     public static final double kBackRightChassisAngularOffset = Math.PI / 2;
 
     // SPARK MAX CAN IDs Drive Motors
-    public static final int kFrontLeftDrivingCanId = -1;
-    public static final int kRearLeftDrivingCanId = -1;
-    public static final int kFrontRightDrivingCanId = -1;
-    public static final int kRearRightDrivingCanId = -1;
+    public static final int kFrontLeftDrivingCanId = 1;
+    public static final int kRearLeftDrivingCanId = 2;
+    public static final int kFrontRightDrivingCanId = 3;
+    public static final int kRearRightDrivingCanId = 4;
 
     // SPARK MAX CAN IDs Turning Motors
-    public static final int kFrontLeftTurningCanId = -1;
-    public static final int kRearLeftTurningCanId = -1;
-    public static final int kFrontRightTurningCanId = -1;
-    public static final int kRearRightTurningCanId = -1;
+    public static final int kFrontLeftTurningCanId = 5;
+    public static final int kRearLeftTurningCanId = 6;
+    public static final int kFrontRightTurningCanId = 7;
+    public static final int kRearRightTurningCanId = 8;
 
     // Auxillary Device Can IDs
-    public static final int kPidgeyCanId = -1;
+    public static final int kPidgeyCanId = 9;
 
     public static final boolean kGyroReversed = false;
 
@@ -104,9 +104,13 @@ public final class Constants {
     // Constraint for the motion profiled robot angle controller
     public static final TrapezoidProfile.Constraints kThetaControllerConstraints = new TrapezoidProfile.Constraints(
         kMaxAngularSpeedRadiansPerSecond, kMaxAngularSpeedRadiansPerSecondSquared);
+
+    // Auto Names
+    public static final String kExampleAutoName = "Example Auto";
   }
 
   public static final class NeoMotorConstants {
     public static final double kFreeSpeedRpm = 5676;
   }
+
 }

@@ -1,7 +1,6 @@
 // Copyright (c) FIRST and other WPILib contributors.
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
-
 package frc.robot.subsystems;
 
 import edu.wpi.first.hal.FRCNetComm.tInstances;
@@ -24,6 +23,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Robot;
 import frc.robot.Constants.DriveConstants;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+
 import com.ctre.phoenix6.hardware.Pigeon2;
 import com.ctre.phoenix6.sim.Pigeon2SimState;
 import com.pathplanner.lib.auto.AutoBuilder;
@@ -34,6 +34,7 @@ import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import static edu.wpi.first.units.Units.*;
 
 public class DriveSubsystem extends SubsystemBase {
+
     // Create MAXSwerveModules
     private final MAXSwerveModule m_frontLeft = new MAXSwerveModule(
             DriveConstants.kFrontLeftDrivingCanId,
@@ -64,24 +65,26 @@ public class DriveSubsystem extends SubsystemBase {
     // Odometry class for tracking robot pose
     SwerveDriveOdometry m_odometry = new SwerveDriveOdometry(DriveConstants.kDriveKinematics,
             new Rotation2d(pidgey.getYaw().getValue()),
-            new SwerveModulePosition[] {
-                    m_frontLeft.getPosition(),
-                    m_frontRight.getPosition(),
-                    m_rearLeft.getPosition(),
-                    m_rearRight.getPosition()
+            new SwerveModulePosition[]{
+                m_frontLeft.getPosition(),
+                m_frontRight.getPosition(),
+                m_rearLeft.getPosition(),
+                m_rearRight.getPosition()
             });
 
     SwerveDrivePoseEstimator poseEstimator = new SwerveDrivePoseEstimator(
             DriveConstants.kDriveKinematics,
             new Rotation2d(pidgey.getYaw().getValue()),
-            new SwerveModulePosition[] {
-                    m_frontLeft.getPosition(),
-                    m_frontRight.getPosition(),
-                    m_rearLeft.getPosition(),
-                    m_rearRight.getPosition()
+            new SwerveModulePosition[]{
+                m_frontLeft.getPosition(),
+                m_frontRight.getPosition(),
+                m_rearLeft.getPosition(),
+                m_rearRight.getPosition()
             }, new Pose2d(new Translation2d(), new Rotation2d()));
 
-    /** Creates a new DriveSubsystem. */
+    /**
+     * Creates a new DriveSubsystem.
+     */
     public DriveSubsystem() {
         // Usage reporting for MAXSwerve template
         HAL.report(tResourceType.kResourceType_RobotDrive, tInstances.kRobotDriveSwerve_MaxSwerve);
@@ -102,10 +105,10 @@ public class DriveSubsystem extends SubsystemBase {
                 this::resetOdometry, // Method to reset odometry (will be called if your auto has a starting pose)
                 this::getRobotRelativeSpeeds, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
                 (speeds, feedforwards) -> drive(speeds), // Method that will drive the robot given ROBOT RELATIVE
-                                                         // ChassisSpeeds. Also optionally outputs individual module
-                                                         // feedforwards
+                // ChassisSpeeds. Also optionally outputs individual module
+                // feedforwards
                 new PPHolonomicDriveController( // PPHolonomicController is the built in path following controller for
-                                                // holonomic drive trains
+                        // holonomic drive trains
                         new PIDConstants(5.0, 0.0, 0.0), // Translation PID constants
                         new PIDConstants(5.0, 0.0, 0.0) // Rotation PID constants
                 ),
@@ -145,19 +148,18 @@ public class DriveSubsystem extends SubsystemBase {
             m_simPidgey.setSupplyVoltage(RobotController.getBatteryVoltage());
             m_simPidgey.setRawYaw(
                     getHeading().in(Degrees) + Radians.of(chassisSpeed.omegaRadiansPerSecond).in(Degrees)
-                            * DriveConstants.kPeriodicInterval.in(Seconds));
+                    * DriveConstants.kPeriodicInterval.in(Seconds));
 
             m_odometry.update(
                     new Rotation2d(getHeading()),
-                    new SwerveModulePosition[] {
-                            m_frontLeft.getPosition(),
-                            m_frontRight.getPosition(),
-                            m_rearLeft.getPosition(),
-                            m_rearRight.getPosition()
+                    new SwerveModulePosition[]{
+                        m_frontLeft.getPosition(),
+                        m_frontRight.getPosition(),
+                        m_rearLeft.getPosition(),
+                        m_rearRight.getPosition()
                     });
 
             // m_simPidgey.setRawYaw(3.4);
-
             // System.out.println(chassisSpeed + ", " +
             // getHeading());
         }
@@ -179,26 +181,10 @@ public class DriveSubsystem extends SubsystemBase {
 
     public SwerveModulePosition[] getModulePositions() {
 
-        // System.out.println("Front Left Position: " +
-        // m_frontLeft.getPosition().distanceMeters);
-
-        return new SwerveModulePosition[] {
-                m_frontLeft.getPosition(), m_frontRight.getPosition(),
-                m_rearLeft.getPosition(), m_rearRight.getPosition()
+        return new SwerveModulePosition[]{
+            m_frontLeft.getPosition(), m_frontRight.getPosition(),
+            m_rearLeft.getPosition(), m_rearRight.getPosition()
         };
-    }
-
-    public void SimulationPeriodic() {
-        // ChassisSpeeds chassisSpeed = DriveConstants.kDriveKinematics.toChassisSpeeds(
-        // m_frontLeft.getState(), m_frontRight.getState(), m_rearLeft.getState(),
-        // m_rearRight.getState());
-
-        // m_simPidgey.setSupplyVoltage(RobotController.getBatteryVoltage());
-        // m_simPidgey.setRawYaw(getHeading() +
-        // Units.radiansToDegrees(chassisSpeed.omegaRadiansPerSecond) *
-        // DriveConstants.kPeriodicInterval.in(Seconds));
-        // poseEstimator.update(new Rotation2d(getHeading()), getModulePositions());
-        // m_field.setRobotPose(poseEstimator.getEstimatedPosition());
     }
 
     /**
@@ -209,11 +195,11 @@ public class DriveSubsystem extends SubsystemBase {
     public void resetOdometry(Pose2d pose) {
         m_odometry.resetPosition(
                 new Rotation2d(pidgey.getYaw().getValue()),
-                new SwerveModulePosition[] {
-                        m_frontLeft.getPosition(),
-                        m_frontRight.getPosition(),
-                        m_rearLeft.getPosition(),
-                        m_rearRight.getPosition()
+                new SwerveModulePosition[]{
+                    m_frontLeft.getPosition(),
+                    m_frontRight.getPosition(),
+                    m_rearLeft.getPosition(),
+                    m_rearRight.getPosition()
                 },
                 pose);
     }
@@ -221,11 +207,11 @@ public class DriveSubsystem extends SubsystemBase {
     /**
      * Method to drive the robot using joystick info.
      *
-     * @param xSpeed        Speed of the robot in the x direction (forward).
-     * @param ySpeed        Speed of the robot in the y direction (sideways).
-     * @param rot           Angular rate of the robot.
-     * @param fieldRelative Whether the provided x and y speeds are relative to the
-     *                      field.
+     * @param xSpeed Speed of the robot in the x direction (forward).
+     * @param ySpeed Speed of the robot in the y direction (sideways).
+     * @param rot Angular rate of the robot.
+     * @param fieldRelative Whether the provided x and y speeds are relative to
+     * the field.
      */
     public void drive(double xSpeed, double ySpeed, double rot, boolean fieldRelative) {
         // Convert the commanded speeds into the correct units for the drivetrain
@@ -275,7 +261,9 @@ public class DriveSubsystem extends SubsystemBase {
         m_rearRight.setDesiredState(desiredStates[3]);
     }
 
-    /** Resets the drive encoders to currently read a position of 0. */
+    /**
+     * Resets the drive encoders to currently read a position of 0.
+     */
     public void resetEncoders() {
         m_frontLeft.resetEncoders();
         m_rearLeft.resetEncoders();
@@ -283,7 +271,9 @@ public class DriveSubsystem extends SubsystemBase {
         m_rearRight.resetEncoders();
     }
 
-    /** Zeroes the heading of the robot. */
+    /**
+     * Zeroes the heading of the robot.
+     */
     public void zeroHeading() {
         pidgey.reset();
     }
