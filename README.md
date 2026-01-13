@@ -10,6 +10,7 @@ A repository all robot code for 5690's 2026 season.
 * [Network Map](#network-map)
 * [Button Bindings](#button-bindings)
 * [Commands](#commands)
+* [Autos](#autos)
 * [Making Changes](#making-changes)
 
 ## Introduction
@@ -21,5 +22,7 @@ A repository all robot code for 5690's 2026 season.
 ## Button Bindings
 
 ## Commands
+
+## Autos
 
 ## Making Changes
