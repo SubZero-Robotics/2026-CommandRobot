@@ -65,7 +65,7 @@ public final class Constants {
         public static final int kRearRightTurningCanId = 8;
 
         // Auxillary Device Can IDs
-        public static final int kPidgeyCanId = 9;
+        public static final int kPidgeyCanId = 13;
 
         public static final boolean kGyroReversed = false;
 
