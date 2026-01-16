@@ -145,6 +145,8 @@ public class DriveSubsystem extends SubsystemBase {
                     m_frontLeft.getState(), m_frontRight.getState(), m_rearLeft.getState(),
                     m_rearRight.getState());
 
+            // System.out.println(chassisSpeed);
+
             m_simPidgey.setSupplyVoltage(RobotController.getBatteryVoltage());
             m_simPidgey.setRawYaw(
                     getHeading().in(Degrees) + Radians.of(chassisSpeed.omegaRadiansPerSecond).in(Degrees)
