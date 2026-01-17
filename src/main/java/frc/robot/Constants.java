@@ -78,7 +78,7 @@ public final class Constants {
 
         public static final Time kPeriodicInterval = Seconds.of(0.02);
 
-        public static final double kAutoRotationP = 3.0;
+        public static final double kAutoRotationP = 10.0;
         public static final double kAutoRotationI = 0.0;
         public static final double kAutoRotationD = 0.0;
     }

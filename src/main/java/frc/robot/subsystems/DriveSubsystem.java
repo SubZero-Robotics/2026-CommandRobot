@@ -27,12 +27,15 @@ import frc.robot.Constants.DriveConstants;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.RunCommand;
+
 import com.ctre.phoenix6.hardware.Pigeon2;
 import com.ctre.phoenix6.sim.Pigeon2SimState;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
+import edu.wpi.first.units.measure.*;
 
 import static edu.wpi.first.units.Units.*;
 
@@ -155,6 +158,29 @@ public class DriveSubsystem extends SubsystemBase {
                 });
     }
 
+    public Command enableFacePose(Pose2d fixture) {
+        return new RunCommand(() ->  {
+            Pose2d robotPose = getPose();
+
+            double xFixtureDist = fixture.getX() - robotPose.getX();
+            double yFixtureDist = fixture.getY() - robotPose.getY();
+
+            double angleToFixture = Math.atan2(yFixtureDist, xFixtureDist);
+
+            System.out.println(angleToFixture);
+
+            m_targetAutoAngle = Radians.of(angleToFixture);
+
+            m_isManualRotate = false;
+        });   
+    }
+
+    public Command disableFacePose() {
+        return new InstantCommand(() -> {
+            m_isManualRotate = true;
+        });
+    }
+
     @Override
     public void periodic() {
         // Update the odometry in the periodic block
@@ -181,7 +207,7 @@ public class DriveSubsystem extends SubsystemBase {
                     });
         }
 
-        System.out.println("Current rotation: " + getPose().getRotation().getRadians());
+        // System.out.println("Current rotation: " + getPose().getRotation().getRadians());
 
         poseEstimator.update(new Rotation2d(getHeading()), getModulePositions());
         m_field.setRobotPose(poseEstimator.getEstimatedPosition());

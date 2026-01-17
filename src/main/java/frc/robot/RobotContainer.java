@@ -6,6 +6,8 @@ package frc.robot;
 import com.pathplanner.lib.commands.PathPlannerAuto;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -47,7 +49,8 @@ public class RobotContainer {
     }
 
     private void configureBindings() {
-        m_driverController.x().onTrue(m_drive.moveToAngle(Radians.of(-Math.PI)));
+        m_driverController.x().whileTrue(m_drive.enableFacePose(new Pose2d(4.0, 3.7, new Rotation2d())));
+        m_driverController.x().whileFalse(m_drive.disableFacePose());
     }
 
     public Command getAutonomousCommand() {
