@@ -14,6 +14,10 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.measure.AngularAcceleration;
+import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.LinearAcceleration;
+import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.Time;
 
 /**
@@ -32,8 +36,11 @@ public final class Constants {
         // Driving Parameters - Note that these are not the maximum capable speeds of
         // the robot, rather the allowed maximum speeds
 
-        public static final double kMaxSpeedMetersPerSecond = 4.8;
-        public static final double kMaxAngularSpeed = 2 * Math.PI; // radians per second
+        public static final LinearVelocity kMaxSpeed = MetersPerSecond.of(4.8);
+        public static final LinearAcceleration kMaxAcceleration = MetersPerSecondPerSecond.of(10.0);
+
+        public static final AngularVelocity kMaxAngularSpeed = RadiansPerSecond.of(2 * Math.PI);
+        public static final AngularAcceleration kMaxAngularAcceleration = RadiansPerSecondPerSecond.of(4 * Math.PI);
 
         // Chassis configuration
         public static final double kTrackWidth = Units.inchesToMeters(26.5);
@@ -70,6 +77,10 @@ public final class Constants {
         public static final boolean kGyroReversed = false;
 
         public static final Time kPeriodicInterval = Seconds.of(0.02);
+
+        public static final double kAutoRotationP = 3.0;
+        public static final double kAutoRotationI = 0.0;
+        public static final double kAutoRotationD = 0.0;
     }
 
     public static final class ModuleConstants {

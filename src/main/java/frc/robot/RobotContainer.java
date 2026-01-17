@@ -14,6 +14,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants.AutoConstants;
 import frc.robot.Constants.OIConstants;
 import frc.robot.subsystems.DriveSubsystem;
+import static edu.wpi.first.units.Units.*;
 
 public class RobotContainer {
 
@@ -46,7 +47,7 @@ public class RobotContainer {
     }
 
     private void configureBindings() {
-
+        m_driverController.x().onTrue(m_drive.moveToAngle(Radians.of(-Math.PI)));
     }
 
     public Command getAutonomousCommand() {

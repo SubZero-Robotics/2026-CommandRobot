@@ -6,6 +6,7 @@ package frc.robot.subsystems;
 import edu.wpi.first.hal.FRCNetComm.tInstances;
 import edu.wpi.first.hal.FRCNetComm.tResourceType;
 import edu.wpi.first.hal.HAL;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -18,12 +19,14 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Robot;
 import frc.robot.Constants.DriveConstants;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import com.ctre.phoenix6.hardware.Pigeon2;
 import com.ctre.phoenix6.sim.Pigeon2SimState;
 import com.pathplanner.lib.auto.AutoBuilder;
@@ -56,6 +59,14 @@ public class DriveSubsystem extends SubsystemBase {
             DriveConstants.kRearRightTurningCanId,
             DriveConstants.kBackRightChassisAngularOffset);
 
+    private boolean m_isManualRotate = true;
+    private Angle m_targetAutoAngle = Radians.of(0.0);
+
+    private double m_latestTime = Timer.getFPGATimestamp();
+
+    private PIDController m_pidController = new PIDController(DriveConstants.kAutoRotationP,
+            DriveConstants.kAutoRotationI, DriveConstants.kAutoRotationD);
+
     // The gyro sensor
     private final Pigeon2 pidgey = new Pigeon2(DriveConstants.kPidgeyCanId, "rio");
     private final Pigeon2SimState m_simPidgey = pidgey.getSimState();
@@ -65,21 +76,21 @@ public class DriveSubsystem extends SubsystemBase {
     // Odometry class for tracking robot pose
     SwerveDriveOdometry m_odometry = new SwerveDriveOdometry(DriveConstants.kDriveKinematics,
             new Rotation2d(pidgey.getYaw().getValue()),
-            new SwerveModulePosition[]{
-                m_frontLeft.getPosition(),
-                m_frontRight.getPosition(),
-                m_rearLeft.getPosition(),
-                m_rearRight.getPosition()
+            new SwerveModulePosition[] {
+                    m_frontLeft.getPosition(),
+                    m_frontRight.getPosition(),
+                    m_rearLeft.getPosition(),
+                    m_rearRight.getPosition()
             });
 
     SwerveDrivePoseEstimator poseEstimator = new SwerveDrivePoseEstimator(
             DriveConstants.kDriveKinematics,
             new Rotation2d(pidgey.getYaw().getValue()),
-            new SwerveModulePosition[]{
-                m_frontLeft.getPosition(),
-                m_frontRight.getPosition(),
-                m_rearLeft.getPosition(),
-                m_rearRight.getPosition()
+            new SwerveModulePosition[] {
+                    m_frontLeft.getPosition(),
+                    m_frontRight.getPosition(),
+                    m_rearLeft.getPosition(),
+                    m_rearRight.getPosition()
             }, new Pose2d(new Translation2d(), new Rotation2d()));
 
     /**
@@ -136,6 +147,14 @@ public class DriveSubsystem extends SubsystemBase {
         return DriveConstants.kDriveKinematics.toChassisSpeeds(fl, fr, rl, rr);
     }
 
+    public Command moveToAngle(Angle angle) {
+        return new InstantCommand(
+                () -> {
+                    m_isManualRotate = false;
+                    m_targetAutoAngle = angle;
+                });
+    }
+
     @Override
     public void periodic() {
         // Update the odometry in the periodic block
@@ -150,21 +169,19 @@ public class DriveSubsystem extends SubsystemBase {
             m_simPidgey.setSupplyVoltage(RobotController.getBatteryVoltage());
             m_simPidgey.setRawYaw(
                     getHeading().in(Degrees) + Radians.of(chassisSpeed.omegaRadiansPerSecond).in(Degrees)
-                    * DriveConstants.kPeriodicInterval.in(Seconds));
+                            * DriveConstants.kPeriodicInterval.in(Seconds));
 
             m_odometry.update(
                     new Rotation2d(getHeading()),
-                    new SwerveModulePosition[]{
-                        m_frontLeft.getPosition(),
-                        m_frontRight.getPosition(),
-                        m_rearLeft.getPosition(),
-                        m_rearRight.getPosition()
+                    new SwerveModulePosition[] {
+                            m_frontLeft.getPosition(),
+                            m_frontRight.getPosition(),
+                            m_rearLeft.getPosition(),
+                            m_rearRight.getPosition()
                     });
-
-            // m_simPidgey.setRawYaw(3.4);
-            // System.out.println(chassisSpeed + ", " +
-            // getHeading());
         }
+
+        System.out.println("Current rotation: " + getPose().getRotation().getRadians());
 
         poseEstimator.update(new Rotation2d(getHeading()), getModulePositions());
         m_field.setRobotPose(poseEstimator.getEstimatedPosition());
@@ -183,9 +200,9 @@ public class DriveSubsystem extends SubsystemBase {
 
     public SwerveModulePosition[] getModulePositions() {
 
-        return new SwerveModulePosition[]{
-            m_frontLeft.getPosition(), m_frontRight.getPosition(),
-            m_rearLeft.getPosition(), m_rearRight.getPosition()
+        return new SwerveModulePosition[] {
+                m_frontLeft.getPosition(), m_frontRight.getPosition(),
+                m_rearLeft.getPosition(), m_rearRight.getPosition()
         };
     }
 
@@ -197,11 +214,11 @@ public class DriveSubsystem extends SubsystemBase {
     public void resetOdometry(Pose2d pose) {
         m_odometry.resetPosition(
                 new Rotation2d(pidgey.getYaw().getValue()),
-                new SwerveModulePosition[]{
-                    m_frontLeft.getPosition(),
-                    m_frontRight.getPosition(),
-                    m_rearLeft.getPosition(),
-                    m_rearRight.getPosition()
+                new SwerveModulePosition[] {
+                        m_frontLeft.getPosition(),
+                        m_frontRight.getPosition(),
+                        m_rearLeft.getPosition(),
+                        m_rearRight.getPosition()
                 },
                 pose);
     }
@@ -209,17 +226,19 @@ public class DriveSubsystem extends SubsystemBase {
     /**
      * Method to drive the robot using joystick info.
      *
-     * @param xSpeed Speed of the robot in the x direction (forward).
-     * @param ySpeed Speed of the robot in the y direction (sideways).
-     * @param rot Angular rate of the robot.
+     * @param xSpeed        Speed of the robot in the x direction (forward).
+     * @param ySpeed        Speed of the robot in the y direction (sideways).
+     * @param rot           Angular rate of the robot.
      * @param fieldRelative Whether the provided x and y speeds are relative to
-     * the field.
+     *                      the field.
      */
     public void drive(double xSpeed, double ySpeed, double rot, boolean fieldRelative) {
         // Convert the commanded speeds into the correct units for the drivetrain
-        double xSpeedDelivered = xSpeed * DriveConstants.kMaxSpeedMetersPerSecond;
-        double ySpeedDelivered = ySpeed * DriveConstants.kMaxSpeedMetersPerSecond;
-        double rotDelivered = rot * DriveConstants.kMaxAngularSpeed;
+
+        double xSpeedDelivered = xSpeed * DriveConstants.kMaxSpeed.magnitude();
+        double ySpeedDelivered = ySpeed * DriveConstants.kMaxSpeed.magnitude();
+        double rotDelivered = (m_isManualRotate) ? rot * DriveConstants.kMaxAngularSpeed.magnitude()
+                : m_pidController.calculate(getPose().getRotation().getRadians(), m_targetAutoAngle.magnitude());
 
         var swerveModuleStates = DriveConstants.kDriveKinematics.toSwerveModuleStates(
                 fieldRelative
@@ -227,12 +246,18 @@ public class DriveSubsystem extends SubsystemBase {
                                 new Rotation2d(getHeading()))
                         : new ChassisSpeeds(xSpeedDelivered, ySpeedDelivered, rotDelivered));
         SwerveDriveKinematics.desaturateWheelSpeeds(
-                swerveModuleStates, DriveConstants.kMaxSpeedMetersPerSecond);
+                swerveModuleStates, DriveConstants.kMaxSpeed.magnitude());
 
         m_frontLeft.setDesiredState(swerveModuleStates[0]);
         m_frontRight.setDesiredState(swerveModuleStates[1]);
         m_rearLeft.setDesiredState(swerveModuleStates[2]);
         m_rearRight.setDesiredState(swerveModuleStates[3]);
+
+        double latestTime = Timer.getFPGATimestamp();
+        double timeElapsed = latestTime - m_latestTime < 0.20 ? latestTime - m_latestTime
+                : DriveConstants.kPeriodicInterval.in(Seconds);
+
+        m_latestTime = latestTime;
     }
 
     public void drive(ChassisSpeeds speeds) {
@@ -256,7 +281,7 @@ public class DriveSubsystem extends SubsystemBase {
      */
     public void setModuleStates(SwerveModuleState[] desiredStates) {
         SwerveDriveKinematics.desaturateWheelSpeeds(
-                desiredStates, DriveConstants.kMaxSpeedMetersPerSecond);
+                desiredStates, DriveConstants.kMaxSpeed.magnitude());
         m_frontLeft.setDesiredState(desiredStates[0]);
         m_frontRight.setDesiredState(desiredStates[1]);
         m_rearLeft.setDesiredState(desiredStates[2]);
