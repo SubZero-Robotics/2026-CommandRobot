@@ -36,7 +36,7 @@ public final class Constants {
         // Driving Parameters - Note that these are not the maximum capable speeds of
         // the robot, rather the allowed maximum speeds
 
-        public static final LinearVelocity kMaxSpeed = MetersPerSecond.of(4.8);
+        public static final LinearVelocity kMaxSpeed = MetersPerSecond.of(2.4);
         public static final LinearAcceleration kMaxAcceleration = MetersPerSecondPerSecond.of(10.0);
 
         public static final AngularVelocity kMaxAngularSpeed = RadiansPerSecond.of(2 * Math.PI);
@@ -78,7 +78,7 @@ public final class Constants {
 
         public static final Time kPeriodicInterval = Seconds.of(0.02);
 
-        public static final double kAutoRotationP = 10.0;
+        public static final double kAutoRotationP = 0.3;
         public static final double kAutoRotationI = 0.0;
         public static final double kAutoRotationD = 0.0;
     }
@@ -122,6 +122,9 @@ public final class Constants {
         // Constraint for the motion profiled robot angle controller
         public static final TrapezoidProfile.Constraints kThetaControllerConstraints = new TrapezoidProfile.Constraints(
                 kMaxAngularSpeedRadiansPerSecond, kMaxAngularSpeedRadiansPerSecondSquared);
+
+        // Whether pathplanner should actually reset odometry for pathplanner autos
+        public static final boolean kIgnoreResetOdometry = false;
 
         // Auto Names
         public static final String kExampleAutoName = "Example Auto";

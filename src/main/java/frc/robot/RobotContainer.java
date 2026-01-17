@@ -49,7 +49,7 @@ public class RobotContainer {
     }
 
     private void configureBindings() {
-        m_driverController.x().whileTrue(m_drive.enableFacePose(new Pose2d(4.0, 3.7, new Rotation2d())));
+        m_driverController.x().whileTrue(m_drive.moveToAngle(Radians.of(Math.PI)));
         m_driverController.x().whileFalse(m_drive.disableFacePose());
     }
 

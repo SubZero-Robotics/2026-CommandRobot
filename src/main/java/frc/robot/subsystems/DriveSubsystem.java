@@ -264,7 +264,7 @@ public class DriveSubsystem extends SubsystemBase {
         double xSpeedDelivered = xSpeed * DriveConstants.kMaxSpeed.magnitude();
         double ySpeedDelivered = ySpeed * DriveConstants.kMaxSpeed.magnitude();
         double rotDelivered = (m_isManualRotate) ? rot * DriveConstants.kMaxAngularSpeed.magnitude()
-                : m_pidController.calculate(getPose().getRotation().getRadians(), m_targetAutoAngle.magnitude());
+                : m_pidController.calculate(getNonContinuousHeading().in(Radians), m_targetAutoAngle.magnitude());
 
         var swerveModuleStates = DriveConstants.kDriveKinematics.toSwerveModuleStates(
                 fieldRelative
@@ -338,5 +338,14 @@ public class DriveSubsystem extends SubsystemBase {
      */
     public Angle getHeading() {
         return pidgey.getYaw().getValue();
+    }
+
+    public Angle getNonContinuousHeading() {
+        if (getHeading().in(Radians) > 2.0 * Math.PI) {
+            return getHeading();
+        }
+
+        double rotations = Math.floor(getHeading().in(Radians) / (2 * Math.PI));
+        return Radians.of(getHeading().in(Radians) - rotations);
     }
 }
