@@ -23,6 +23,7 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Robot;
+import frc.robot.utils.ShuffleboardPid;
 import frc.robot.Constants.DriveConstants;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -67,8 +68,8 @@ public class DriveSubsystem extends SubsystemBase {
 
     private double m_latestTime = Timer.getFPGATimestamp();
 
-    private PIDController m_pidController = new PIDController(DriveConstants.kAutoRotationP,
-            DriveConstants.kAutoRotationI, DriveConstants.kAutoRotationD);
+    private ShuffleboardPid m_pidController = new ShuffleboardPid(DriveConstants.kAutoRotationP,
+            DriveConstants.kAutoRotationI, DriveConstants.kAutoRotationD, "Auto Rotate PID");
 
     // The gyro sensor
     private final Pigeon2 pidgey = new Pigeon2(DriveConstants.kPidgeyCanId, "rio");
@@ -214,6 +215,8 @@ public class DriveSubsystem extends SubsystemBase {
         m_field.setRobotPose(poseEstimator.getEstimatedPosition());
 
         SmartDashboard.putData(m_field);
+
+        m_pidController.periodic();
     }
 
     /**
