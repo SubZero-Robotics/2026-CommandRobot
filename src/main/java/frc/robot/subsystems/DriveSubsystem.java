@@ -159,7 +159,7 @@ public class DriveSubsystem extends SubsystemBase {
     }
 
     public Command enableFacePose(Pose2d fixture) {
-        return new RunCommand(() ->  {
+        return new RunCommand(() -> {
             Pose2d robotPose = getPose();
 
             double xFixtureDist = fixture.getX() - robotPose.getX();
@@ -172,7 +172,7 @@ public class DriveSubsystem extends SubsystemBase {
             m_targetAutoAngle = Radians.of(angleToFixture);
 
             m_isManualRotate = false;
-        });   
+        });
     }
 
     public Command disableFacePose() {
@@ -207,7 +207,8 @@ public class DriveSubsystem extends SubsystemBase {
                     });
         }
 
-        // System.out.println("Current rotation: " + getPose().getRotation().getRadians());
+        // System.out.println("Current rotation: " +
+        // getPose().getRotation().getRadians());
 
         poseEstimator.update(new Rotation2d(getHeading()), getModulePositions());
         m_field.setRobotPose(poseEstimator.getEstimatedPosition());
@@ -264,7 +265,7 @@ public class DriveSubsystem extends SubsystemBase {
         double xSpeedDelivered = xSpeed * DriveConstants.kMaxSpeed.magnitude();
         double ySpeedDelivered = ySpeed * DriveConstants.kMaxSpeed.magnitude();
         double rotDelivered = (m_isManualRotate) ? rot * DriveConstants.kMaxAngularSpeed.magnitude()
-                : m_pidController.calculate(getNonContinuousHeading().in(Radians), m_targetAutoAngle.magnitude());
+                : m_pidController.calculate(getHeading().in(Radians), getOptimalAngle(m_targetAutoAngle).in(Radians));
 
         var swerveModuleStates = DriveConstants.kDriveKinematics.toSwerveModuleStates(
                 fieldRelative
@@ -347,5 +348,23 @@ public class DriveSubsystem extends SubsystemBase {
 
         double rotations = Math.floor(getHeading().in(Radians) / (2 * Math.PI));
         return Radians.of(getHeading().in(Radians) - rotations);
+    }
+
+    private Angle getOptimalAngle(Angle target) {
+        Angle robotHeading = getHeading();
+
+        // Full robot rotations in radians
+        Angle robotRotations = Radians.of(Radians.convertFrom(Math.floor(robotHeading.in(Radians) / (2 * Math.PI)), Rotations));
+
+        // Both are the same angle, just one is negative and one is positive
+        Angle pTargetAngle = robotRotations.plus(target);
+        Angle nTargetAngle = robotRotations.plus(target.minus(Radians.of(2 * Math.PI)));
+
+        // If either angle is less than 180 degrees relative to the robot's current angle, it is the most optimal path
+        if (robotHeading.minus(pTargetAngle).abs(Radians) < Math.PI) {
+            return pTargetAngle;
+        }
+
+        return nTargetAngle;
     }
 }
