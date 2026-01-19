@@ -46,6 +46,8 @@ import edu.wpi.first.units.measure.*;
 
 import static edu.wpi.first.units.Units.*;
 
+import java.util.Optional;
+
 import org.photonvision.PhotonCamera;
 
 public class DriveSubsystem extends SubsystemBase {
@@ -85,7 +87,7 @@ public class DriveSubsystem extends SubsystemBase {
 
     private final Field2d m_field = new Field2d();
 
-    private final VisionSubsystem m_vision = new VisionSubsystem(null, this::addVisionMeasurement);
+    private final VisionSubsystem m_vision = new VisionSubsystem(Optional.empty(), this::addVisionMeasurement);
 
     // Odometry class for tracking robot pose
     SwerveDriveOdometry m_odometry = new SwerveDriveOdometry(DriveConstants.kDriveKinematics,
@@ -236,7 +238,7 @@ public class DriveSubsystem extends SubsystemBase {
      * @return The pose.
      */
     public Pose2d getPose() {
-        return m_odometry.getPoseMeters();
+        return m_poseEstimator.getEstimatedPosition();
     }
 
     public SwerveModulePosition[] getModulePositions() {
