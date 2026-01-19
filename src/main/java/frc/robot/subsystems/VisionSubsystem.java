@@ -69,7 +69,7 @@ public class VisionSubsystem extends SubsystemBase {
         Optional<EstimatedRobotPose> visionEstimationCameraTwo = Optional.empty();
         m_poseEstimatorTwo.setRobotToCameraTransform(getTurretCameraTransform());
 
-        for (var result : m_camera1.getAllUnreadResults()) {
+        for (var result : m_camera2.getAllUnreadResults()) {
             visionEstimationCameraTwo = m_poseEstimatorTwo.estimateCoprocMultiTagPose(result);
 
             if (visionEstimationCameraTwo.isEmpty()) {
