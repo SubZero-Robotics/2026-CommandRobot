@@ -6,6 +6,7 @@ package frc.robot;
 import com.pathplanner.lib.commands.PathPlannerAuto;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -14,7 +15,6 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants.AutoConstants;
 import frc.robot.Constants.OIConstants;
 import frc.robot.subsystems.DriveSubsystem;
-import static edu.wpi.first.units.Units.*;
 
 public class RobotContainer {
 
@@ -46,7 +46,7 @@ public class RobotContainer {
     }
 
     private void configureBindings() {
-        m_driverController.x().whileTrue(m_drive.moveToAngle(Radians.of(Math.PI)));
+        m_driverController.x().whileTrue(m_drive.enableFacePose(new Pose2d()));
         m_driverController.x().whileFalse(m_drive.disableFacePose());
     }
 

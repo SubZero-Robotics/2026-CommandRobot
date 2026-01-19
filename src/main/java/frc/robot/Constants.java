@@ -144,4 +144,8 @@ public final class Constants {
         public static final AprilTagFieldLayout kTagLayout
                 = AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
     }
+
+    public static final class NumericalConstants {
+        public static final double kEpsilon = 1e-6;
+    }
 }
