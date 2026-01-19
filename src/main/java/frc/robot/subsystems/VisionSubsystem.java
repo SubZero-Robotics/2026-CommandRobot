@@ -34,7 +34,7 @@ public class VisionSubsystem extends SubsystemBase {
     PhotonCamera m_camera1 = new PhotonCamera(VisionConstants.kCameraName1);
     PhotonCamera m_camera2 = new PhotonCamera(VisionConstants.kCameraName2);
 
-    Supplier<Angle> m_turretAngleSupplier;
+    Optional<Supplier<Angle>> m_turretAngleSupplier;
 
     PhotonPoseEstimator m_poseEstimatorOne = new PhotonPoseEstimator(null, VisionConstants.kRobotToCamOne);
     PhotonPoseEstimator m_poseEstimatorTwo = new PhotonPoseEstimator(null, VisionConstants.kRobotToCamTwo);
@@ -42,7 +42,7 @@ public class VisionSubsystem extends SubsystemBase {
     Consumer<VisionEstimation> m_visionConsumer;
     private Matrix<N3, N1> curStdDevs;
 
-    public VisionSubsystem(Supplier<Angle> turretAngleSupplier, Consumer<VisionEstimation> visionConsumer) {
+    public VisionSubsystem(Optional<Supplier<Angle>> turretAngleSupplier, Consumer<VisionEstimation> visionConsumer) {
         m_turretAngleSupplier = turretAngleSupplier;
         m_visionConsumer = visionConsumer;
     }
@@ -132,7 +132,10 @@ public class VisionSubsystem extends SubsystemBase {
     }
 
     private Transform3d getTurretCameraTransform() {
-        Angle turretAngle = m_turretAngleSupplier.get();
+        if (m_turretAngleSupplier.isEmpty())
+            return VisionConstants.kRobotToCamTwo;
+        
+        Angle turretAngle = m_turretAngleSupplier.get().get();
 
         Distance cameraXOffset = Meters
                 .of(VisionConstants.kTurretCameraDistanceToCenter.in(Meters) * Math.cos(turretAngle.in(Radians)));

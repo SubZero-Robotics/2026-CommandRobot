@@ -85,7 +85,7 @@ public class DriveSubsystem extends SubsystemBase {
 
     private final Field2d m_field = new Field2d();
 
-    private final VisionSubsystem m_vision = new VisionSubsystem(() -> Radians.of(0.0), this::addVisionMeasurement);
+    private final VisionSubsystem m_vision = new VisionSubsystem(null, this::addVisionMeasurement);
 
     // Odometry class for tracking robot pose
     SwerveDriveOdometry m_odometry = new SwerveDriveOdometry(DriveConstants.kDriveKinematics,
