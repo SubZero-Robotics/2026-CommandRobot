@@ -7,18 +7,19 @@ import static edu.wpi.first.units.Units.*;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
+import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
+import edu.wpi.first.math.numbers.N1;
+import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.units.measure.AngularAcceleration;
-import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.units.measure.LinearAcceleration;
-import edu.wpi.first.units.measure.LinearVelocity;
-import edu.wpi.first.units.measure.Time;
+import edu.wpi.first.units.measure.*;
 
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide
@@ -137,11 +138,34 @@ public final class Constants {
 
     public static final class VisionConstants {
 
-        public static final Transform3d kRobotToCam
-                = new Transform3d(new Translation3d(0.5, 0.0, 0.5),
-                        new Rotation3d(0, 0, 0));
+        public static final String kCameraName1 = "Photonvision";
+        public static final String kCameraName2 = "Photonvision2";
 
-        public static final AprilTagFieldLayout kTagLayout
-                = AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
+        // Distance to fill pose3d z value assuming robot is on the ground
+        public static Distance kEncoderZOffset = Inches.of(5.0);
+
+        // Confidence of encoder readings for vision; should be tuned
+        public static final double kEncoderConfidence = 0.15;
+
+        public static final Transform3d kRobotToCamOne = new Transform3d(new Translation3d(0.5, 0.0, 0.5),
+                new Rotation3d(0, 0, 0));
+        public static final Transform3d kRobotToCamTwo = new Transform3d(new Translation3d(0.5, 0.0, 0.5),
+                new Rotation3d(0, 0, 0));
+
+        public static final AprilTagFieldLayout kTagLayout = AprilTagFieldLayout
+                .loadField(AprilTagFields.kDefaultField);
+
+        // Placeholder numbers
+        public static final Pose3d kTurretAxisOfRotation = new Pose3d(Meters.of(0.2), Meters.of(0.3), Meters.of(0.3),
+                new Rotation3d(0.0, 0.0, 0.0));
+        public static final Distance kTurretCameraDistanceToCenter = Meters.of(0.6);
+        public static final Angle kCameraTwoPitch = Radians.of(0.0);
+        public static final Angle kCameraTwoRoll = Radians.of(0.0);
+
+        public static final Matrix<N3, N1> kSingleTagStdDevs = VecBuilder.fill(4, 4, 8);
+        public static final Matrix<N3, N1> kMultiTagStdDevs = VecBuilder.fill(0.5, 0.5, 1);
+
+        public static final Matrix<N3, N1> kStateStdDevs = VecBuilder.fill(0.1, 0.1, 0.1);
+        public static final Matrix<N3, N1> kVisionStdDevs = VecBuilder.fill(1, 1, 1);
     }
 }
