@@ -36,9 +36,16 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
+
 import edu.wpi.first.units.measure.*;
 
 import static edu.wpi.first.units.Units.*;
+
+import java.util.Optional;
+
+import org.photonvision.PhotonCamera;
+
+import frc.robot.Constants;
 
 public class DriveSubsystem extends SubsystemBase {
 
@@ -166,11 +173,13 @@ public class DriveSubsystem extends SubsystemBase {
             double xFixtureDist = fixture.getX() - robotPose.getX();
             double yFixtureDist = fixture.getY() - robotPose.getY();
 
-            double angleToFixture = Math.atan2(yFixtureDist, xFixtureDist);
+            double totalDistance = Math.hypot(xFixtureDist, yFixtureDist);
 
-            System.out.println(angleToFixture);
-
-            m_targetAutoAngle = Radians.of(angleToFixture);
+            // Floating point value correction
+            if (Math.abs(totalDistance) < Constants.NumericalConstants.kEpsilon)
+                return;
+            
+            m_targetAutoAngle = Radians.of(Math.atan2(yFixtureDist, xFixtureDist));
 
             m_isManualRotate = false;
         });
@@ -265,10 +274,14 @@ public class DriveSubsystem extends SubsystemBase {
     public void drive(double xSpeed, double ySpeed, double rot, boolean fieldRelative) {
         // Convert the commanded speeds into the correct units for the drivetrain
 
+        if (!m_isManualRotate)
+            System.out.println("Setpoint: " + getOptimalAngle(m_targetAutoAngle, getHeading()).in(Radians) + ", Current: "
+                    + getHeading().in(Radians));
+
         double xSpeedDelivered = xSpeed * DriveConstants.kMaxSpeed.magnitude();
         double ySpeedDelivered = ySpeed * DriveConstants.kMaxSpeed.magnitude();
         double rotDelivered = (m_isManualRotate) ? rot * DriveConstants.kMaxAngularSpeed.magnitude()
-                : m_pidController.calculate(getHeading().in(Radians), getOptimalAngle(m_targetAutoAngle).in(Radians));
+                : m_pidController.calculate(getHeading().in(Radians), getOptimalAngle(m_targetAutoAngle, getHeading()).in(Radians));
 
         var swerveModuleStates = DriveConstants.kDriveKinematics.toSwerveModuleStates(
                 fieldRelative
@@ -353,21 +366,23 @@ public class DriveSubsystem extends SubsystemBase {
         return Radians.of(getHeading().in(Radians) - rotations);
     }
 
-    private Angle getOptimalAngle(Angle target) {
-        Angle robotHeading = getHeading();
-
+    private Angle getOptimalAngle(Angle target, Angle robotHeading) {
         // Full robot rotations in radians
-        Angle robotRotations = Radians.of(Radians.convertFrom(Math.floor(robotHeading.in(Radians) / (2 * Math.PI)), Rotations));
+        Angle robotRotations = Radians
+                .of(Math.floor(robotHeading.in(Radians) / (2 * Math.PI)) * 2.0 * Math.PI);
 
-        // Both are the same angle, just one is negative and one is positive
-        Angle pTargetAngle = robotRotations.plus(target);
-        Angle nTargetAngle = robotRotations.plus(target.minus(Radians.of(2 * Math.PI)));
+        Angle wrappedRobotAngle = robotHeading.minus(robotRotations);
 
-        // If either angle is less than 180 degrees relative to the robot's current angle, it is the most optimal path
-        if (robotHeading.minus(pTargetAngle).abs(Radians) < Math.PI) {
-            return pTargetAngle;
-        }
+        Angle delta = target.minus(wrappedRobotAngle);
 
-        return nTargetAngle;
+        // Ensuring that the angle is always positive to ensure it is wrapped correctly
+        if (delta.lt(Radians.of(0.0)))
+            delta = delta.plus(Radians.of(2 * Math.PI));
+
+        // Wrapping the delta to make it at most 180 deg
+        if (delta.gt(Radians.of(Math.PI)))
+            delta = delta.minus(Radians.of(2.0 * Math.PI));
+
+        return delta.plus(robotHeading);
     }
 }
