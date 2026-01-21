@@ -5,6 +5,8 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.*;
 
+import com.ctre.phoenix6.sim.TalonFXSimState.MotorType;
+
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Rotation3d;
@@ -14,6 +16,7 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.LinearAcceleration;
@@ -147,5 +150,15 @@ public final class Constants {
 
     public static final class NumericalConstants {
         public static final double kEpsilon = 1e-6;
+    }
+
+    public static final class TurretConstants {
+        public static final int kMotorId = 1;
+        public static final Angle kMinAngle = Radians.of(0.0);
+        public static final Angle kMaxAngle = Radians.of(2.0 * Math.PI);
+    }
+
+    public static final class ShooterConstants {
+        public static final int kMotorId = 1;
     }
 }

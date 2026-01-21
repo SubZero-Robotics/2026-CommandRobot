@@ -15,6 +15,8 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants.AutoConstants;
 import frc.robot.Constants.OIConstants;
 import frc.robot.subsystems.DriveSubsystem;
+import frc.robot.subsystems.ShooterSubsystem;
+import frc.robot.subsystems.TurretSubsystem;
 
 public class RobotContainer {
 
@@ -25,7 +27,11 @@ public class RobotContainer {
     private String m_autoSelected;
     private final SendableChooser<String> m_chooser = new SendableChooser<>();
 
+    private TurretSubsystem m_turret;
+
     public RobotContainer() {
+        m_turret = new TurretSubsystem(m_drive::getHeading);
+
         m_chooser.setDefaultOption("Example Auto", AutoConstants.kExampleAutoName);
         SmartDashboard.putData("Auto Choices", m_chooser);
 
