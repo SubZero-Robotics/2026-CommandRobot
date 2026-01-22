@@ -153,7 +153,7 @@ public final class Constants {
     }
 
     public static final class TurretConstants {
-        public static final int kMotorId = 1;
+        public static final int kMotorId = 20;
         public static final Angle kMinAngle = Radians.of(0.0);
         public static final Angle kMaxAngle = Radians.of(2.0 * Math.PI);
     }

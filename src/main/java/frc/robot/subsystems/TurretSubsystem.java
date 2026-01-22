@@ -5,11 +5,14 @@ import static edu.wpi.first.units.Units.Rotations;
 import java.util.function.Supplier;
 
 import com.revrobotics.AbsoluteEncoder;
+import com.revrobotics.sim.SparkAbsoluteEncoderSim;
+import com.revrobotics.sim.SparkMaxSim;
 import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 
+import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -20,8 +23,10 @@ import frc.robot.Constants.TurretConstants;
 public class TurretSubsystem extends SubsystemBase {
     
     private final SparkMax m_turretMotor = new SparkMax(TurretConstants.kMotorId, MotorType.kBrushless);
+    private final SparkMaxSim m_simTurretMotor = new SparkMaxSim(m_turretMotor, DCMotor.getNEO(1));
 
     private final AbsoluteEncoder m_absoluteEncoder = m_turretMotor.getAbsoluteEncoder();
+    private final SparkAbsoluteEncoderSim m_simAbsoluteEncoder = m_simTurretMotor.getAbsoluteEncoderSim();
 
     private final SparkClosedLoopController m_turretClosedLoopController = m_turretMotor.getClosedLoopController();
 
@@ -32,9 +37,6 @@ public class TurretSubsystem extends SubsystemBase {
     }
 
     public Command moveToAngle(Angle angle) {
-        
-        
-
         return new InstantCommand(() -> {
             if (angle.gt(TurretConstants.kMaxAngle)) {
                 System.out.println("Angle " + angle + "is bigger than maximum angle " + TurretConstants.kMaxAngle + ".");
@@ -56,5 +58,11 @@ public class TurretSubsystem extends SubsystemBase {
     @Override
     public void periodic() {
         
+    }
+
+    @Override
+    public void simulationPeriodic() {
+        m_simTurretMotor.setVelocity(1.0);
+        System.out.println(m_simAbsoluteEncoder.getPosition());
     }
 }
