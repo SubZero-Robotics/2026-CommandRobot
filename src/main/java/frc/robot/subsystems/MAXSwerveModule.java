@@ -38,7 +38,7 @@ public class MAXSwerveModule {
 
   private final SparkClosedLoopController m_drivingClosedLoopController;
   private final SparkClosedLoopController m_turningClosedLoopController;
-  
+
   private LinearVelocity m_simDriverEncoderVelocity = MetersPerSecond.of(0.0);
   private Distance m_simDriverEncoderPosition = Meters.of(0.0);
   private Angle m_simCurrentAngle = Radians.of(0.0);
@@ -83,7 +83,8 @@ public class MAXSwerveModule {
 
   public void updateSimDriverPosition(SwerveModuleState desiredState) {
     m_simDriverEncoderVelocity = MetersPerSecond.of(desiredState.speedMetersPerSecond);
-    m_simDriverEncoderPosition = m_simDriverEncoderPosition.plus(m_simDriverEncoderVelocity.times(Constants.DriveConstants.kPeriodicInterval));
+    m_simDriverEncoderPosition = m_simDriverEncoderPosition
+        .plus(m_simDriverEncoderVelocity.times(Constants.DriveConstants.kPeriodicInterval));
   }
 
   public SwerveModuleState getState() {
@@ -94,7 +95,7 @@ public class MAXSwerveModule {
       return new SwerveModuleState(m_drivingEncoder.getVelocity(),
           new Rotation2d(m_turningEncoder.getPosition() - m_chassisAngularOffset));
 
-      return new SwerveModuleState(m_simDriverEncoderVelocity,
+    return new SwerveModuleState(m_simDriverEncoderVelocity,
         new Rotation2d(m_simCurrentAngle.in(Radian) - m_chassisAngularOffset));
   }
 
@@ -111,7 +112,7 @@ public class MAXSwerveModule {
       return new SwerveModulePosition(
           m_drivingEncoder.getPosition(),
           new Rotation2d(m_turningEncoder.getPosition() - m_chassisAngularOffset));
-    
+
     return new SwerveModulePosition(m_simDriverEncoderPosition,
         new Rotation2d(m_simCurrentAngle.in(Radian) - m_chassisAngularOffset));
   }
