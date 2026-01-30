@@ -28,6 +28,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Robot;
 import frc.robot.utils.ShuffleboardPid;
 import frc.robot.utils.VisionEstimation;
+import frc.robot.utils.Vision;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.VisionConstants;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -87,7 +88,7 @@ public class DriveSubsystem extends SubsystemBase {
 
     private final Field2d m_field = new Field2d();
 
-    private final VisionSubsystem m_vision = new VisionSubsystem(Optional.empty(), this::addVisionMeasurement);
+    private final Vision m_vision = new Vision(Optional.empty(), this::addVisionMeasurement);
 
     // Odometry class for tracking robot pose
     SwerveDriveOdometry m_odometry = new SwerveDriveOdometry(DriveConstants.kDriveKinematics,
@@ -227,6 +228,10 @@ public class DriveSubsystem extends SubsystemBase {
         m_poseEstimator.update(new Rotation2d(getHeading()), getModulePositions());
         m_field.setRobotPose(m_poseEstimator.getEstimatedPosition());
 
+        // System.out.println(m_poseEstimator.getEstimatedPosition());
+
+        m_vision.periodic();
+
         SmartDashboard.putData(m_field);
 
         m_pidController.periodic();
@@ -358,6 +363,7 @@ public class DriveSubsystem extends SubsystemBase {
     }
 
     public void addVisionMeasurement(VisionEstimation estimation) {
+        System.out.println(estimation.m_pose);
         m_poseEstimator.addVisionMeasurement(estimation.m_pose, estimation.m_timestamp, estimation.m_stdDevs);
     }
 

@@ -1,4 +1,4 @@
-package frc.robot.subsystems;
+package frc.robot.utils;
 
 import java.util.List;
 import java.util.Optional;
@@ -22,37 +22,37 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import frc.robot.Constants.VisionConstants;
-import frc.robot.utils.VisionEstimation;
 import edu.wpi.first.units.measure.*;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import static edu.wpi.first.units.Units.*;
 
-public class VisionSubsystem extends SubsystemBase {
+public class Vision {
 
     PhotonCamera m_camera1 = new PhotonCamera(VisionConstants.kCameraName1);
     PhotonCamera m_camera2 = new PhotonCamera(VisionConstants.kCameraName2);
 
     Optional<Supplier<Angle>> m_turretAngleSupplier;
 
-    PhotonPoseEstimator m_poseEstimatorOne = new PhotonPoseEstimator(null, VisionConstants.kRobotToCamOne);
-    PhotonPoseEstimator m_poseEstimatorTwo = new PhotonPoseEstimator(null, VisionConstants.kRobotToCamTwo);
+    PhotonPoseEstimator m_poseEstimatorOne = new PhotonPoseEstimator(VisionConstants.kTagLayout,
+            VisionConstants.kRobotToCamOne);
+    PhotonPoseEstimator m_poseEstimatorTwo = new PhotonPoseEstimator(VisionConstants.kTagLayout,
+            VisionConstants.kRobotToCamTwo);
 
     Consumer<VisionEstimation> m_visionConsumer;
     private Matrix<N3, N1> curStdDevs;
 
-    public VisionSubsystem(Optional<Supplier<Angle>> turretAngleSupplier, Consumer<VisionEstimation> visionConsumer) {
+    public Vision(Optional<Supplier<Angle>> turretAngleSupplier, Consumer<VisionEstimation> visionConsumer) {
         m_turretAngleSupplier = turretAngleSupplier;
         m_visionConsumer = visionConsumer;
     }
 
-    @Override
     public void periodic() {
         Optional<EstimatedRobotPose> visionEstimationCameraOne = Optional.empty();
 
         for (var result : m_camera1.getAllUnreadResults()) {
-            visionEstimationCameraOne = m_poseEstimatorOne.estimateCoprocMultiTagPose(result);
+            visionEstimationCameraOne = m_poseEstimatorOne.estimateLowestAmbiguityPose(result);
 
             if (visionEstimationCameraOne.isEmpty()) {
                 visionEstimationCameraOne = m_poseEstimatorOne.estimateLowestAmbiguityPose(result);
@@ -62,7 +62,7 @@ public class VisionSubsystem extends SubsystemBase {
 
             visionEstimationCameraOne.ifPresent(estimation -> {
                 m_visionConsumer.accept(new VisionEstimation(estimation.estimatedPose.toPose2d(),
-                        Timer.getFPGATimestamp(), getCurrentStdDevs()));
+                        estimation.timestampSeconds, getCurrentStdDevs()));
             });
         }
 
@@ -80,7 +80,7 @@ public class VisionSubsystem extends SubsystemBase {
 
             visionEstimationCameraTwo.ifPresent(estimation -> {
                 m_visionConsumer.accept(new VisionEstimation(estimation.estimatedPose.toPose2d(),
-                        Timer.getFPGATimestamp(), getCurrentStdDevs()));
+                        estimation.timestampSeconds, getCurrentStdDevs()));
             });
         }
     }
@@ -134,7 +134,7 @@ public class VisionSubsystem extends SubsystemBase {
     private Transform3d getTurretCameraTransform() {
         if (m_turretAngleSupplier.isEmpty())
             return VisionConstants.kRobotToCamTwo;
-        
+
         Angle turretAngle = m_turretAngleSupplier.get().get();
 
         Distance cameraXOffset = Meters
