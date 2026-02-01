@@ -3,10 +3,6 @@
 // the WPILib BSD license file in the root directory of this project.
 package frc.robot;
 
-import static edu.wpi.first.units.Units.*;
-
-import com.ctre.phoenix6.sim.TalonFXSimState.MotorType;
-
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Rotation3d;
@@ -16,6 +12,12 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
+import static edu.wpi.first.units.Units.MetersPerSecond;
+import static edu.wpi.first.units.Units.MetersPerSecondPerSecond;
+import static edu.wpi.first.units.Units.Radians;
+import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static edu.wpi.first.units.Units.RadiansPerSecondPerSecond;
+import static edu.wpi.first.units.Units.Seconds;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -146,6 +148,8 @@ public final class Constants {
 
         public static final AprilTagFieldLayout kTagLayout
                 = AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
+
+        public static final int kMaxTimeStamps = 2000;
     }
 
     public static final class NumericalConstants {
@@ -156,6 +160,11 @@ public final class Constants {
         public static final int kMotorId = 20;
         public static final Angle kMinAngle = Radians.of(0.0);
         public static final Angle kMaxAngle = Radians.of(2.0 * Math.PI);
+
+        public static final int kPositionBufferLength = 4000;
+        public static final Time kEncoderReadingDelay = Seconds.of(0.005);
+
+        public static final Time kEncoderReadInterval = Seconds.of(0.01);
     }
 
     public static final class ShooterConstants {
