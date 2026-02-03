@@ -178,7 +178,7 @@ public class DriveSubsystem extends SubsystemBase {
             // Floating point value correction
             if (Math.abs(totalDistance) < Constants.NumericalConstants.kEpsilon)
                 return;
-            
+
             m_targetAutoAngle = Radians.of(Math.atan2(yFixtureDist, xFixtureDist));
 
             m_isManualRotate = false;
@@ -234,7 +234,7 @@ public class DriveSubsystem extends SubsystemBase {
      * @return The pose.
      */
     public Pose2d getPose() {
-        return m_odometry.getPoseMeters();
+        return poseEstimator.getEstimatedPosition();
     }
 
     public SwerveModulePosition[] getModulePositions() {
@@ -275,13 +275,15 @@ public class DriveSubsystem extends SubsystemBase {
         // Convert the commanded speeds into the correct units for the drivetrain
 
         if (!m_isManualRotate)
-            System.out.println("Setpoint: " + getOptimalAngle(m_targetAutoAngle, getHeading()).in(Radians) + ", Current: "
-                    + getHeading().in(Radians));
+            System.out
+                    .println("Setpoint: " + getOptimalAngle(m_targetAutoAngle, getHeading()).in(Radians) + ", Current: "
+                            + getHeading().in(Radians));
 
         double xSpeedDelivered = xSpeed * DriveConstants.kMaxSpeed.magnitude();
         double ySpeedDelivered = ySpeed * DriveConstants.kMaxSpeed.magnitude();
         double rotDelivered = (m_isManualRotate) ? rot * DriveConstants.kMaxAngularSpeed.magnitude()
-                : m_pidController.calculate(getHeading().in(Radians), getOptimalAngle(m_targetAutoAngle, getHeading()).in(Radians));
+                : m_pidController.calculate(getHeading().in(Radians),
+                        getOptimalAngle(m_targetAutoAngle, getHeading()).in(Radians));
 
         var swerveModuleStates = DriveConstants.kDriveKinematics.toSwerveModuleStates(
                 fieldRelative
