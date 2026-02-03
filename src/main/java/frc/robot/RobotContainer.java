@@ -4,6 +4,8 @@
 package frc.robot;
 
 import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.Radian;
+import static edu.wpi.first.units.Units.Radians;
 
 import com.pathplanner.lib.commands.PathPlannerAuto;
 
@@ -55,9 +57,7 @@ public class RobotContainer {
     }
 
     private void configureBindings() {
-        m_driverController.a()
-                .whileTrue(
-                        m_turret.pointToHeading(Degrees.of(90.0)));
+        m_driverController.a().whileTrue(new RunCommand(() -> m_turret.moveToAngle(Radians.of(Math.PI))));
     }
 
     public Command getAutonomousCommand() {

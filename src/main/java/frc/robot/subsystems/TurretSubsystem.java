@@ -53,8 +53,7 @@ public class TurretSubsystem extends SubsystemBase {
         m_turretMotor.configure(m_pidConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
     }
 
-    public Command moveToAngle(Angle angle) {
-        return new InstantCommand(() -> {
+    public void moveToAngle(Angle angle) {
             if (angle.gt(TurretConstants.kMaxAngle)) {
                 System.out
                         .println("Angle " + angle + "is bigger than maximum angle " + TurretConstants.kMaxAngle + ".");
@@ -66,21 +65,13 @@ public class TurretSubsystem extends SubsystemBase {
             }
 
             m_turretClosedLoopController.setSetpoint(angle.in(Rotations), ControlType.kPosition);
-        });
     }
 
-    public Command pointToHeading(Angle heading) {
-        return new RunCommand(() -> {
-            // Very scary code, broke turret with a 2x on the angle
-            // Pose2d robotPose = m_robotPoseSupplier.get();
+    public void pointToHeading(Angle heading) {
+        Angle robotHeading = Radians.of(m_robotPoseSupplier.get().getRotation().getRadians());
+        Angle targetAngle = heading.minus(robotHeading);
 
-            // double robotRotation = robotPose.getRotation().getRadians();
-
-            // Angle angle = Radians.of(robotRotation).minus(heading);
-
-            // m_turretClosedLoopController.setSetpoint(angle.in(Rotations),
-            // ControlType.kPosition);
-        }, this);
+        moveToAngle(targetAngle);
     }
 
     public Angle getRotation() {
