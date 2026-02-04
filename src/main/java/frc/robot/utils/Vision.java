@@ -3,6 +3,7 @@ package frc.robot.utils;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import org.photonvision.EstimatedRobotPose;
@@ -33,7 +34,7 @@ public class Vision {
     PhotonCamera m_camera1 = new PhotonCamera(VisionConstants.kCameraName1);
     PhotonCamera m_camera2 = new PhotonCamera(VisionConstants.kCameraName2);
 
-    Optional<Supplier<Angle>> m_turretAngleSupplier;
+    Optional<Function<Double, Angle>> m_turretAngleSupplier;
 
     PhotonPoseEstimator m_poseEstimatorOne = new PhotonPoseEstimator(VisionConstants.kTagLayout,
             VisionConstants.kRobotToCamOne);
@@ -43,7 +44,7 @@ public class Vision {
     Consumer<VisionEstimation> m_visionConsumer;
     private Matrix<N3, N1> curStdDevs;
 
-    public Vision(Optional<Supplier<Angle>> turretAngleSupplier, Consumer<VisionEstimation> visionConsumer) {
+    public Vision(Optional<Function<Double, Angle>> turretAngleSupplier, Consumer<VisionEstimation> visionConsumer) {
         m_turretAngleSupplier = turretAngleSupplier;
         m_visionConsumer = visionConsumer;
     }
@@ -67,9 +68,8 @@ public class Vision {
         }
 
         Optional<EstimatedRobotPose> visionEstimationCameraTwo = Optional.empty();
-        m_poseEstimatorTwo.setRobotToCameraTransform(getTurretCameraTransform());
-
         for (var result : m_camera2.getAllUnreadResults()) {
+            m_poseEstimatorTwo.setRobotToCameraTransform(getTurretCameraTransform(result.getTimestampSeconds()));
             visionEstimationCameraTwo = m_poseEstimatorTwo.estimateCoprocMultiTagPose(result);
 
             if (visionEstimationCameraTwo.isEmpty()) {
@@ -131,11 +131,11 @@ public class Vision {
         }
     }
 
-    private Transform3d getTurretCameraTransform() {
+    private Transform3d getTurretCameraTransform(double estimationTime) {
         if (m_turretAngleSupplier.isEmpty())
             return VisionConstants.kRobotToCamTwo;
 
-        Angle turretAngle = m_turretAngleSupplier.get().get();
+        Angle turretAngle = m_turretAngleSupplier.get().apply(estimationTime);
 
         Distance cameraXOffset = Meters
                 .of(VisionConstants.kTurretCameraDistanceToCenter.in(Meters) * Math.cos(turretAngle.in(Radians)));
