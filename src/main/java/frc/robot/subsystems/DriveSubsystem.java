@@ -30,6 +30,7 @@ import frc.robot.utils.ShuffleboardPid;
 import frc.robot.utils.VisionEstimation;
 import frc.robot.utils.Vision;
 import frc.robot.Constants.DriveConstants;
+import frc.robot.Constants.NumericalConstants;
 import frc.robot.Constants.VisionConstants;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -186,7 +187,7 @@ public class DriveSubsystem extends SubsystemBase {
             double totalDistance = Math.hypot(xFixtureDist, yFixtureDist);
 
             // Floating point value correction
-            if (Math.abs(totalDistance) < Constants.NumericalConstants.kEpsilon)
+            if (Math.abs(totalDistance) < NumericalConstants.kEpsilon)
                 return;
 
             m_targetAutoAngle = Radians.of(Math.atan2(yFixtureDist, xFixtureDist));

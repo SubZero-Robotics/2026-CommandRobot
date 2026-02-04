@@ -11,6 +11,7 @@ import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
@@ -183,6 +184,44 @@ public final class Constants {
 
         public static final Matrix<N3, N1> kStateStdDevs = VecBuilder.fill(0.1, 0.1, 0.1);
         public static final Matrix<N3, N1> kVisionStdDevs = VecBuilder.fill(1, 1, 1);
+    }
+
+    public static final class NumericalConstants {
+        public static final double kEpsilon = 1e-6;
+    }
+
+    public static final class TurretConstants {
+        public static final int kMotorId = 20;
+        public static final Angle kMinAngle = Radians.of(0.0);
+        public static final Angle kMaxAngle = Radians.of(2.0 * Math.PI);
+
+        public static final int kPositionBufferLength = 4000;
+        public static final Time kEncoderReadingDelay = Seconds.of(0.005);
+
+        public static final Time kEncoderReadInterval = Seconds.of(0.01);
+
+        public static final Angle kFullRotation = Radians.of(2.0 * Math.PI);
+        public static final Angle kNoRotation = Radians.of(0.0);
+
+        public static final double kP = 1.5;
+        public static final double kI = 0.0;
+        public static final double kD = 0.0;
+    }
+
+    public static final class ShooterConstants {
+        public static final int kShooterMotorId = 30;
+        public static final int kHoodMotorId = 31;
+
+        public static final double kHoodP = 0.1;
+        public static final double kHoodI = 0.0;
+        public static final double kHoodD = 0.0;
+
+        public static final double kShooterP = 0.1;
+        public static final double kShooterI = 0.0;
+        public static final double kShooterD = 0.0;
+
+        // Teeth on encoder gear to teeth on shaft, teeth on shaft to teeth on hood part
+        public static final double kHoodGearRatio = (62 / 25) * (14 / 218);
     }
 
     public static final class Fixtures {
