@@ -163,12 +163,15 @@ public final class Constants {
     public static final class TurretConstants {
         public static final int kMotorId = 20;
         public static final Angle kMinAngle = Radians.of(0.0);
-        public static final Angle kMaxAngle = Radians.of(1.0 * Math.PI);
+        public static final Angle kMaxAngle = Radians.of(2.0 * Math.PI);
 
         public static final int kPositionBufferLength = 4000;
         public static final Time kEncoderReadingDelay = Seconds.of(0.005);
 
         public static final Time kEncoderReadInterval = Seconds.of(0.01);
+
+        public static final Angle kFullRotation = Radians.of(2.0 * Math.PI);
+        public static final Angle kNoRotation = Radians.of(0.0);
 
         public static final double kP = 1.5;
         public static final double kI = 0.0;

@@ -54,24 +54,33 @@ public class TurretSubsystem extends SubsystemBase {
     }
 
     public void moveToAngle(Angle angle) {
-            if (angle.gt(TurretConstants.kMaxAngle)) {
-                System.out
-                        .println("Angle " + angle + "is bigger than maximum angle " + TurretConstants.kMaxAngle + ".");
-                return;
-            } else if (angle.lt(TurretConstants.kMinAngle)) {
-                System.out.println(
-                        "Angle " + angle + "is to smaller than minimum angle " + TurretConstants.kMinAngle + ".");
-                return;
-            }
 
-            m_turretClosedLoopController.setSetpoint(angle.in(Rotations), ControlType.kPosition);
+        if (angle.gt(TurretConstants.kFullRotation)) {
+            angle = angle.minus(TurretConstants.kFullRotation);
+        } else if (angle.lt(TurretConstants.kNoRotation)) {
+            angle = angle.plus(TurretConstants.kFullRotation);
+        }
+
+        if (angle.gt(TurretConstants.kMaxAngle)) {
+            System.out
+                    .println("Angle " + angle + "is bigger than maximum angle " +
+                            TurretConstants.kMaxAngle + ".");
+            return;
+        } else if (angle.lt(TurretConstants.kMinAngle)) {
+            System.out.println(
+                    "Angle " + angle + "is to smaller than minimum angle " +
+                            TurretConstants.kMinAngle + ".");
+            return;
+        }
+
+        m_turretClosedLoopController.setSetpoint(angle.in(Rotations), ControlType.kPosition);
     }
 
     public void pointToHeading(Angle heading) {
-        Angle robotHeading = Radians.of(m_robotPoseSupplier.get().getRotation().getRadians());
-        Angle targetAngle = heading.minus(robotHeading);
-
-        moveToAngle(targetAngle);
+        // moveToAngle(
+        // heading.minus(Radians.of(m_robotPoseSupplier.get().getRotation().getRadians()
+        // - heading.magnitude())));
+        moveToAngle(Radians.of(m_robotPoseSupplier.get().getRotation().getRadians() - heading.in(Radians)));
     }
 
     public Angle getRotation() {

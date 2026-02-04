@@ -54,10 +54,13 @@ public class RobotContainer {
                                 -MathUtil.applyDeadband(m_driverController.getRightX(), OIConstants.kDriveDeadband),
                                 true),
                         m_drive));
+
+        // TODO: Get rid of this
+        m_turret.setDefaultCommand(new RunCommand(() -> m_turret.pointToHeading(Radians.of(Math.PI / 4)), m_turret));
     }
 
     private void configureBindings() {
-        m_driverController.a().whileTrue(new RunCommand(() -> m_turret.moveToAngle(Radians.of(Math.PI))));
+
     }
 
     public Command getAutonomousCommand() {
