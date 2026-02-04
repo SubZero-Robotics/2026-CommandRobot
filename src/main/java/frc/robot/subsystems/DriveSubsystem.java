@@ -6,6 +6,7 @@ package frc.robot.subsystems;
 import edu.wpi.first.hal.FRCNetComm.tInstances;
 import edu.wpi.first.hal.FRCNetComm.tResourceType;
 import edu.wpi.first.hal.HAL;
+import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -16,6 +17,8 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.math.numbers.N1;
+import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotController;
@@ -24,11 +27,15 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Robot;
 import frc.robot.utils.ShuffleboardPid;
+import frc.robot.utils.VisionEstimation;
+import frc.robot.utils.Vision;
 import frc.robot.Constants.DriveConstants;
+import frc.robot.Constants.VisionConstants;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
+import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 
 import com.ctre.phoenix6.hardware.Pigeon2;
 import com.ctre.phoenix6.sim.Pigeon2SimState;
@@ -84,6 +91,8 @@ public class DriveSubsystem extends SubsystemBase {
 
     private final Field2d m_field = new Field2d();
 
+    private final Vision m_vision = new Vision(Optional.empty(), this::addVisionMeasurement);
+
     // Odometry class for tracking robot pose
     SwerveDriveOdometry m_odometry = new SwerveDriveOdometry(DriveConstants.kDriveKinematics,
             new Rotation2d(pidgey.getYaw().getValue()),
@@ -94,7 +103,7 @@ public class DriveSubsystem extends SubsystemBase {
                     m_rearRight.getPosition()
             });
 
-    SwerveDrivePoseEstimator poseEstimator = new SwerveDrivePoseEstimator(
+    SwerveDrivePoseEstimator m_poseEstimator = new SwerveDrivePoseEstimator(
             DriveConstants.kDriveKinematics,
             new Rotation2d(pidgey.getYaw().getValue()),
             new SwerveModulePosition[] {
@@ -108,6 +117,7 @@ public class DriveSubsystem extends SubsystemBase {
      * Creates a new DriveSubsystem.
      */
     public DriveSubsystem() {
+
         // Usage reporting for MAXSwerve template
         HAL.report(tResourceType.kResourceType_RobotDrive, tInstances.kRobotDriveSwerve_MaxSwerve);
 
@@ -220,8 +230,12 @@ public class DriveSubsystem extends SubsystemBase {
         // System.out.println("Current rotation: " +
         // getPose().getRotation().getRadians());
 
-        poseEstimator.update(new Rotation2d(getHeading()), getModulePositions());
-        m_field.setRobotPose(poseEstimator.getEstimatedPosition());
+        m_poseEstimator.update(new Rotation2d(getHeading()), getModulePositions());
+        m_field.setRobotPose(m_poseEstimator.getEstimatedPosition());
+
+        // System.out.println(m_poseEstimator.getEstimatedPosition());
+
+        m_vision.periodic();
 
         SmartDashboard.putData(m_field);
 
@@ -234,7 +248,7 @@ public class DriveSubsystem extends SubsystemBase {
      * @return The pose.
      */
     public Pose2d getPose() {
-        return poseEstimator.getEstimatedPosition();
+        return m_poseEstimator.getEstimatedPosition();
     }
 
     public SwerveModulePosition[] getModulePositions() {
@@ -359,13 +373,9 @@ public class DriveSubsystem extends SubsystemBase {
         return pidgey.getYaw().getValue();
     }
 
-    public Angle getNonContinuousHeading() {
-        if (getHeading().in(Radians) > 2.0 * Math.PI) {
-            return getHeading();
-        }
-
-        double rotations = Math.floor(getHeading().in(Radians) / (2 * Math.PI));
-        return Radians.of(getHeading().in(Radians) - rotations);
+    public void addVisionMeasurement(VisionEstimation estimation) {
+        System.out.println(estimation.m_pose);
+        m_poseEstimator.addVisionMeasurement(estimation.m_pose, estimation.m_timestamp, estimation.m_stdDevs);
     }
 
     private Angle getOptimalAngle(Angle target, Angle robotHeading) {
