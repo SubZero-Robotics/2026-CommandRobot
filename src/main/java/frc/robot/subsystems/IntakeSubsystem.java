@@ -2,8 +2,6 @@ package frc.robot.subsystems;
 
 import static edu.wpi.first.units.Units.*;
 
-import java.util.function.Supplier;
-
 import com.revrobotics.AbsoluteEncoder;
 import com.revrobotics.PersistMode;
 import com.revrobotics.ResetMode;
@@ -14,20 +12,15 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkMaxConfig;
 
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.units.measure.Velocity;
-import edu.wpi.first.wpilibj2.command.RunCommand;
 import frc.robot.Constants.IntakeConstants;
 
 public class IntakeSubsystem {
-    private final SparkMax m_IntakeMotor = new SparkMax(IntakeConstants.kMotorId, MotorType.kBrushless);
-    private final SparkMax m_DeployMotor = new SparkMax(IntakeConstants.kMotorId, MotorType.kBrushless);
+    private final SparkMax m_intakeMotor = new SparkMax(IntakeConstants.kMotorId, MotorType.kBrushless);
+    private final SparkMax m_deployMotor = new SparkMax(IntakeConstants.kMotorId, MotorType.kBrushless);
 
-    private final AbsoluteEncoder m_absoluteEncoder = m_DeployMotor.getAbsoluteEncoder();
-
-    private final SparkClosedLoopController m_IntakeClosedLoopController = m_IntakeMotor.getClosedLoopController();
-    private final SparkClosedLoopController m_DeployClosedLoopController = m_IntakeMotor.getClosedLoopController();
+    private final SparkClosedLoopController m_intakeClosedLoopController = m_intakeMotor.getClosedLoopController();
+    private final SparkClosedLoopController m_deployClosedLoopController = m_intakeMotor.getClosedLoopController();
 
     private SparkMaxConfig m_PidConfig = new SparkMaxConfig();
 
@@ -36,19 +29,26 @@ public class IntakeSubsystem {
         m_PidConfig.closedLoop.p(IntakeConstants.kP).i(IntakeConstants.kI)
                 .d(IntakeConstants.kD);
         m_PidConfig.closedLoop.feedbackSensor(FeedbackSensor.kAbsoluteEncoder);
-        m_DeployMotor.configure(m_PidConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
+        m_deployMotor.configure(m_PidConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
     }
 
-    public void SpinIntake(AngularVelocity velocity) {
-        m_IntakeClosedLoopController.setSetpoint(velocity.in(RPM), ControlType.kVelocity);
+    public void spinIntake(AngularVelocity velocity) {
+        m_intakeClosedLoopController.setSetpoint(velocity.in(RPM), ControlType.kVelocity);
     }
 
-     public void StopIntake() {
-        SpinIntake(RPM.of(0));
+    public void stopIntake() {
+        spinIntake(RPM.of(0));
     }
 
-    public void DeployPosition() {
+    public void toDeployPosition() {
+        m_deployClosedLoopController.setSetpoint(
+                IntakeConstants.kDeployRotations.in(Rotations),
+                ControlType.kPosition);
+    }
+
+    public void retractIntake() {
+        m_deployClosedLoopController.setSetpoint(
+                IntakeConstants.kRetractRotations.in(Rotations),
+                ControlType.kPosition);
     }
 }
-
-

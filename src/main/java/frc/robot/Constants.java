@@ -14,10 +14,16 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.AngleUnit;
+import edu.wpi.first.units.DistanceUnit;
+import edu.wpi.first.units.PerUnit;
+import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearAcceleration;
 import edu.wpi.first.units.measure.LinearVelocity;
+import edu.wpi.first.units.measure.Per;
 import edu.wpi.first.units.measure.Time;
 
 /**
@@ -137,12 +143,11 @@ public final class Constants {
 
     public static final class VisionConstants {
 
-        public static final Transform3d kRobotToCam
-                = new Transform3d(new Translation3d(0.5, 0.0, 0.5),
-                        new Rotation3d(0, 0, 0));
+        public static final Transform3d kRobotToCam = new Transform3d(new Translation3d(0.5, 0.0, 0.5),
+                new Rotation3d(0, 0, 0));
 
-        public static final AprilTagFieldLayout kTagLayout
-                = AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
+        public static final AprilTagFieldLayout kTagLayout = AprilTagFieldLayout
+                .loadField(AprilTagFields.kDefaultField);
     }
 
     public static final class NumericalConstants {
@@ -152,7 +157,11 @@ public final class Constants {
     public static final class IntakeConstants {
         public static final double kP = 1;
         public static final double kI = 0;
-        public static final double kD = 1;
+        public static final double kD = 0;
         public static final int kMotorId = 1;
+
+        // Placeholder
+        public static final Angle kDeployRotations = Rotations.of(10.0);
+        public static final Angle kRetractRotations = Rotations.of(0.0);
     }
 }
