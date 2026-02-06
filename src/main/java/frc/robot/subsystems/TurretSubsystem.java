@@ -1,5 +1,6 @@
 package frc.robot.subsystems;
 
+import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.Rotations;
 
@@ -15,6 +16,7 @@ import com.revrobotics.spark.FeedbackSensor;
 import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkMaxConfig;
+import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.SparkMax;
 
 import edu.wpi.first.math.geometry.Pose2d;
@@ -43,23 +45,21 @@ public class TurretSubsystem extends SubsystemBase {
 
     private Supplier<Pose2d> m_robotPoseSupplier;
 
-    private SparkMaxConfig m_pidConfig = new SparkMaxConfig();
+    private SparkMaxConfig m_config = new SparkMaxConfig();
 
     public TurretSubsystem(Supplier<Pose2d> robotPoseSupplier) {
         m_robotPoseSupplier = robotPoseSupplier;
 
-        m_pidConfig.closedLoop.p(TurretConstants.kP).i(TurretConstants.kI).d(TurretConstants.kD);
-        m_pidConfig.closedLoop.feedbackSensor(FeedbackSensor.kAbsoluteEncoder);
-        m_turretMotor.configure(m_pidConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
+        m_config.closedLoop.p(TurretConstants.kP).i(TurretConstants.kI).d(TurretConstants.kD);
+        m_config.closedLoop.feedbackSensor(FeedbackSensor.kAbsoluteEncoder);
+        m_config.smartCurrentLimit(TurretConstants.kSmartCurrentLimit);
+        m_config.idleMode(IdleMode.kBrake);
+        m_turretMotor.configure(m_config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     }
 
     public void moveToAngle(Angle angle) {
 
-        if (angle.gt(TurretConstants.kFullRotation)) {
-            angle = angle.minus(TurretConstants.kFullRotation);
-        } else if (angle.lt(TurretConstants.kNoRotation)) {
-            angle = angle.plus(TurretConstants.kFullRotation);
-        }
+        angle = wrapAngle(angle);
 
         if (angle.gt(TurretConstants.kMaxAngle)) {
             System.out
@@ -73,6 +73,7 @@ public class TurretSubsystem extends SubsystemBase {
             return;
         }
 
+        // System.out.println("Target angle is " + angle);
         m_turretClosedLoopController.setSetpoint(angle.in(Rotations), ControlType.kPosition);
     }
 
@@ -104,6 +105,15 @@ public class TurretSubsystem extends SubsystemBase {
     @Override
     public void simulationPeriodic() {
         m_simTurretMotor.setVelocity(1.0);
-        System.out.println(m_simAbsoluteEncoder.getPosition());
+        // System.out.println(m_simAbsoluteEncoder.getPosition());
+    }
+
+    private Angle wrapAngle(Angle angle) {
+        Angle wrap = Radians.of((angle.in(Radians) % TurretConstants.kFullRotation.in(Radians)));
+        if (wrap.lt(TurretConstants.kNoRotation)) {
+            wrap = wrap.plus(TurretConstants.kFullRotation);
+        }
+
+        return wrap;
     }
 }

@@ -206,6 +206,8 @@ public final class Constants {
         public static final double kP = 1.5;
         public static final double kI = 0.0;
         public static final double kD = 0.0;
+
+        public static final int kSmartCurrentLimit = 40;
     }
 
     public static final class ShooterConstants {
