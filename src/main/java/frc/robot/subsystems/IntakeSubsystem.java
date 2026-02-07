@@ -11,6 +11,7 @@ import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkMaxConfig;
+import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
 import edu.wpi.first.units.measure.AngularVelocity;
 import frc.robot.Constants.IntakeConstants;
@@ -20,16 +21,19 @@ public class IntakeSubsystem {
     private final SparkMax m_deployMotor = new SparkMax(IntakeConstants.kMotorId, MotorType.kBrushless);
 
     private final SparkClosedLoopController m_intakeClosedLoopController = m_intakeMotor.getClosedLoopController();
-    private final SparkClosedLoopController m_deployClosedLoopController = m_intakeMotor.getClosedLoopController();
+    private final SparkClosedLoopController m_deployClosedLoopController = m_deployMotor.getClosedLoopController();
 
-    private SparkMaxConfig m_PidConfig = new SparkMaxConfig();
+    private SparkMaxConfig m_deployConfig = new SparkMaxConfig();
 
     public IntakeSubsystem() {
 
-        m_PidConfig.closedLoop.p(IntakeConstants.kP).i(IntakeConstants.kI)
+        m_deployConfig.closedLoop.p(IntakeConstants.kP).i(IntakeConstants.kI)
                 .d(IntakeConstants.kD);
-        m_PidConfig.closedLoop.feedbackSensor(FeedbackSensor.kAbsoluteEncoder);
-        m_deployMotor.configure(m_PidConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
+        m_deployConfig.closedLoop.feedbackSensor(FeedbackSensor.kAbsoluteEncoder);
+        m_deployConfig.idleMode(IdleMode.kBrake);
+        m_deployConfig.smartCurrentLimit(IntakeConstants.kDeployMotorCurrentLimit);
+        m_deployMotor.configure(m_deployConfig, ResetMode.kResetSafeParameters,
+                PersistMode.kPersistParameters);
     }
 
     public void spinIntake(AngularVelocity velocity) {
@@ -40,7 +44,7 @@ public class IntakeSubsystem {
         spinIntake(RPM.of(0));
     }
 
-    public void toDeployPosition() {
+    public void deployIntake() {
         m_deployClosedLoopController.setSetpoint(
                 IntakeConstants.kDeployRotations.in(Rotations),
                 ControlType.kPosition);

@@ -163,5 +163,7 @@ public final class Constants {
         // Placeholder
         public static final Angle kDeployRotations = Rotations.of(10.0);
         public static final Angle kRetractRotations = Rotations.of(0.0);
+
+        public static final int kDeployMotorCurrentLimit = 40;
     }
 }
