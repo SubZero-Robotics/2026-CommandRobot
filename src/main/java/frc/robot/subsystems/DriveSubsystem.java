@@ -21,6 +21,7 @@ import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
@@ -30,6 +31,7 @@ import frc.robot.utils.ShuffleboardPid;
 import frc.robot.utils.VisionEstimation;
 import frc.robot.utils.Vision;
 import frc.robot.Constants.DriveConstants;
+import frc.robot.Constants.Fixtures;
 import frc.robot.Constants.NumericalConstants;
 import frc.robot.Constants.VisionConstants;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -177,7 +179,15 @@ public class DriveSubsystem extends SubsystemBase {
                 });
     }
 
-    public Command enableFacePose(Pose2d fixture) {
+    public Command faceCardinalHeading(Angle heading) {
+        return new RunCommand(() -> {
+            Angle robotHeading = getHeading();
+            m_targetAutoAngle = robotHeading.minus(heading);
+            m_isManualRotate = false;
+        }, this);
+    }
+
+    public Command facePose(Pose2d fixture) {
         return new RunCommand(() -> {
             Pose2d robotPose = getPose();
 
@@ -377,6 +387,44 @@ public class DriveSubsystem extends SubsystemBase {
     public void addVisionMeasurement(VisionEstimation estimation) {
         System.out.println(estimation.m_pose);
         m_poseEstimator.addVisionMeasurement(estimation.m_pose, estimation.m_timestamp, estimation.m_stdDevs);
+    }
+
+    public Fixtures.FieldLocations getRobotLocation() {
+        Optional<Alliance> alliance = DriverStation.getAlliance();
+        Pose2d robotPose = getPose();
+
+        double x = robotPose.getX();
+        double y = robotPose.getY();
+
+        if (alliance.isPresent()) {
+            if (alliance.get() == Alliance.Blue) {
+                if (x < Fixtures.kBlueSideNeutralBorder.in(Meters) && x > Fixtures.kRedSideNeutralBorder.in(Meters)) {
+                    if (y < Fixtures.kFieldYMidpoint.in(Meters)) {
+                        return Fixtures.FieldLocations.NeutralLeftSide;
+                    } else {
+                        return Fixtures.FieldLocations.NeutralRightSide;
+                    }
+                } else if (x > Fixtures.kBlueSideNeutralBorder.in(Meters)) {
+                    return Fixtures.FieldLocations.AllianceSide;
+                } else {
+                    return Fixtures.FieldLocations.OpponentSide;
+                }
+            } else if (alliance.get() == Alliance.Red) {
+                if (x > Fixtures.kRedSideNeutralBorder.in(Meters) && x < Fixtures.kBlueSideNeutralBorder.in(Meters)) {
+                    if (y < Fixtures.kFieldYMidpoint.in(Meters)) {
+                        return Fixtures.FieldLocations.NeutralRightSide;
+                    } else {
+                        return Fixtures.FieldLocations.NeutralLeftSide;
+                    }
+                } else if (x < Fixtures.kRedSideNeutralBorder.in(Meters)) {
+                    return Fixtures.FieldLocations.AllianceSide;
+                } else {
+                    return Fixtures.FieldLocations.OpponentSide;
+                }
+            }
+        }
+
+        return null;
     }
 
     private Angle getOptimalAngle(Angle target, Angle robotHeading) {

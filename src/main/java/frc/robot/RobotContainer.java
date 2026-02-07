@@ -23,6 +23,7 @@ import frc.robot.Constants.AutoConstants;
 import frc.robot.Constants.Fixtures;
 import frc.robot.Constants.OIConstants;
 import frc.robot.Constants.TurretConstants;
+import frc.robot.Constants.Fixtures.FieldLocations;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.TurretSubsystem;
 
@@ -81,41 +82,9 @@ public class RobotContainer {
         };
     }
 
-    public Fixtures.FieldLocations getRobotLocation() {
-        Optional<Alliance> alliance = DriverStation.getAlliance();
-        Pose2d robotPose = m_drive.getPose();
-
-        double x = robotPose.getX();
-        double y = robotPose.getY();
-
-        if (alliance.isPresent()) {
-            if (alliance.get() == Alliance.Blue) {
-                if (x < Fixtures.kBlueSideNeutralBorder.in(Meters) && x > Fixtures.kRedSideNeutralBorder.in(Meters)) {
-                    if (y < Fixtures.kFieldYMidpoint.in(Meters)) {
-                        return Fixtures.FieldLocations.NeutralLeftSide;
-                    } else {
-                        return Fixtures.FieldLocations.NeutralRightSide;
-                    }
-                } else if (x > Fixtures.kBlueSideNeutralBorder.in(Meters)) {
-                    return Fixtures.FieldLocations.AllianceSide;
-                } else {
-                    return Fixtures.FieldLocations.OpponentSide;
-                }
-            } else if (alliance.get() == Alliance.Red) {
-                if (x > Fixtures.kRedSideNeutralBorder.in(Meters) && x < Fixtures.kBlueSideNeutralBorder.in(Meters)) {
-                    if (y < Fixtures.kFieldYMidpoint.in(Meters)) {
-                        return Fixtures.FieldLocations.NeutralRightSide;
-                    } else {
-                        return Fixtures.FieldLocations.NeutralLeftSide;
-                    }
-                } else if (x < Fixtures.kRedSideNeutralBorder.in(Meters)) {
-                    return Fixtures.FieldLocations.AllianceSide;
-                } else {
-                    return Fixtures.FieldLocations.OpponentSide;
-                }
-            }
-        }
-
-        return null;
+    public Command feedPosition(Alliance alliance) {
+        return new RunCommand(() -> {
+            
+        }, m_drive, m_turret);
     }
 }

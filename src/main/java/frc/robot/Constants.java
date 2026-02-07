@@ -240,5 +240,13 @@ public final class Constants {
             NeutralRightSide,
             OpponentSide
         }
+
+        // Placeholders
+        public static final Angle kRedLeftSideFeedHeading = Degrees.of(40);
+        public static final Angle kRedRightSideFeedHeading = Degrees.of(160);
+
+        // Placeholders
+        public static final Angle kBlueLeftSideFeedHeading = Degrees.of(-40);
+        public static final Angle kBlueRightSideFeedHeading = Degrees.of(-160);
     }
 }
