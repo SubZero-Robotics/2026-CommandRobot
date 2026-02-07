@@ -160,9 +160,12 @@ public final class Constants {
         public static final double kD = 0;
         public static final int kMotorId = 1;
 
-        // Placeholder
-        public static final Angle kDeployRotations = Rotations.of(10.0);
+        // 10 teeth on pinion, 20 teeth on rack
+        public static final Angle kDeployRotations = Rotations.of(20.0 / 10.0);
         public static final Angle kRetractRotations = Rotations.of(0.0);
+
+        public static final Angle kMaxExtension = Rotations.of(20.0 / 10.0);
+        public static final Angle kMinExtension = Rotations.of(0.0);
 
         public static final int kDeployMotorCurrentLimit = 40;
     }
