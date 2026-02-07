@@ -1,6 +1,5 @@
 package frc.robot.subsystems;
 
-import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.Rotations;
 
@@ -21,12 +20,8 @@ import com.revrobotics.spark.SparkMax;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.system.plant.DCMotor;
-import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.Seconds;
 import edu.wpi.first.units.measure.Angle;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.TurretConstants;
 import frc.robot.utils.PositionBuffer;
@@ -37,8 +32,6 @@ public class TurretSubsystem extends SubsystemBase {
     private final SparkMaxSim m_simTurretMotor = new SparkMaxSim(m_turretMotor, DCMotor.getNEO(1));
 
     private final AbsoluteEncoder m_absoluteEncoder = m_turretMotor.getAbsoluteEncoder();
-    private final SparkAbsoluteEncoderSim m_simAbsoluteEncoder = m_simTurretMotor.getAbsoluteEncoderSim();
-
     private final SparkClosedLoopController m_turretClosedLoopController = m_turretMotor.getClosedLoopController();
 
     private final PositionBuffer m_positionBuffer = new PositionBuffer(TurretConstants.kPositionBufferLength);

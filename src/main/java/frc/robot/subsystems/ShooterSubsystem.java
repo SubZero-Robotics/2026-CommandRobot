@@ -14,13 +14,8 @@ import com.revrobotics.spark.SparkBase.ControlType;
 
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.units.measure.LinearVelocity;
-import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.ShooterConstants;
-import edu.wpi.first.math.trajectory.TrapezoidProfile;
-
-import frc.robot.utils.ShuffleboardPid;
 
 public class ShooterSubsystem extends SubsystemBase {
 
@@ -48,12 +43,16 @@ public class ShooterSubsystem extends SubsystemBase {
                 .d(ShooterConstants.kHoodD);
         m_hoodConfig.closedLoop.feedbackSensor(FeedbackSensor.kAbsoluteEncoder);
 
+        // Inverse since kHoodGearRatio gives encoder -> hood motion, and we need hood
+        // motion -> encoder
+        m_hoodConfig.encoder.positionConversionFactor(1.0 / ShooterConstants.kHoodGearRatio);
+
         m_shooterMotor.configure(m_shooterConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
         m_hoodMotor.configure(m_hoodConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
     }
 
     public void Aim(Angle angle) {
-        m_hoodClosedLoopController.setSetpoint(angle.in(Rotations) / ShooterConstants.kHoodGearRatio,
+        m_hoodClosedLoopController.setSetpoint(angle.in(Rotations),
                 ControlType.kPosition);
     }
 

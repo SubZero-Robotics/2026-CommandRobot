@@ -22,14 +22,6 @@ import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
-import static edu.wpi.first.units.Units.Inches;
-import static edu.wpi.first.units.Units.Meters;
-import static edu.wpi.first.units.Units.MetersPerSecond;
-import static edu.wpi.first.units.Units.MetersPerSecondPerSecond;
-import static edu.wpi.first.units.Units.Radians;
-import static edu.wpi.first.units.Units.RadiansPerSecond;
-import static edu.wpi.first.units.Units.RadiansPerSecondPerSecond;
-import static edu.wpi.first.units.Units.Seconds;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -224,6 +216,8 @@ public final class Constants {
 
         // Teeth on encoder gear to teeth on shaft, teeth on shaft to teeth on hood part
         public static final double kHoodGearRatio = (62 / 25) * (14 / 218);
+
+        public static final Angle kFeedAngle = Degrees.of(90.0);
     }
 
     public static final class Fixtures {
@@ -234,5 +228,17 @@ public final class Constants {
         // side
         public static final Pose2d kTopFeedPose = new Pose2d();
         public static final Pose2d kBottomFeedPose = new Pose2d();
+
+        public static final Distance kFieldYMidpoint = Inches.of(317.69 / 2.0);
+
+        public static final Distance kRedSideNeutralBorder = Inches.of(182.11);
+        public static final Distance kBlueSideNeutralBorder = Inches.of(651.22 - 182.11);
+
+        public static enum FieldLocations {
+            AllianceSide,
+            NeutralLeftSide,
+            NeutralRightSide,
+            OpponentSide
+        }
     }
 }

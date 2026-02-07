@@ -3,22 +3,26 @@
 // the WPILib BSD license file in the root directory of this project.
 package frc.robot;
 
-import static edu.wpi.first.units.Units.Degrees;
-import static edu.wpi.first.units.Units.Radian;
+import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Radians;
+
+import java.util.Optional;
 
 import com.pathplanner.lib.commands.PathPlannerAuto;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants.AutoConstants;
+import frc.robot.Constants.Fixtures;
 import frc.robot.Constants.OIConstants;
+import frc.robot.Constants.TurretConstants;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.TurretSubsystem;
 
@@ -75,5 +79,43 @@ public class RobotContainer {
         return () -> {
             m_turret.pushCurrentEncoderReading();
         };
+    }
+
+    public Fixtures.FieldLocations getRobotLocation() {
+        Optional<Alliance> alliance = DriverStation.getAlliance();
+        Pose2d robotPose = m_drive.getPose();
+
+        double x = robotPose.getX();
+        double y = robotPose.getY();
+
+        if (alliance.isPresent()) {
+            if (alliance.get() == Alliance.Blue) {
+                if (x < Fixtures.kBlueSideNeutralBorder.in(Meters) && x > Fixtures.kRedSideNeutralBorder.in(Meters)) {
+                    if (y < Fixtures.kFieldYMidpoint.in(Meters)) {
+                        return Fixtures.FieldLocations.NeutralLeftSide;
+                    } else {
+                        return Fixtures.FieldLocations.NeutralRightSide;
+                    }
+                } else if (x > Fixtures.kBlueSideNeutralBorder.in(Meters)) {
+                    return Fixtures.FieldLocations.AllianceSide;
+                } else {
+                    return Fixtures.FieldLocations.OpponentSide;
+                }
+            } else if (alliance.get() == Alliance.Red) {
+                if (x > Fixtures.kRedSideNeutralBorder.in(Meters) && x < Fixtures.kBlueSideNeutralBorder.in(Meters)) {
+                    if (y < Fixtures.kFieldYMidpoint.in(Meters)) {
+                        return Fixtures.FieldLocations.NeutralRightSide;
+                    } else {
+                        return Fixtures.FieldLocations.NeutralLeftSide;
+                    }
+                } else if (x < Fixtures.kRedSideNeutralBorder.in(Meters)) {
+                    return Fixtures.FieldLocations.AllianceSide;
+                } else {
+                    return Fixtures.FieldLocations.OpponentSide;
+                }
+            }
+        }
+
+        return null;
     }
 }
