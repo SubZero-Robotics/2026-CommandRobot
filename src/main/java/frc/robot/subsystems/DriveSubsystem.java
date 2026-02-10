@@ -179,10 +179,21 @@ public class DriveSubsystem extends SubsystemBase {
                 });
     }
 
+    public Command faceCardinalHeadingRange(Angle minAngle, Angle maxAngle) {
+        return new RunCommand(() -> {
+            Angle robotAngle = getHeading();
+
+            if (withinRange(minAngle, maxAngle, robotAngle)) {
+                m_isManualRotate = true;
+            } else {
+                m_isManualRotate = false;
+            }
+        }, this);
+    }
+
     public Command faceCardinalHeading(Angle heading) {
         return new RunCommand(() -> {
-            Angle robotHeading = getHeading();
-            m_targetAutoAngle = robotHeading.minus(heading);
+            m_targetAutoAngle = heading;
             m_isManualRotate = false;
         }, this);
     }
@@ -445,5 +456,9 @@ public class DriveSubsystem extends SubsystemBase {
             delta = delta.minus(Radians.of(2.0 * Math.PI));
 
         return delta.plus(robotHeading);
+    }
+
+    private static boolean withinRange(Angle min, Angle max, Angle angle) {
+        return !(angle.lt(min) || angle.gt(max));
     }
 }

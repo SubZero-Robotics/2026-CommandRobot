@@ -167,7 +167,7 @@ public final class Constants {
         // Placeholder numbers
         public static final Pose3d kTurretAxisOfRotation = new Pose3d(Meters.of(0.2), Meters.of(0.3), Meters.of(0.3),
                 new Rotation3d(0.0, 0.0, 0.0));
-        public static final Distance kTurretCameraDistanceToCenter = Meters.of(0.6);
+        public static final Distance kTurretCameraDistanceToCenter = Meters.of(0.13);
         public static final Angle kCameraTwoPitch = Radians.of(0.0);
         public static final Angle kCameraTwoRoll = Radians.of(0.0);
 

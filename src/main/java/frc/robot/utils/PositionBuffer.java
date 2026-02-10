@@ -15,10 +15,14 @@ public class PositionBuffer {
     }
 
     public void pushElement(Angle angle, double delay) {
-        m_positions.push(new TimePosition(angle, Timer.getFPGATimestamp() - delay));
+        try {
+            m_positions.push(new TimePosition(angle, Timer.getFPGATimestamp() - delay));
+        } catch (Exception e) {
+            System.out.println("Ring Buffer Exception: " + e.getMessage());
+        }
     }
 
-    public Angle getAngleAtTime(double time) {
+    public Angle getAngleAtTime(double requestedTime) {
         // A fun little binary search algo
         int high = m_positions.getLength();
         int low = 0;
@@ -27,42 +31,78 @@ public class PositionBuffer {
         int midpoint = low + (high - low) / 2;
 
         while (low < high) {
-            double timeAtMidpoint = m_positions.get(midpoint).timestamp;
+            double timeAtMidpoint;
+            try {
+                timeAtMidpoint = m_positions.get(midpoint).timestamp;
+            } catch (Exception e) {
+                System.out.println("Ring Buffer Exception: " + e.getMessage());
+                return null;
+            }
 
-            if (time > timeAtMidpoint) {
+            if (requestedTime > timeAtMidpoint) {
                 low = midpoint + 1;
-            } else if (time < timeAtMidpoint) {
+            } else if (requestedTime < timeAtMidpoint) {
                 high = midpoint;
             }
 
             midpoint = low + (high - low) / 2;
         }
 
-        Angle angleAtTimeStamp;
-
         // Linearly interpolate velocity if we aren't on the first/last timestamp
         if (midpoint != 0 && midpoint != m_positions.getLength() - 1) {
-            TimePosition closestTimestamp = m_positions.get(midpoint);
+            TimePosition closestTimestamp;
 
-            double dt = m_positions.get(midpoint).timestamp - time;
-            TimePosition nextTimeStamp = dt > 0 ? m_positions.get(midpoint + 1) : m_positions.get(midpoint - 1);
+            try {
+                closestTimestamp = m_positions.get(midpoint);
+            } catch (Exception e) {
+                return null;
+            }
 
-            Angle daStamped = nextTimeStamp.angle.minus(closestTimestamp.angle);
+            double dt;
 
-            // Absolute since in order to preserve the sign, only one part of the fraction
-            // can keep its original sign. In this case we always keep the denominator
-            // positive
-            double dtStamped = Math.abs(nextTimeStamp.timestamp - closestTimestamp.timestamp);
+            try {
+                dt = m_positions.get(midpoint).timestamp - requestedTime;
+            } catch (Exception e) {
+                return null;
+            }
 
-            double percentageTimeTraveled = dt / dtStamped;
-            Angle da = daStamped.times(percentageTimeTraveled);
+            TimePosition nextTimeStamp;
 
-            angleAtTimeStamp = closestTimestamp.angle.plus(da);
-        } else {
-            angleAtTimeStamp = m_positions.get(midpoint).angle;
+            // Stampted Time 1 should always be less than stampted time 2
+            TimePosition stamptedTime1;
+            TimePosition stamptedTime2;
+
+            if (dt > 0) {
+                try {
+                    stamptedTime2 = m_positions.get(midpoint + 1);
+                    stamptedTime1 = closestTimestamp;
+                } catch (Exception e) {
+                    System.out.println("Ring Buffer Exception: " + e.getMessage());
+                    return null;
+                }
+            } else {
+                try {
+                    stamptedTime1 = m_positions.get(midpoint - 1);
+                    stamptedTime2 = closestTimestamp;
+                } catch (Exception e) {
+                    System.out.println("Ring Buffer Exception: " + e.getMessage());
+                    return null;
+                }
+            }
+
+            double deltaTimeStampted = stamptedTime2.timestamp - stamptedTime1.timestamp;
+            double timeSinceStamp1 = requestedTime - stamptedTime1.timestamp;
+
+            Angle deltaTheta = stamptedTime2.angle.minus(stamptedTime2.angle);
+
+            return deltaTheta.times(timeSinceStamp1 / deltaTimeStampted).plus(stamptedTime1.angle);
         }
 
-        return angleAtTimeStamp;
-
+        try {
+            return m_positions.get(midpoint).angle;
+        } catch (Exception e) {
+            System.out.println("Ring Buffer Exception: " + e.getMessage());
+            return null;
+        }
     }
 }

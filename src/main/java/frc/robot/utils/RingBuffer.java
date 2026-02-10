@@ -21,31 +21,42 @@ public class RingBuffer<T> {
         m_length = maxLength;
     }
 
-    public void push(T element) {
+    public void push(T element) throws Exception {
         if (m_head - m_tail == m_length) {
-            pop();
+            try {
+                pop();
+            } catch (Exception e) {
+                throw e;
+            }
         }
 
-        m_elements[getTrueIndex(m_head++)] = element;
+        synchronized (m_elements) {
+            m_elements[getTrueIndex(m_head++)] = element;
+        }
     }
 
-    public T pop() {
+    public T pop() throws Exception {
         if (m_tail == m_head) {
-            System.out.println("Cannot pop from empty ring buffer.");
-            return null;
+            System.out.println();
+            throw new Exception("Cannot pop from empty ring buffer.");
         }
 
-        return (T) m_elements[getTrueIndex(m_tail++)];
+        synchronized (m_elements) {
+            return (T) m_elements[getTrueIndex(m_tail++)];
+        }
     }
 
-    public T get(int index) {
-        int trueIndex = m_tail + index;
-        if (trueIndex > m_head) {
-            System.out.println("Index " + index + " is out of bounds of the ring buffer.");
-            return null;
-        }
+    public T get(int index) throws Exception {
+        synchronized (m_elements) {
+            int trueIndex = m_tail + index;
+            if (trueIndex > m_head) {
+                System.out.println("Index " + index + " is out of bounds of the ring buffer.");
 
-        return (T) m_elements[getTrueIndex(trueIndex)];
+                throw new Exception("Index " + index + " out of bounds.");
+            }
+
+            return (T) m_elements[getTrueIndex(trueIndex)];
+        }
     }
 
     public int getLength() {
