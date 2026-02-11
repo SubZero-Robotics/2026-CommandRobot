@@ -6,8 +6,6 @@ package frc.robot.subsystems;
 import edu.wpi.first.hal.FRCNetComm.tInstances;
 import edu.wpi.first.hal.FRCNetComm.tResourceType;
 import edu.wpi.first.hal.HAL;
-import edu.wpi.first.math.Matrix;
-import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -17,8 +15,6 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.math.numbers.N1;
-import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
@@ -33,13 +29,11 @@ import frc.robot.utils.Vision;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.Fixtures;
 import frc.robot.Constants.NumericalConstants;
-import frc.robot.Constants.VisionConstants;
+import frc.robot.Constants.TurretConstants;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
-import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
-
 import com.ctre.phoenix6.hardware.Pigeon2;
 import com.ctre.phoenix6.sim.Pigeon2SimState;
 import com.pathplanner.lib.auto.AutoBuilder;
@@ -47,15 +41,9 @@ import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 
-import edu.wpi.first.units.measure.*;
-
 import static edu.wpi.first.units.Units.*;
 
 import java.util.Optional;
-
-import org.photonvision.PhotonCamera;
-
-import frc.robot.Constants;
 
 public class DriveSubsystem extends SubsystemBase {
 
@@ -180,21 +168,17 @@ public class DriveSubsystem extends SubsystemBase {
     }
 
     public Command faceCardinalHeadingRange(Angle minAngle, Angle maxAngle) {
-        return new RunCommand(() -> {
+        return new InstantCommand(() -> {
             Angle robotAngle = getHeading();
+            // System.out.println(robotAngle);
 
             if (withinRange(minAngle, maxAngle, robotAngle)) {
                 m_isManualRotate = true;
             } else {
                 m_isManualRotate = false;
+                System.out.println(getClosestAngle(minAngle, maxAngle, robotAngle));
+                m_targetAutoAngle = getClosestAngle(minAngle, maxAngle, robotAngle);
             }
-        }, this);
-    }
-
-    public Command faceCardinalHeading(Angle heading) {
-        return new RunCommand(() -> {
-            m_targetAutoAngle = heading;
-            m_isManualRotate = false;
         }, this);
     }
 
@@ -217,7 +201,7 @@ public class DriveSubsystem extends SubsystemBase {
         });
     }
 
-    public Command disableFacePose() {
+    public Command disableFaceHeading() {
         return new InstantCommand(() -> {
             m_isManualRotate = true;
         });
@@ -320,6 +304,8 @@ public class DriveSubsystem extends SubsystemBase {
         double rotDelivered = (m_isManualRotate) ? rot * DriveConstants.kMaxAngularSpeed.magnitude()
                 : m_pidController.calculate(getHeading().in(Radians),
                         getOptimalAngle(m_targetAutoAngle, getHeading()).in(Radians));
+
+        System.out.println("Target " + m_targetAutoAngle + ", Current" + getHeading());
 
         var swerveModuleStates = DriveConstants.kDriveKinematics.toSwerveModuleStates(
                 fieldRelative
@@ -438,12 +424,21 @@ public class DriveSubsystem extends SubsystemBase {
         return null;
     }
 
-    private Angle getOptimalAngle(Angle target, Angle robotHeading) {
-        // Full robot rotations in radians
+    private static Angle wrapAngle(Angle heading) {
         Angle robotRotations = Radians
-                .of(Math.floor(robotHeading.in(Radians) / (2 * Math.PI)) * 2.0 * Math.PI);
+                .of(Math.floor(heading.in(Radians) / (2 * Math.PI)) * 2.0 * Math.PI);
 
-        Angle wrappedRobotAngle = robotHeading.minus(robotRotations);
+        Angle wrap = heading.minus(robotRotations);
+
+        if (wrap.lt(Radians.of(0))) {
+            wrap = wrap.plus(TurretConstants.kFullRotation);
+        }
+
+        return wrap;
+    }
+
+    private static Angle getOptimalAngle(Angle target, Angle robotHeading) {
+        Angle wrappedRobotAngle = wrapAngle(robotHeading);
 
         Angle delta = target.minus(wrappedRobotAngle);
 
@@ -459,6 +454,17 @@ public class DriveSubsystem extends SubsystemBase {
     }
 
     private static boolean withinRange(Angle min, Angle max, Angle angle) {
-        return !(angle.lt(min) || angle.gt(max));
+        angle = wrapAngle(angle);
+        min = getOptimalAngle(angle, min);
+        max = getOptimalAngle(angle, max);
+        return angle.gt(max) && angle.lt(min);
+    }
+
+    private static Angle getClosestAngle(Angle t1, Angle t2, Angle angle) {
+        t1 = wrapAngle(t1);
+        t2 = wrapAngle(t2);
+        angle = wrapAngle(angle);
+
+        return t1.minus(angle).abs(Rotations) < t2.minus(angle).abs(Rotations) ? t1 : t2;
     }
 }

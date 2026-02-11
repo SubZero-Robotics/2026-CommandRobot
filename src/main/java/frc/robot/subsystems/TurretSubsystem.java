@@ -54,14 +54,14 @@ public class TurretSubsystem extends SubsystemBase {
         angle = wrapAngle(angle);
 
         if (angle.gt(TurretConstants.kMaxAngle)) {
-            System.out
-                    .println("Angle " + angle + "is bigger than maximum angle " +
-                            TurretConstants.kMaxAngle + ".");
+            // System.out
+            // .println("Angle " + angle + "is bigger than maximum angle " +
+            // TurretConstants.kMaxAngle + ".");
             return;
         } else if (angle.lt(TurretConstants.kMinAngle)) {
-            System.out.println(
-                    "Angle " + angle + "is to smaller than minimum angle " +
-                            TurretConstants.kMinAngle + ".");
+            // System.out.println(
+            // "Angle " + angle + "is to smaller than minimum angle " +
+            // TurretConstants.kMinAngle + ".");
             return;
         }
 
