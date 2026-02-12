@@ -148,4 +148,8 @@ public final class Constants {
     public static final class NumericalConstants {
         public static final double kEpsilon = 1e-6;
     }
+
+    public static final class ClimberConstants {
+        public static final int kMotorId = 1;
+    }
 }
