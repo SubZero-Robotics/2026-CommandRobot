@@ -47,6 +47,7 @@ All devices connected to the robot's local network along with each device's assi
 | ------- | ---------- |
 | Gateway | 10.56.90.1 |
 | RoboRio | 10.56.90.2 |
+| Vision Coprocessor | 10.56.90.10 |
 
 ## Button Bindings
 
