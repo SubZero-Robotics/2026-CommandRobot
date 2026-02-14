@@ -16,6 +16,7 @@ import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.RobotController;
@@ -24,12 +25,14 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Robot;
 import frc.robot.utils.ShuffleboardPid;
+import frc.robot.utils.TurretPosition;
 import frc.robot.utils.VisionEstimation;
 import frc.robot.utils.Vision;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.Fixtures;
 import frc.robot.Constants.NumericalConstants;
 import frc.robot.Constants.TurretConstants;
+import frc.robot.Constants.DriveConstants.RangeType;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -44,6 +47,8 @@ import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import static edu.wpi.first.units.Units.*;
 
 import java.util.Optional;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 public class DriveSubsystem extends SubsystemBase {
 
@@ -82,7 +87,7 @@ public class DriveSubsystem extends SubsystemBase {
 
     private final Field2d m_field = new Field2d();
 
-    private final Vision m_vision = new Vision(Optional.empty(), this::addVisionMeasurement);
+    private final Vision m_vision;
 
     // Odometry class for tracking robot pose
     SwerveDriveOdometry m_odometry = new SwerveDriveOdometry(DriveConstants.kDriveKinematics,
@@ -107,7 +112,10 @@ public class DriveSubsystem extends SubsystemBase {
     /**
      * Creates a new DriveSubsystem.
      */
-    public DriveSubsystem() {
+    public DriveSubsystem(Function<Double, TurretPosition> turretPositionSupplier) {
+
+        m_vision = new Vision(Optional.of(turretPositionSupplier), this::addVisionMeasurement,
+                this::getAngularVelocity);
 
         // Usage reporting for MAXSwerve template
         HAL.report(tResourceType.kResourceType_RobotDrive, tInstances.kRobotDriveSwerve_MaxSwerve);
@@ -167,19 +175,18 @@ public class DriveSubsystem extends SubsystemBase {
                 });
     }
 
-    public Command faceCardinalHeadingRange(Angle minAngle, Angle maxAngle) {
-        return new InstantCommand(() -> {
-            Angle robotAngle = getHeading();
-            // System.out.println(robotAngle);
+    public RangeType faceCardinalHeadingRange(Angle minAngle, Angle maxAngle) {
+        Angle robotAngle = getHeading();
+        // System.out.println(robotAngle);
 
-            if (withinRange(minAngle, maxAngle, robotAngle)) {
-                m_isManualRotate = true;
-            } else {
-                m_isManualRotate = false;
-                System.out.println(getClosestAngle(minAngle, maxAngle, robotAngle));
-                m_targetAutoAngle = getClosestAngle(minAngle, maxAngle, robotAngle);
-            }
-        }, this);
+        if (withinRange(minAngle, maxAngle, robotAngle)) {
+            m_isManualRotate = true;
+            return RangeType.Within;
+        } else {
+            m_isManualRotate = false;
+            m_targetAutoAngle = getClosestAngle(minAngle, maxAngle, robotAngle);
+            return m_targetAutoAngle.isEquivalent(minAngle) ? RangeType.CloseMin : RangeType.CloseMax;
+        }
     }
 
     public Command facePose(Pose2d fixture) {
@@ -231,6 +238,13 @@ public class DriveSubsystem extends SubsystemBase {
                             m_rearLeft.getPosition(),
                             m_rearRight.getPosition()
                     });
+        }
+
+        if (!m_isManualRotate && Math
+                .abs(m_targetAutoAngle.in(Degrees) - getHeading().in(Degrees)) < DriveConstants.kTurnToAngleTolerance
+                        .in(Degrees)) {
+
+            m_isManualRotate = true;
         }
 
         // System.out.println("Current rotation: " +
@@ -299,13 +313,17 @@ public class DriveSubsystem extends SubsystemBase {
                     .println("Setpoint: " + getOptimalAngle(m_targetAutoAngle, getHeading()).in(Radians) + ", Current: "
                             + getHeading().in(Radians));
 
+        double pidCalculation = m_pidController.calculate(getHeading().in(Radians),
+                getOptimalAngle(m_targetAutoAngle, getHeading()).in(Radians));
+
         double xSpeedDelivered = xSpeed * DriveConstants.kMaxSpeed.magnitude();
         double ySpeedDelivered = ySpeed * DriveConstants.kMaxSpeed.magnitude();
-        double rotDelivered = (m_isManualRotate) ? rot * DriveConstants.kMaxAngularSpeed.magnitude()
-                : m_pidController.calculate(getHeading().in(Radians),
-                        getOptimalAngle(m_targetAutoAngle, getHeading()).in(Radians));
+        double rotDelivered = (m_isManualRotate)
+                ? rot * DriveConstants.kMaxAngularSpeed.magnitude()
+                : pidCalculation;
 
-        System.out.println("Target " + m_targetAutoAngle + ", Current" + getHeading());
+        // System.out.println("Target " + m_targetAutoAngle + ", Current" +
+        // getHeading());
 
         var swerveModuleStates = DriveConstants.kDriveKinematics.toSwerveModuleStates(
                 fieldRelative
@@ -422,6 +440,10 @@ public class DriveSubsystem extends SubsystemBase {
         }
 
         return null;
+    }
+
+    private AngularVelocity getAngularVelocity() {
+        return DegreesPerSecond.of(pidgey.getAngularVelocityZDevice().getValueAsDouble());
     }
 
     private static Angle wrapAngle(Angle heading) {

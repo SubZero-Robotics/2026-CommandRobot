@@ -34,7 +34,8 @@ public class Vision {
     PhotonCamera m_camera1 = new PhotonCamera(VisionConstants.kCameraName1);
     PhotonCamera m_camera2 = new PhotonCamera(VisionConstants.kCameraName2);
 
-    Optional<Function<Double, Angle>> m_turretAngleSupplier;
+    Optional<Function<Double, TurretPosition>> m_turretPositionSupplier;
+    Supplier<AngularVelocity> m_robotAngularVelocitySupplier;
 
     PhotonPoseEstimator m_poseEstimatorOne = new PhotonPoseEstimator(VisionConstants.kTagLayout,
             VisionConstants.kRobotToCamOne);
@@ -44,9 +45,11 @@ public class Vision {
     Consumer<VisionEstimation> m_visionConsumer;
     private Matrix<N3, N1> curStdDevs;
 
-    public Vision(Optional<Function<Double, Angle>> turretAngleSupplier, Consumer<VisionEstimation> visionConsumer) {
-        m_turretAngleSupplier = turretAngleSupplier;
+    public Vision(Optional<Function<Double, TurretPosition>> turretPositionSupplier,
+            Consumer<VisionEstimation> visionConsumer, Supplier<AngularVelocity> robotAngularVelocitySupplier) {
+        m_turretPositionSupplier = turretPositionSupplier;
         m_visionConsumer = visionConsumer;
+        m_robotAngularVelocitySupplier = robotAngularVelocitySupplier;
     }
 
     public void periodic() {
@@ -69,7 +72,15 @@ public class Vision {
 
         Optional<EstimatedRobotPose> visionEstimationCameraTwo = Optional.empty();
         for (var result : m_camera2.getAllUnreadResults()) {
-            m_poseEstimatorTwo.setRobotToCameraTransform(getTurretCameraTransform(result.getTimestampSeconds()));
+            Transform3d cameraTransform;
+
+            try {
+                cameraTransform = getTurretCameraTransform(result.getTimestampSeconds());
+            } catch (Exception e) {
+                System.out.println(e.getMessage());
+                break;
+            }
+            m_poseEstimatorTwo.setRobotToCameraTransform(cameraTransform);
             visionEstimationCameraTwo = m_poseEstimatorTwo.estimateCoprocMultiTagPose(result);
 
             if (visionEstimationCameraTwo.isEmpty()) {
@@ -131,11 +142,19 @@ public class Vision {
         }
     }
 
-    private Transform3d getTurretCameraTransform(double estimationTime) {
-        if (m_turretAngleSupplier.isEmpty())
+    private Transform3d getTurretCameraTransform(double estimationTime) throws Exception {
+        if (m_turretPositionSupplier.isEmpty())
             return VisionConstants.kRobotToCamTwo;
 
-        Angle turretAngle = m_turretAngleSupplier.get().apply(estimationTime);
+        TurretPosition turretPosition = m_turretPositionSupplier.get().apply(estimationTime);
+
+        // Getting the net velocity of the turret relative to the field
+        if (turretPosition.velocity().plus(m_robotAngularVelocitySupplier.get())
+                .gt(VisionConstants.kMaxTurretVisionSpeed)) {
+            throw new Exception("Turret exceeds max speed for processing april tags.");
+        }
+
+        Angle turretAngle = turretPosition.angle();
 
         Distance cameraXOffset = Meters
                 .of(VisionConstants.kTurretCameraDistanceToCenter.in(Meters) * Math.cos(turretAngle.in(Radians)));

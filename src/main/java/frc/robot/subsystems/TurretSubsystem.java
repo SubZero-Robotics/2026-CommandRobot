@@ -1,5 +1,6 @@
 package frc.robot.subsystems;
 
+import static edu.wpi.first.units.Units.RPM;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.Rotations;
 
@@ -24,6 +25,7 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.TurretConstants;
 import frc.robot.utils.PositionBuffer;
+import frc.robot.utils.TurretPosition;
 
 public class TurretSubsystem extends SubsystemBase {
 
@@ -35,13 +37,9 @@ public class TurretSubsystem extends SubsystemBase {
 
     private final PositionBuffer m_positionBuffer = new PositionBuffer(TurretConstants.kPositionBufferLength);
 
-    private Supplier<Pose2d> m_robotPoseSupplier;
-
     private SparkMaxConfig m_config = new SparkMaxConfig();
 
-    public TurretSubsystem(Supplier<Pose2d> robotPoseSupplier) {
-        m_robotPoseSupplier = robotPoseSupplier;
-
+    public TurretSubsystem() {
         m_config.closedLoop.p(TurretConstants.kP).i(TurretConstants.kI).d(TurretConstants.kD);
         m_config.closedLoop.feedbackSensor(FeedbackSensor.kAbsoluteEncoder);
         m_config.smartCurrentLimit(TurretConstants.kSmartCurrentLimit);
@@ -54,14 +52,14 @@ public class TurretSubsystem extends SubsystemBase {
         angle = wrapAngle(angle);
 
         if (angle.gt(TurretConstants.kMaxAngle)) {
-            // System.out
-            // .println("Angle " + angle + "is bigger than maximum angle " +
-            // TurretConstants.kMaxAngle + ".");
+            System.out
+                    .println("Angle " + angle + "is bigger than maximum angle " +
+                            TurretConstants.kMaxAngle + ".");
             return;
         } else if (angle.lt(TurretConstants.kMinAngle)) {
-            // System.out.println(
-            // "Angle " + angle + "is to smaller than minimum angle " +
-            // TurretConstants.kMinAngle + ".");
+            System.out.println(
+                    "Angle " + angle + "is to smaller than minimum angle " +
+                            TurretConstants.kMinAngle + ".");
             return;
         }
 
@@ -69,18 +67,11 @@ public class TurretSubsystem extends SubsystemBase {
         m_turretClosedLoopController.setSetpoint(angle.in(Rotations), ControlType.kPosition);
     }
 
-    public void pointToHeading(Angle heading) {
-        // moveToAngle(
-        // heading.minus(Radians.of(m_robotPoseSupplier.get().getRotation().getRadians()
-        // - heading.magnitude())));
-        moveToAngle(Radians.of(m_robotPoseSupplier.get().getRotation().getRadians() - heading.in(Radians)));
-    }
-
     public Angle getRotation() {
-        return Rotations.of(m_absoluteEncoder.getPosition());
+        return wrapAngle(Rotations.of(m_absoluteEncoder.getPosition()));
     }
 
-    public Angle getRotationAtTime(double timestamp) {
+    public TurretPosition getRotationAtTime(double timestamp) {
         return m_positionBuffer.getAngleAtTime(timestamp);
     }
 
@@ -91,6 +82,7 @@ public class TurretSubsystem extends SubsystemBase {
     // Connected to another periodic loop that runs quicker than 0.02 seconds
     public void pushCurrentEncoderReading() {
         m_positionBuffer.pushElement(Rotations.of(m_absoluteEncoder.getPosition()),
+                RPM.of(m_absoluteEncoder.getVelocity()),
                 TurretConstants.kEncoderReadingDelay.in(Seconds));
     }
 

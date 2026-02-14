@@ -91,6 +91,14 @@ public final class Constants {
         public static final double kAutoRotationP = Robot.isReal() ? 0.3 : 3.0;
         public static final double kAutoRotationI = 0.0;
         public static final double kAutoRotationD = 0.0;
+
+        public static enum RangeType {
+            Within,
+            CloseMin,
+            CloseMax
+        }
+
+        public static final Angle kTurnToAngleTolerance = Degrees.of(2);
     }
 
     public static final class ModuleConstants {
@@ -176,6 +184,8 @@ public final class Constants {
 
         public static final Matrix<N3, N1> kStateStdDevs = VecBuilder.fill(0.1, 0.1, 0.1);
         public static final Matrix<N3, N1> kVisionStdDevs = VecBuilder.fill(1, 1, 1);
+
+        public static final AngularVelocity kMaxTurretVisionSpeed = RPM.of(30);
     }
 
     public static final class NumericalConstants {
@@ -185,7 +195,7 @@ public final class Constants {
     public static final class TurretConstants {
         public static final int kMotorId = 20;
         public static final Angle kMinAngle = Radians.of(0.0);
-        public static final Angle kMaxAngle = Radians.of((3.0 / 2.0) * Math.PI);
+        public static final Angle kMaxAngle = Degrees.of(340);
 
         public static final int kPositionBufferLength = 4000;
         public static final Time kEncoderReadingDelay = Seconds.of(0.005);
@@ -200,6 +210,9 @@ public final class Constants {
         public static final double kD = 0.0;
 
         public static final int kSmartCurrentLimit = 40;
+
+        public static final Angle kFeedMinAngle = Degrees.of(150);
+        public static final Angle kFeedMaxAngle = Degrees.of(200);
     }
 
     public static final class ShooterConstants {
