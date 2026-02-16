@@ -20,6 +20,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import frc.robot.Constants.VisionConstants;
@@ -74,12 +75,13 @@ public class Vision {
         for (var result : m_camera2.getAllUnreadResults()) {
             Transform3d cameraTransform;
 
-            try {
-                cameraTransform = getTurretCameraTransform(result.getTimestampSeconds());
-            } catch (Exception e) {
-                System.out.println(e.getMessage());
+            cameraTransform = getTurretCameraTransform(result.getTimestampSeconds());
+
+            if (cameraTransform == null) {
+                System.out.println("Turret exceeded max velocity valid for reading april tags.");
                 break;
             }
+
             m_poseEstimatorTwo.setRobotToCameraTransform(cameraTransform);
             visionEstimationCameraTwo = m_poseEstimatorTwo.estimateCoprocMultiTagPose(result);
 
@@ -142,31 +144,34 @@ public class Vision {
         }
     }
 
-    private Transform3d getTurretCameraTransform(double estimationTime) throws Exception {
+    private Transform3d getTurretCameraTransform(double estimationTime) {
         if (m_turretPositionSupplier.isEmpty())
             return VisionConstants.kRobotToCamTwo;
 
         TurretPosition turretPosition = m_turretPositionSupplier.get().apply(estimationTime);
 
         // Getting the net velocity of the turret relative to the field
-        if (turretPosition.velocity().plus(m_robotAngularVelocitySupplier.get())
-                .gt(VisionConstants.kMaxTurretVisionSpeed)) {
-            throw new Exception("Turret exceeds max speed for processing april tags.");
+        if (turretPosition == null || turretPosition.velocity().plus(
+                m_robotAngularVelocitySupplier.get()).abs(DegreesPerSecond) > VisionConstants.kMaxTurretVisionSpeed
+                        .in(DegreesPerSecond)) {
+            return null;
         }
 
-        Angle turretAngle = turretPosition.angle();
+        Distance cameraX = VisionConstants.kTurretCameraDistanceToCenter
+                .times(Math.cos(turretPosition.angle().in(Radians)))
+                .plus(VisionConstants.kTurretAxisOfRotation.getMeasureX());
 
-        Distance cameraXOffset = Meters
-                .of(VisionConstants.kTurretCameraDistanceToCenter.in(Meters) * Math.cos(turretAngle.in(Radians)));
-        Distance cameraYOffset = Meters
-                .of(VisionConstants.kTurretCameraDistanceToCenter.in(Meters) * Math.sin(turretAngle.in(Radians)));
+        Distance cameraY = VisionConstants.kTurretCameraDistanceToCenter
+                .times(Math.sin(turretPosition.angle().in(Radians)))
+                .plus(VisionConstants.kTurretAxisOfRotation.getMeasureY());
 
-        Distance cameraX = VisionConstants.kTurretAxisOfRotation.getMeasureX().plus(cameraXOffset);
-        Distance cameraY = VisionConstants.kTurretAxisOfRotation.getMeasureY().plus(cameraYOffset);
-        Distance cameraZ = VisionConstants.kTurretAxisOfRotation.getMeasureZ();
+        Translation3d cameraPosition = new Translation3d(cameraX, cameraY,
+                VisionConstants.kCameraTwoZ);
 
-        return new Transform3d(cameraX, cameraY, cameraZ,
-                new Rotation3d(VisionConstants.kCameraTwoPitch, VisionConstants.kCameraTwoRoll, turretAngle));
+        Rotation3d cameraRotation = new Rotation3d(VisionConstants.kCameraTwoRoll, VisionConstants.kCameraTwoPitch,
+                turretPosition.angle().plus(VisionConstants.kCameraTwoYaw));
+
+        return new Transform3d(cameraPosition, cameraRotation);
     }
 
     private Matrix<N3, N1> getCurrentStdDevs() {

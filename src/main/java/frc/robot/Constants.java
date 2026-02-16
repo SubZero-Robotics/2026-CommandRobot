@@ -173,11 +173,14 @@ public final class Constants {
                 .loadField(AprilTagFields.kDefaultField);
 
         // Placeholder numbers
-        public static final Pose3d kTurretAxisOfRotation = new Pose3d(Meters.of(0.2), Meters.of(0.3), Meters.of(0.3),
-                new Rotation3d(0.0, 0.0, 0.0));
+        public static final Translation3d kTurretAxisOfRotation = new Translation3d(Meters.of(0.2), Meters.of(0.3),
+                Meters.of(0.3));
         public static final Distance kTurretCameraDistanceToCenter = Meters.of(0.13);
-        public static final Angle kCameraTwoPitch = Radians.of(0.0);
+        public static final Distance kCameraTwoZ = Inches.of(18.0);
+
+        public static final Angle kCameraTwoPitch = Radians.of(15.0);
         public static final Angle kCameraTwoRoll = Radians.of(0.0);
+        public static final Angle kCameraTwoYaw = Radians.of(0.0);
 
         public static final Matrix<N3, N1> kSingleTagStdDevs = VecBuilder.fill(4, 4, 8);
         public static final Matrix<N3, N1> kMultiTagStdDevs = VecBuilder.fill(0.5, 0.5, 1);

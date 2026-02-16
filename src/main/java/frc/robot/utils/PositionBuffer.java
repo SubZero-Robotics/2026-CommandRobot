@@ -42,10 +42,13 @@ public class PositionBuffer {
         // Avoiding overflow (though isn't really necessary here)
         int midpoint = low + (high - low) / 2;
 
+        TurretPosition midpointTurretPosition = null;
+        double timeAtMidpoint = 0.0;
+
         while (low < high) {
-            double timeAtMidpoint;
             try {
-                timeAtMidpoint = m_positions.get(midpoint).timestamp();
+                midpointTurretPosition = m_positions.get(midpoint);
+                timeAtMidpoint = midpointTurretPosition.timestamp();
             } catch (Exception e) {
                 System.out.println("Ring Buffer Exception: " + e.getMessage());
                 return null;
@@ -62,52 +65,43 @@ public class PositionBuffer {
 
         // Linearly interpolate velocity if we aren't on the first/last timestamp
         if (midpoint != 0 && midpoint != m_positions.getLength() - 1) {
-            TurretPosition closestTimestamp;
-
-            try {
-                closestTimestamp = m_positions.get(midpoint);
-            } catch (Exception e) {
-                return null;
-            }
-
             double dt;
 
             try {
-                dt = m_positions.get(midpoint).timestamp() - requestedTime;
+                dt = timeAtMidpoint - requestedTime;
             } catch (Exception e) {
                 return null;
             }
 
-            TurretPosition nextTimeStamp;
-
             // Stampted Time 1 should always be less than stampted time 2
-            TurretPosition stamptedTime1;
-            TurretPosition stamptedTime2;
+            TurretPosition firstTurretPosition;
+            TurretPosition secondTurretPosition;
 
             if (dt > 0) {
                 try {
-                    stamptedTime2 = m_positions.get(midpoint + 1);
-                    stamptedTime1 = closestTimestamp;
+                    secondTurretPosition = m_positions.get(midpoint + 1);
+                    firstTurretPosition = midpointTurretPosition;
                 } catch (Exception e) {
                     System.out.println("Ring Buffer Exception: " + e.getMessage());
                     return null;
                 }
             } else {
                 try {
-                    stamptedTime1 = m_positions.get(midpoint - 1);
-                    stamptedTime2 = closestTimestamp;
+                    firstTurretPosition = m_positions.get(midpoint - 1);
+                    secondTurretPosition = midpointTurretPosition;
                 } catch (Exception e) {
                     System.out.println("Ring Buffer Exception: " + e.getMessage());
                     return null;
                 }
             }
 
-            Angle angle = Radians.of(interpolate(stamptedTime1.timestamp(), stamptedTime2.timestamp(),
-                    stamptedTime1.angle().in(Radians), stamptedTime2.angle().in(Radians), requestedTime));
+            Angle angle = Radians.of(interpolate(firstTurretPosition.timestamp(), secondTurretPosition.timestamp(),
+                    firstTurretPosition.angle().in(Radians), secondTurretPosition.angle().in(Radians), requestedTime));
 
             AngularVelocity velocity = RPM
-                    .of(interpolate(stamptedTime1.timestamp(), stamptedTime2.timestamp(),
-                            stamptedTime1.velocity().in(RPM), stamptedTime2.velocity().in(RPM), requestedTime));
+                    .of(interpolate(firstTurretPosition.timestamp(), secondTurretPosition.timestamp(),
+                            firstTurretPosition.velocity().in(RPM), secondTurretPosition.velocity().in(RPM),
+                            requestedTime));
 
             return new TurretPosition(angle, velocity, requestedTime);
         }
