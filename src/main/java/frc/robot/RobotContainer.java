@@ -3,10 +3,14 @@
 // the WPILib BSD license file in the root directory of this project.
 package frc.robot;
 
+import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.Radians;
+
 import com.pathplanner.lib.commands.PathPlannerAuto;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -15,17 +19,23 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants.AutoConstants;
 import frc.robot.Constants.OIConstants;
 import frc.robot.subsystems.DriveSubsystem;
+import frc.robot.subsystems.TurretSubsystem;
 
 public class RobotContainer {
 
     private final DriveSubsystem m_drive = new DriveSubsystem();
 
-    private final CommandXboxController m_driverController = new CommandXboxController(OIConstants.kDriverControllerPort);
+    private final CommandXboxController m_driverController = new CommandXboxController(
+            OIConstants.kDriverControllerPort);
 
     private String m_autoSelected;
     private final SendableChooser<String> m_chooser = new SendableChooser<>();
 
+    private final TurretSubsystem m_turret;
+
     public RobotContainer() {
+        m_turret = new TurretSubsystem(m_drive::getPose);
+
         m_chooser.setDefaultOption("Example Auto", AutoConstants.kExampleAutoName);
         SmartDashboard.putData("Auto Choices", m_chooser);
 
@@ -43,11 +53,14 @@ public class RobotContainer {
                                 -MathUtil.applyDeadband(m_driverController.getRightX(), OIConstants.kDriveDeadband),
                                 true),
                         m_drive));
+
+        // TODO: Get rid of this
+        m_turret.setDefaultCommand(new RunCommand(() -> m_turret.moveToAngle(Radians.of(Math.PI / 4)), m_turret));
     }
 
     private void configureBindings() {
-        m_driverController.x().whileTrue(m_drive.enableFacePose(new Pose2d()));
-        m_driverController.x().whileFalse(m_drive.disableFacePose());
+        m_driverController.a().whileTrue(m_drive.faceCardinalHeadingRange(Degrees.of(342), Degrees.of(190)));
+        m_driverController.a().whileFalse(m_drive.disableFaceHeading());
     }
 
     public Command getAutonomousCommand() {
@@ -56,5 +69,17 @@ public class RobotContainer {
         System.out.print(m_autoSelected);
 
         return new PathPlannerAuto(m_autoSelected);
+    }
+
+    public Runnable pushTurretEncoderReading() {
+        return () -> {
+            m_turret.pushCurrentEncoderReading();
+        };
+    }
+
+    public Command feedPosition(Alliance alliance) {
+        return new RunCommand(() -> {
+
+        }, m_drive, m_turret);
     }
 }
