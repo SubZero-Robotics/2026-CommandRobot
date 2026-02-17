@@ -14,14 +14,19 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants.AutoConstants;
+import frc.robot.Constants.IntakeConstants;
 import frc.robot.Constants.OIConstants;
 import frc.robot.subsystems.DriveSubsystem;
+import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.TurretSubsystem;
 
 public class RobotContainer {
+
+    private final IntakeSubsystem m_intake = new IntakeSubsystem();
 
     private final DriveSubsystem m_drive = new DriveSubsystem();
 
@@ -81,5 +86,31 @@ public class RobotContainer {
         return new RunCommand(() -> {
 
         }, m_drive, m_turret);
+    }
+
+    public Command spinIntake() {
+        return new RunCommand(() -> {
+            m_intake.spinIntake(IntakeConstants.kDefaultIntakeSpeed);
+        });
+    }
+
+    public Command retractIntake() {
+        return new RunCommand(() -> {
+            m_intake.stopIntake();
+            m_intake.retractIntake();
+        });
+    }
+
+    public Command outTake() {
+        return new RunCommand(() -> {
+            m_intake.spinIntake(IntakeConstants.kDefaultIntakeSpeed.times(-1));
+        });
+    }
+
+    public Command DeployIntake() {
+        return new InstantCommand(() -> {
+            m_intake.deployIntake();
+        });
+        
     }
 }

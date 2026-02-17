@@ -269,5 +269,7 @@ public final class Constants {
         public static final Angle kMinExtension = Rotations.of(0.0);
 
         public static final int kDeployMotorCurrentLimit = 40;
+
+        public static final AngularVelocity kDefaultIntakeSpeed = RotationsPerSecond.of(1 * Math.PI);
     }
 }
