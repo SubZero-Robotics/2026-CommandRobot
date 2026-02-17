@@ -18,7 +18,9 @@ import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants.AutoConstants;
 import frc.robot.Constants.OIConstants;
+import frc.robot.Constants.ShooterConstants;
 import frc.robot.subsystems.DriveSubsystem;
+import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.TurretSubsystem;
 
 public class RobotContainer {
@@ -32,6 +34,8 @@ public class RobotContainer {
     private final SendableChooser<String> m_chooser = new SendableChooser<>();
 
     private final TurretSubsystem m_turret;
+
+    private final ShooterSubsystem m_shooter = new ShooterSubsystem();
 
     public RobotContainer() {
         m_turret = new TurretSubsystem(m_drive::getPose);
@@ -81,5 +85,18 @@ public class RobotContainer {
         return new RunCommand(() -> {
 
         }, m_drive, m_turret);
+    }
+
+    
+    public Command shoot() {
+        return new RunCommand(() -> {
+            m_shooter.Spin(ShooterConstants.kDefaultShootSpeed);
+        });
+    }
+
+    public Command shootStop() {
+        return new RunCommand(() -> {
+            m_shooter.StopShooting();
+        });
     }
 }

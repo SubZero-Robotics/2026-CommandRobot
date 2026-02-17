@@ -218,6 +218,8 @@ public final class Constants {
         public static final double kHoodGearRatio = (62 / 25) * (14 / 218);
 
         public static final Angle kFeedAngle = Degrees.of(90.0);
+
+        public static final AngularVelocity kDefaultShootSpeed = RadiansPerSecond.of(2 * Math.PI);
     }
 
     public static final class Fixtures {
