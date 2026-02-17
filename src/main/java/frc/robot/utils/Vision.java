@@ -91,7 +91,10 @@ public class Vision {
 
             updateEstimationStdDevs(visionEstimationCameraTwo, result.getTargets(), m_poseEstimatorTwo);
 
+            // final var tmp = visionEstimationCameraTwo;
+
             visionEstimationCameraTwo.ifPresent(estimation -> {
+                // System.out.println(tmp + ", " + cameraTransform);
                 m_visionConsumer.accept(new VisionEstimation(estimation.estimatedPose.toPose2d(),
                         estimation.timestampSeconds, getCurrentStdDevs()));
             });
@@ -158,18 +161,21 @@ public class Vision {
         }
 
         Distance cameraX = VisionConstants.kTurretCameraDistanceToCenter
-                .times(Math.cos(turretPosition.angle().in(Radians)))
-                .plus(VisionConstants.kTurretAxisOfRotation.getMeasureX());
+                .times(Math.cos(turretPosition.angle().minus(VisionConstants.kCameraTwoYaw).in(Radians)))
+                .plus(VisionConstants.kTurretCenterOfRotation.getMeasureX());
 
         Distance cameraY = VisionConstants.kTurretCameraDistanceToCenter
-                .times(Math.sin(turretPosition.angle().in(Radians)))
-                .plus(VisionConstants.kTurretAxisOfRotation.getMeasureY());
+                .times(Math.sin(turretPosition.angle().minus(VisionConstants.kCameraTwoYaw).in(Radians)))
+                .plus(VisionConstants.kTurretCenterOfRotation.getMeasureY());
 
         Translation3d cameraPosition = new Translation3d(cameraX, cameraY,
                 VisionConstants.kCameraTwoZ);
 
         Rotation3d cameraRotation = new Rotation3d(VisionConstants.kCameraTwoRoll, VisionConstants.kCameraTwoPitch,
-                turretPosition.angle().plus(VisionConstants.kCameraTwoYaw));
+                turretPosition.angle());
+
+        // System.out.println(cameraX + ", " + cameraY + ", " +
+        // turretPosition.angle().in(Degrees));
 
         return new Transform3d(cameraPosition, cameraRotation);
     }

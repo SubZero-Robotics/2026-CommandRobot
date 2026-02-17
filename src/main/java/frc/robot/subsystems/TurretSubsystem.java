@@ -3,6 +3,7 @@ package frc.robot.subsystems;
 import static edu.wpi.first.units.Units.RPM;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.Rotations;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import java.util.function.Supplier;
 
@@ -39,12 +40,18 @@ public class TurretSubsystem extends SubsystemBase {
 
     private SparkMaxConfig m_config = new SparkMaxConfig();
 
+    private int i = 0;
+
     public TurretSubsystem() {
         m_config.closedLoop.p(TurretConstants.kP).i(TurretConstants.kI).d(TurretConstants.kD);
         m_config.closedLoop.feedbackSensor(FeedbackSensor.kAbsoluteEncoder);
         m_config.smartCurrentLimit(TurretConstants.kSmartCurrentLimit);
         m_config.idleMode(IdleMode.kBrake);
         m_turretMotor.configure(m_config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+
+        m_positionBuffer.pushElement(wrapAngle(Rotations.of(m_absoluteEncoder.getPosition())),
+                RPM.of(m_absoluteEncoder.getVelocity()),
+                TurretConstants.kEncoderReadingDelay.in(Seconds));
     }
 
     public void moveToAngle(Angle angle) {
@@ -73,17 +80,22 @@ public class TurretSubsystem extends SubsystemBase {
 
     public TurretPosition getRotationAtTime(double timestamp) {
         return m_positionBuffer.getAngleAtTime(timestamp);
+        // return new TurretPosition(getRotation(), RotationsPerSecond.of(0.0),
+        // timestamp);
     }
 
     @Override
     public void periodic() {
+        m_positionBuffer.pushElement(wrapAngle(Rotations.of(m_absoluteEncoder.getPosition())),
+                RPM.of(m_absoluteEncoder.getVelocity()),
+                TurretConstants.kEncoderReadingDelay.in(Seconds));
     }
 
     // Connected to another periodic loop that runs quicker than 0.02 seconds
     public void pushCurrentEncoderReading() {
-        m_positionBuffer.pushElement(Rotations.of(m_absoluteEncoder.getPosition()),
-                RPM.of(m_absoluteEncoder.getVelocity()),
-                TurretConstants.kEncoderReadingDelay.in(Seconds));
+        // m_positionBuffer.pushElement(wrapAngle(Rotations.of(m_absoluteEncoder.getPosition())),
+        // RPM.of(m_absoluteEncoder.getVelocity()),
+        // TurretConstants.kEncoderReadingDelay.in(Seconds));
     }
 
     @Override

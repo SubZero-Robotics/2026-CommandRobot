@@ -80,4 +80,17 @@ public class AimCommandFactory {
             m_turret.moveToAngle(heading.minus(m_drive.getHeading()));
         }, m_turret);
     }
+
+    public Command PointTurretToFixture(Pose2d fixture) {
+        return new RunCommand(() -> {
+            Pose2d robotPose = m_drive.getPose();
+
+            double dx = fixture.getX() - robotPose.getX();
+            double dy = fixture.getY() - robotPose.getY();
+
+            Angle angle = Radians.of(robotPose.getRotation().getRadians()).minus(Radians.of(Math.atan2(dy, dx)));
+
+            m_turret.moveToAngle(angle);
+        }, m_turret);
+    }
 }

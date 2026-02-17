@@ -400,8 +400,9 @@ public class DriveSubsystem extends SubsystemBase {
     }
 
     public void addVisionMeasurement(VisionEstimation estimation) {
-        System.out.println(estimation.m_pose);
-        m_poseEstimator.addVisionMeasurement(estimation.m_pose, estimation.m_timestamp, estimation.m_stdDevs);
+        // System.out.println("Vision applied.");
+        m_poseEstimator.addVisionMeasurement(estimation.m_pose,
+                estimation.m_timestamp, estimation.m_stdDevs);
     }
 
     public Fixtures.FieldLocations getRobotLocation() {

@@ -7,6 +7,7 @@ import static edu.wpi.first.units.Units.RotationsPerSecond;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj.Timer;
+import frc.robot.Constants.NumericalConstants;
 
 public class PositionBuffer {
 
@@ -31,7 +32,7 @@ public class PositionBuffer {
         double dy = y2 - y1;
         double dx = x - x1;
 
-        return (dx / dsx) * dy + y1;
+        return (dx / dsx > 0.0 ? dsx : NumericalConstants.kEpsilon) * dy + y1;
     }
 
     public TurretPosition getAngleAtTime(double requestedTime) {
@@ -107,6 +108,7 @@ public class PositionBuffer {
         }
 
         try {
+            // System.out.println(m_positions.get(midpoint) + " is midpoint");
             return m_positions.get(midpoint);
         } catch (Exception e) {
             System.out.println("Ring Buffer Exception: " + e.getMessage());

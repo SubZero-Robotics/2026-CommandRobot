@@ -17,6 +17,7 @@ import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants.AutoConstants;
+import frc.robot.Constants.Fixtures;
 import frc.robot.Constants.OIConstants;
 import frc.robot.commands.AimCommandFactory;
 import frc.robot.subsystems.DriveSubsystem;
@@ -58,7 +59,7 @@ public class RobotContainer {
 
     private void configureBindings() {
         m_driverController.a()
-                .whileTrue(m_aimFactory.HoldTurretHeading(Degrees.of(10)));
+                .whileTrue(m_aimFactory.HoldTurretHeading(Degrees.of(90.0)));
     }
 
     public Command getAutonomousCommand() {

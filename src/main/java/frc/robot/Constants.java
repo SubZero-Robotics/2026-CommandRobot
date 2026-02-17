@@ -173,14 +173,15 @@ public final class Constants {
                 .loadField(AprilTagFields.kDefaultField);
 
         // Placeholder numbers
-        public static final Translation3d kTurretAxisOfRotation = new Translation3d(Meters.of(0.2), Meters.of(0.3),
-                Meters.of(0.3));
         public static final Distance kTurretCameraDistanceToCenter = Meters.of(0.13);
         public static final Distance kCameraTwoZ = Inches.of(18.0);
 
-        public static final Angle kCameraTwoPitch = Radians.of(15.0);
-        public static final Angle kCameraTwoRoll = Radians.of(0.0);
-        public static final Angle kCameraTwoYaw = Radians.of(0.0);
+        public static final Translation3d kTurretCenterOfRotation = new Translation3d(Meters.of(0.0), Meters.of(0.0),
+                Inches.of(18));
+
+        public static final Angle kCameraTwoPitch = Degrees.of(15.0);
+        public static final Angle kCameraTwoRoll = Degrees.of(0.0);
+        public static final Angle kCameraTwoYaw = Degrees.of(-21.0);
 
         public static final Matrix<N3, N1> kSingleTagStdDevs = VecBuilder.fill(4, 4, 8);
         public static final Matrix<N3, N1> kMultiTagStdDevs = VecBuilder.fill(0.5, 0.5, 1);
@@ -264,5 +265,8 @@ public final class Constants {
         // Placeholders
         public static final Angle kBlueLeftSideFeedHeading = Degrees.of(-40);
         public static final Angle kBlueRightSideFeedHeading = Degrees.of(-160);
+
+        public static final Pose2d kRedHubAprilTag = AprilTagFieldLayout.loadField(AprilTagFields.k2026RebuiltAndymark)
+                .getTagPose(3).get().toPose2d();
     }
 }
