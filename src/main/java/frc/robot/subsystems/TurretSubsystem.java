@@ -47,6 +47,8 @@ public class TurretSubsystem extends SubsystemBase {
         m_config.closedLoop.feedbackSensor(FeedbackSensor.kAbsoluteEncoder);
         m_config.smartCurrentLimit(TurretConstants.kSmartCurrentLimit);
         m_config.idleMode(IdleMode.kBrake);
+        m_config.absoluteEncoder.inverted(true);
+        m_config.inverted(true);
         m_turretMotor.configure(m_config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
         m_positionBuffer.pushElement(wrapAngle(Rotations.of(m_absoluteEncoder.getPosition())),

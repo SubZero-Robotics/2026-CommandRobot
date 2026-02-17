@@ -88,7 +88,7 @@ public class AimCommandFactory {
             double dx = fixture.getX() - robotPose.getX();
             double dy = fixture.getY() - robotPose.getY();
 
-            Angle angle = Radians.of(robotPose.getRotation().getRadians()).minus(Radians.of(Math.atan2(dy, dx)));
+            Angle angle = Radians.of(Math.atan2(dy, dx)).minus(Radians.of(robotPose.getRotation().getRadians()));
 
             m_turret.moveToAngle(angle);
         }, m_turret);

@@ -59,7 +59,7 @@ public class RobotContainer {
 
     private void configureBindings() {
         m_driverController.a()
-                .whileTrue(m_aimFactory.HoldTurretHeading(Degrees.of(90.0)));
+                .whileTrue(m_aimFactory.PointTurretToFixture(Fixtures.kRedHubAprilTag));
     }
 
     public Command getAutonomousCommand() {
