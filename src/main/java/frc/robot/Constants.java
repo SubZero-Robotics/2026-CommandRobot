@@ -194,6 +194,8 @@ public final class Constants {
 
     public static final class NumericalConstants {
         public static final double kEpsilon = 1e-6;
+        public static final Angle kFullRotation = Radians.of(2.0 * Math.PI);
+        public static final Angle kNoRotation = Radians.of(0.0);
     }
 
     public static final class TurretConstants {
@@ -206,17 +208,19 @@ public final class Constants {
 
         public static final Time kEncoderReadInterval = Seconds.of(0.01);
 
-        public static final Angle kFullRotation = Radians.of(2.0 * Math.PI);
-        public static final Angle kNoRotation = Radians.of(0.0);
-
         public static final double kP = 1.5;
         public static final double kI = 0.0;
         public static final double kD = 0.0;
 
         public static final int kSmartCurrentLimit = 40;
 
-        public static final Angle kFeedMinAngle = Degrees.of(150);
-        public static final Angle kFeedMaxAngle = Degrees.of(200);
+        public static final Angle kFeedMinAngle1 = Degrees.of(150);
+        public static final Angle kFeedMaxAngle1 = Degrees.of(200);
+
+        public static final Angle kFeedMinAngle2 = Degrees.of(30);
+        public static final Angle kFeedMaxAngle2 = Degrees.of(60);
+
+        public static final Angle kOvershootAmount = Degrees.of(10.0);
     }
 
     public static final class ShooterConstants {

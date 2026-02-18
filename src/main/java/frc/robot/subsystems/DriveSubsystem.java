@@ -26,6 +26,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Robot;
 import frc.robot.utils.ShuffleboardPid;
 import frc.robot.utils.TurretPosition;
+import frc.robot.utils.UtilityFunctions;
 import frc.robot.utils.VisionEstimation;
 import frc.robot.utils.Vision;
 import frc.robot.Constants.DriveConstants;
@@ -167,12 +168,21 @@ public class DriveSubsystem extends SubsystemBase {
         return DriveConstants.kDriveKinematics.toChassisSpeeds(fl, fr, rl, rr);
     }
 
-    public Command moveToAngle(Angle angle) {
+    public Command moveToAngleCommand(Angle angle) {
         return new InstantCommand(
                 () -> {
-                    m_isManualRotate = false;
-                    m_targetAutoAngle = angle;
+                    moveToAngle(angle);
                 });
+    }
+
+    public void moveToAngle(Angle angle) {
+        m_isManualRotate = false;
+        m_targetAutoAngle = angle;
+    }
+
+    public void moveByAngle(Angle angle) {
+        m_isManualRotate = false;
+        m_targetAutoAngle = getHeading().plus(angle);
     }
 
     public RangeType faceCardinalHeadingRange(Angle minAngle, Angle maxAngle) {
@@ -240,10 +250,9 @@ public class DriveSubsystem extends SubsystemBase {
                     });
         }
 
-        if (!m_isManualRotate && Math
-                .abs(m_targetAutoAngle.in(Degrees) - getHeading().in(Degrees)) < DriveConstants.kTurnToAngleTolerance
-                        .in(Degrees)) {
-
+        if (!m_isManualRotate
+                && UtilityFunctions.WrapAngle(UtilityFunctions.WrapAngle(getHeading()).minus(m_targetAutoAngle))
+                        .abs(Degrees) < DriveConstants.kTurnToAngleTolerance.in(Degrees)) {
             m_isManualRotate = true;
         }
 
@@ -308,24 +317,29 @@ public class DriveSubsystem extends SubsystemBase {
     public void drive(double xSpeed, double ySpeed, double rot, boolean fieldRelative) {
         // Convert the commanded speeds into the correct units for the drivetrain
 
-        if (!m_isManualRotate)
-            System.out
-                    .println("Setpoint: " + getOptimalAngle(m_targetAutoAngle, getHeading()).in(Radians) + ", Current: "
-                            + getHeading().in(Radians));
+        // if (!m_isManualRotate)
+        // System.out
+        // .println("Setpoint: " + getOptimalAngle(m_targetAutoAngle,
+        // getHeading()).in(Radians) + ", Current: "
+        // + getHeading().in(Radians));
 
-        double pidCalculation = m_pidController.calculate(getHeading().in(Radians),
+        if (Math.abs(rot) > NumericalConstants.kEpsilon) {
+            m_isManualRotate = true;
+        }
+
+        final double pidCalculation = m_pidController.calculate(getHeading().in(Radians),
                 getOptimalAngle(m_targetAutoAngle, getHeading()).in(Radians));
 
-        double xSpeedDelivered = xSpeed * DriveConstants.kMaxSpeed.magnitude();
-        double ySpeedDelivered = ySpeed * DriveConstants.kMaxSpeed.magnitude();
-        double rotDelivered = (m_isManualRotate)
+        final double xSpeedDelivered = xSpeed * DriveConstants.kMaxSpeed.magnitude();
+        final double ySpeedDelivered = ySpeed * DriveConstants.kMaxSpeed.magnitude();
+        final double rotDelivered = (m_isManualRotate)
                 ? rot * DriveConstants.kMaxAngularSpeed.magnitude()
                 : pidCalculation;
 
         // System.out.println("Target " + m_targetAutoAngle + ", Current" +
         // getHeading());
 
-        var swerveModuleStates = DriveConstants.kDriveKinematics.toSwerveModuleStates(
+        final var swerveModuleStates = DriveConstants.kDriveKinematics.toSwerveModuleStates(
                 fieldRelative
                         ? ChassisSpeeds.fromFieldRelativeSpeeds(xSpeedDelivered, ySpeedDelivered, rotDelivered,
                                 new Rotation2d(getHeading()))
@@ -338,8 +352,8 @@ public class DriveSubsystem extends SubsystemBase {
         m_rearLeft.setDesiredState(swerveModuleStates[2]);
         m_rearRight.setDesiredState(swerveModuleStates[3]);
 
-        double latestTime = Timer.getFPGATimestamp();
-        double timeElapsed = latestTime - m_latestTime < 0.20 ? latestTime - m_latestTime
+        final double latestTime = Timer.getFPGATimestamp();
+        final double timeElapsed = latestTime - m_latestTime < 0.20 ? latestTime - m_latestTime
                 : DriveConstants.kPeriodicInterval.in(Seconds);
 
         m_latestTime = latestTime;
@@ -447,21 +461,8 @@ public class DriveSubsystem extends SubsystemBase {
         return DegreesPerSecond.of(pidgey.getAngularVelocityZDevice().getValueAsDouble());
     }
 
-    private static Angle wrapAngle(Angle heading) {
-        Angle robotRotations = Radians
-                .of(Math.floor(heading.in(Radians) / (2 * Math.PI)) * 2.0 * Math.PI);
-
-        Angle wrap = heading.minus(robotRotations);
-
-        if (wrap.lt(Radians.of(0))) {
-            wrap = wrap.plus(TurretConstants.kFullRotation);
-        }
-
-        return wrap;
-    }
-
     private static Angle getOptimalAngle(Angle target, Angle robotHeading) {
-        Angle wrappedRobotAngle = wrapAngle(robotHeading);
+        Angle wrappedRobotAngle = UtilityFunctions.WrapAngle(robotHeading);
 
         Angle delta = target.minus(wrappedRobotAngle);
 
@@ -477,16 +478,16 @@ public class DriveSubsystem extends SubsystemBase {
     }
 
     private static boolean withinRange(Angle min, Angle max, Angle angle) {
-        angle = wrapAngle(angle);
+        angle = UtilityFunctions.WrapAngle(angle);
         min = getOptimalAngle(angle, min);
         max = getOptimalAngle(angle, max);
         return angle.gt(max) && angle.lt(min);
     }
 
     private static Angle getClosestAngle(Angle t1, Angle t2, Angle angle) {
-        t1 = wrapAngle(t1);
-        t2 = wrapAngle(t2);
-        angle = wrapAngle(angle);
+        t1 = UtilityFunctions.WrapAngle(t1);
+        t2 = UtilityFunctions.WrapAngle(t2);
+        angle = UtilityFunctions.WrapAngle(angle);
 
         return t1.minus(angle).abs(Rotations) < t2.minus(angle).abs(Rotations) ? t1 : t2;
     }

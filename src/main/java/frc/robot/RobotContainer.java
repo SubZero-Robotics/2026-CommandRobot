@@ -22,6 +22,7 @@ import frc.robot.Constants.OIConstants;
 import frc.robot.commands.AimCommandFactory;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.TurretSubsystem;
+import frc.robot.utils.UtilityFunctions;
 
 public class RobotContainer {
 
@@ -59,7 +60,7 @@ public class RobotContainer {
 
     private void configureBindings() {
         m_driverController.a()
-                .whileTrue(m_aimFactory.PointTurretToFixture(Fixtures.kRedHubAprilTag));
+                .whileTrue(m_aimFactory.MoveTurretToHeadingCommand(Degrees.of(90)));
     }
 
     public Command getAutonomousCommand() {
@@ -80,5 +81,9 @@ public class RobotContainer {
         return new RunCommand(() -> {
 
         }, m_drive, m_turret);
+    }
+
+    public void periodic() {
+        m_turret.addDriveHeading(UtilityFunctions.WrapAngle(m_drive.getHeading()));
     }
 }
