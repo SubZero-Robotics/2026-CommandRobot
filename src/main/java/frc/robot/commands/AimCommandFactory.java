@@ -1,24 +1,16 @@
 package frc.robot.commands;
 
-import static edu.wpi.first.units.Units.Degrees;
-import static edu.wpi.first.units.Units.Radians;
-
 import java.util.function.Supplier;
 
-import com.ctre.phoenix.Util;
-
-import edu.wpi.first.hal.AllianceStationID;
 import edu.wpi.first.math.geometry.Pose2d;
+import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.Radians;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
-import frc.robot.Constants;
-import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.Fixtures;
-import frc.robot.Constants.NumericalConstants;
 import frc.robot.Constants.TurretConstants;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.TurretSubsystem;
@@ -93,6 +85,7 @@ public class AimCommandFactory {
             m_turret.moveToAngle(robotRelativeTurretAngle);
         } else {
             // Gets which ray the robot is closest to
+            System.out.println(m_drive.getHeading() .in(Degrees) + " is arg");
             Angle closest = getClosestAngle(heading, TurretConstants.kFeedMinAngle1, TurretConstants.kFeedMaxAngle1,
                     TurretConstants.kFeedMinAngle2, TurretConstants.kFeedMaxAngle2);
 
@@ -130,24 +123,31 @@ public class AimCommandFactory {
     }
 
     private static Angle angleDiff(Angle a1, Angle a2) {
-        a1 = UtilityFunctions.WrapTo180(a1);
-        a2 = UtilityFunctions.WrapTo180(a2);
-
-        return UtilityFunctions.WrapTo180(a1.minus(a2));
+        Angle diff = a1.minus(a2);
+        return UtilityFunctions.WrapTo180(diff);
     }
 
     private static Angle getClosestAngle(Angle a, Angle... others) {
-        a = UtilityFunctions.WrapTo180(a);
+        a = UtilityFunctions.WrapAngle(a);
 
-        Angle closest = UtilityFunctions.WrapTo180(others[others.length - 1]);
-        double closestDistance = angleDiff(others[others.length - 1], a).abs(Degrees);
+        for (Angle as : others) {
+            System.out.print(as.in(Degrees) + " ");
+        }
+        System.out.print(a.in(Degrees) + " is robot heading");
+        System.out.println();
 
-        for (int i = 0; i < others.length - 1; i++) {
-            final double curDist = angleDiff(UtilityFunctions.WrapTo180(others[i]), a).abs(Degrees);
+        Angle closest = UtilityFunctions.WrapAngle(others[0]);
+        double closestDistance = angleDiff(a, closest).abs(Degrees);
 
-            if (curDist < closestDistance) {
-                closestDistance = curDist;
-                closest = others[i];
+        for (int i = 1; i < others.length; i++) {
+            Angle candidate = UtilityFunctions.WrapAngle(others[i]);
+            double dif = angleDiff(a, candidate).abs(Degrees);
+
+            if (dif < closestDistance) {
+                closest = candidate;
+                closestDistance = dif;
+
+                System.out.println(closest + " " + others.length);
             }
         }
 
