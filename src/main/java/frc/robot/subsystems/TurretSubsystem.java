@@ -17,11 +17,15 @@ import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.RPM;
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.Seconds;
+
+import java.awt.Color;
+
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.TurretConstants;
 import frc.robot.utils.PositionBuffer;
@@ -40,12 +44,20 @@ public class TurretSubsystem extends SubsystemBase {
 
     private SparkMaxConfig m_config = new SparkMaxConfig();
 
-    Mechanism2d m_simMech = new Mechanism2d(4.0, 4.0);
-    MechanismRoot2d m_mechRoot = m_simMech.getRoot("Turret Root", 2.0, 2.0);
-    MechanismLigament2d m_simLigament = new MechanismLigament2d("Turret", 2, 0);
+    private Mechanism2d m_simMech = new Mechanism2d(4.0, 4.0);
+    private MechanismRoot2d m_mechRoot = m_simMech.getRoot("Turret Root", 2.0, 2.0);
 
-    Angle m_targetAngle = Degrees.of(0.0);
-    Angle m_simAngle = Degrees.of(0.0);
+    private MechanismLigament2d m_simLigament = new MechanismLigament2d("Turret", 2, 0);
+
+    private MechanismLigament2d m_min1 = new MechanismLigament2d("min1", 2, 0);
+    private MechanismLigament2d m_max1 = new MechanismLigament2d("max1", 2, 0);
+    private MechanismLigament2d m_min2 = new MechanismLigament2d("min2", 2, 0);
+    private MechanismLigament2d m_max2 = new MechanismLigament2d("max2", 2, 0);
+
+    private Angle robotRotation;
+
+    private Angle m_targetAngle = Degrees.of(0.0);
+    private Angle m_simAngle = Degrees.of(0.0);
 
     public TurretSubsystem() {
         m_config.closedLoop.p(TurretConstants.kP).i(TurretConstants.kI).d(TurretConstants.kD);
@@ -61,6 +73,20 @@ public class TurretSubsystem extends SubsystemBase {
                 TurretConstants.kEncoderReadingDelay.in(Seconds));
 
         m_simLigament = m_mechRoot.append(m_simLigament);
+
+        m_min1 = m_mechRoot.append(m_min1);
+        m_min1.setColor(new Color8Bit("#FF00FF"));
+
+        m_max1 = m_mechRoot.append(m_max1);
+        m_max1.setColor(new Color8Bit("#FF00FF"));
+
+        m_min2 = m_mechRoot.append(m_min2);
+        m_min2.setColor(new Color8Bit("#FF0000"));
+
+        m_max2 = m_mechRoot.append(m_max2);
+        m_max2.setColor(new Color8Bit("#FF0000"));
+
+        robotRotation = Degrees.of(0);
     }
 
     public void moveToAngle(Angle angle) {
@@ -89,7 +115,7 @@ public class TurretSubsystem extends SubsystemBase {
     }
 
     public void addDriveHeading(Angle angle) {
-        m_simAngle = m_targetAngle.plus(angle);
+        robotRotation = angle;
     }
 
     public TurretPosition getRotationAtTime(double timestamp) {
@@ -114,7 +140,11 @@ public class TurretSubsystem extends SubsystemBase {
 
     @Override
     public void simulationPeriodic() {
-        m_simLigament.setAngle(m_simAngle.in(Degrees));
+        m_simLigament.setAngle(m_targetAngle.plus(robotRotation).in(Degrees));
+        m_min1.setAngle(TurretConstants.kFeedMinAngle1.plus(robotRotation).in(Degrees));
+        m_max1.setAngle(TurretConstants.kFeedMaxAngle1.plus(robotRotation).in(Degrees));
+        m_min2.setAngle(TurretConstants.kFeedMinAngle2.plus(robotRotation).in(Degrees));
+        m_max2.setAngle(TurretConstants.kFeedMaxAngle2.plus(robotRotation).in(Degrees));
         SmartDashboard.putData("Turret Rotation", m_simMech);
     }
 }

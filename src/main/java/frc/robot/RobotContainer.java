@@ -60,7 +60,7 @@ public class RobotContainer {
 
     private void configureBindings() {
         m_driverController.a()
-                .whileTrue(m_aimFactory.MoveTurretToHeadingCommand(Degrees.of(90)));
+                .whileTrue(m_aimFactory.MoveTurretToHeadingCommand(Degrees.of(40)));
     }
 
     public Command getAutonomousCommand() {
@@ -85,5 +85,6 @@ public class RobotContainer {
 
     public void periodic() {
         m_turret.addDriveHeading(UtilityFunctions.WrapAngle(m_drive.getHeading()));
+
     }
 }

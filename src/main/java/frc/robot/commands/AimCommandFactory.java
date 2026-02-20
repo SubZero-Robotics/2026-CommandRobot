@@ -78,20 +78,22 @@ public class AimCommandFactory {
 
     public void MoveTurretToHeading(Angle heading) {
         Angle robotHeading = UtilityFunctions.WrapAngle(m_drive.getHeading());
-        Angle robotRelativeTurretAngle = heading.minus(robotHeading);
 
-        if (withinRange(TurretConstants.kFeedMinAngle1, TurretConstants.kFeedMaxAngle1, robotHeading)
-                || withinRange(TurretConstants.kFeedMinAngle2, TurretConstants.kFeedMaxAngle2, robotHeading)) {
+        Angle robotRelativeTurretAngle = UtilityFunctions.WrapAngle(heading.minus(robotHeading));
+
+        if (withinRange(TurretConstants.kFeedMinAngle1, TurretConstants.kFeedMaxAngle1, robotRelativeTurretAngle)
+                || withinRange(TurretConstants.kFeedMinAngle2, TurretConstants.kFeedMaxAngle2,
+                        robotRelativeTurretAngle)) {
             m_turret.moveToAngle(robotRelativeTurretAngle);
         } else {
             // Gets which ray the robot is closest to
-            System.out.println(m_drive.getHeading() .in(Degrees) + " is arg");
-            Angle closest = getClosestAngle(heading, TurretConstants.kFeedMinAngle1, TurretConstants.kFeedMaxAngle1,
+            Angle closest = getClosestAngle(robotRelativeTurretAngle, TurretConstants.kFeedMinAngle1,
+                    TurretConstants.kFeedMaxAngle1,
                     TurretConstants.kFeedMinAngle2, TurretConstants.kFeedMaxAngle2);
 
             // The overshoot is negative if the robot has to move in a negative direction;
             // same for positive
-            Angle overshoot = robotRelativeTurretAngle.minus(closest).in(Degrees) > 0.0
+            Angle overshoot = robotRelativeTurretAngle.minus(closest).in(Degrees) < 0.0
                     ? TurretConstants.kOvershootAmount
                     : TurretConstants.kOvershootAmount.times(-1.0);
 
@@ -119,6 +121,9 @@ public class AimCommandFactory {
 
     private static boolean withinRange(Angle min, Angle max, Angle a) {
         a = UtilityFunctions.WrapAngle(a);
+        min = UtilityFunctions.WrapAngle(min);
+        max = UtilityFunctions.WrapAngle(max);
+
         return a.gt(min) && a.lt(max);
     }
 
@@ -130,11 +135,11 @@ public class AimCommandFactory {
     private static Angle getClosestAngle(Angle a, Angle... others) {
         a = UtilityFunctions.WrapAngle(a);
 
-        for (Angle as : others) {
-            System.out.print(as.in(Degrees) + " ");
-        }
-        System.out.print(a.in(Degrees) + " is robot heading");
-        System.out.println();
+        // for (Angle as : others) {
+        // System.out.print(as.in(Degrees) + " ");
+        // }
+        // System.out.print(a.in(Degrees) + " is robot heading");
+        // System.out.println();
 
         Angle closest = UtilityFunctions.WrapAngle(others[0]);
         double closestDistance = angleDiff(a, closest).abs(Degrees);
@@ -147,7 +152,7 @@ public class AimCommandFactory {
                 closest = candidate;
                 closestDistance = dif;
 
-                System.out.println(closest + " " + others.length);
+                // System.out.println(closest + " " + others.length);
             }
         }
 

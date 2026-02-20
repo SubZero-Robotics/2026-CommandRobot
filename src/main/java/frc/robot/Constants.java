@@ -219,11 +219,11 @@ public final class Constants {
 
         public static final int kSmartCurrentLimit = 40;
 
-        public static final Angle kFeedMinAngle1 = Degrees.of(300);
-        public static final Angle kFeedMaxAngle1 = Degrees.of(330);
+        public static final Angle kFeedMinAngle1 = Degrees.of(240);
+        public static final Angle kFeedMaxAngle1 = Degrees.of(300);
 
-        public static final Angle kFeedMinAngle2 = Degrees.of(30);
-        public static final Angle kFeedMaxAngle2 = Degrees.of(60);
+        public static final Angle kFeedMinAngle2 = Degrees.of(60);
+        public static final Angle kFeedMaxAngle2 = Degrees.of(120);
 
         public static final Angle kOvershootAmount = Degrees.of(10.0);
     }
