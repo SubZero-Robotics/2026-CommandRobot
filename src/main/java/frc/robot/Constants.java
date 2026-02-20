@@ -5,17 +5,27 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.*;
 
+import com.ctre.phoenix6.sim.TalonFXSimState.MotorType;
+
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
+import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
+import edu.wpi.first.math.numbers.N1;
+import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearAcceleration;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.Time;
@@ -71,7 +81,7 @@ public final class Constants {
         public static final int kFrontRightTurningCanId = 5;
         public static final int kRearRightTurningCanId = 8;
 
-        // Auxillary Device Can IDs
+        // Auxiliary Device Can IDs
         public static final int kPidgeyCanId = 13;
 
         public static final boolean kGyroReversed = false;
@@ -137,15 +147,106 @@ public final class Constants {
 
     public static final class VisionConstants {
 
-        public static final Transform3d kRobotToCam
-                = new Transform3d(new Translation3d(0.5, 0.0, 0.5),
-                        new Rotation3d(0, 0, 0));
+        public static final String kCameraName1 = "Photonvision";
+        public static final String kCameraName2 = "Photonvision2";
 
-        public static final AprilTagFieldLayout kTagLayout
-                = AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
+        // Distance to fill pose3d z value assuming robot is on the ground
+        public static Distance kEncoderZOffset = Inches.of(5.0);
+
+        // Confidence of encoder readings for vision; should be tuned
+        public static final double kEncoderConfidence = 0.15;
+
+        public static final Transform3d kRobotToCamOne = new Transform3d(new Translation3d(0.5, 0.0, 0.5),
+                new Rotation3d(0, 0, 0));
+        public static final Transform3d kRobotToCamTwo = new Transform3d(new Translation3d(0.5, 0.0, 0.5),
+                new Rotation3d(0, 0, 0));
+
+        public static final AprilTagFieldLayout kTagLayout = AprilTagFieldLayout
+                .loadField(AprilTagFields.kDefaultField);
+
+        // Placeholder numbers
+        public static final Pose3d kTurretAxisOfRotation = new Pose3d(Meters.of(0.2), Meters.of(0.3), Meters.of(0.3),
+                new Rotation3d(0.0, 0.0, 0.0));
+        public static final Distance kTurretCameraDistanceToCenter = Meters.of(0.13);
+        public static final Angle kCameraTwoPitch = Radians.of(0.0);
+        public static final Angle kCameraTwoRoll = Radians.of(0.0);
+
+        public static final Matrix<N3, N1> kSingleTagStdDevs = VecBuilder.fill(4, 4, 8);
+        public static final Matrix<N3, N1> kMultiTagStdDevs = VecBuilder.fill(0.5, 0.5, 1);
+
+        public static final Matrix<N3, N1> kStateStdDevs = VecBuilder.fill(0.1, 0.1, 0.1);
+        public static final Matrix<N3, N1> kVisionStdDevs = VecBuilder.fill(1, 1, 1);
     }
 
     public static final class NumericalConstants {
         public static final double kEpsilon = 1e-6;
+    }
+
+    public static final class TurretConstants {
+        public static final int kMotorId = 20;
+        public static final Angle kMinAngle = Radians.of(0.0);
+        public static final Angle kMaxAngle = Radians.of((3.0 / 2.0) * Math.PI);
+
+        public static final int kPositionBufferLength = 4000;
+        public static final Time kEncoderReadingDelay = Seconds.of(0.005);
+
+        public static final Time kEncoderReadInterval = Seconds.of(0.01);
+
+        public static final Angle kFullRotation = Radians.of(2.0 * Math.PI);
+        public static final Angle kNoRotation = Radians.of(0.0);
+
+        public static final double kP = 1.5;
+        public static final double kI = 0.0;
+        public static final double kD = 0.0;
+
+        public static final int kSmartCurrentLimit = 40;
+    }
+
+    public static final class ShooterConstants {
+        public static final int kShooterMotorId = 30;
+        public static final int kHoodMotorId = 31;
+
+        public static final double kHoodP = 0.1;
+        public static final double kHoodI = 0.0;
+        public static final double kHoodD = 0.0;
+
+        public static final double kShooterP = 0.1;
+        public static final double kShooterI = 0.0;
+        public static final double kShooterD = 0.0;
+
+        // Teeth on encoder gear to teeth on shaft, teeth on shaft to teeth on hood part
+        public static final double kHoodGearRatio = (62 / 25) * (14 / 218);
+
+        public static final Angle kFeedAngle = Degrees.of(90.0);
+    }
+
+    public static final class Fixtures {
+        public static final Pose2d kRedAllianceHub = new Pose2d();
+        public static final Pose2d kBlueAllianceHub = new Pose2d();
+
+        // From a top down perspective of the field with the red alliance on the left
+        // side
+        public static final Pose2d kTopFeedPose = new Pose2d();
+        public static final Pose2d kBottomFeedPose = new Pose2d();
+
+        public static final Distance kFieldYMidpoint = Inches.of(317.69 / 2.0);
+
+        public static final Distance kRedSideNeutralBorder = Inches.of(182.11);
+        public static final Distance kBlueSideNeutralBorder = Inches.of(651.22 - 182.11);
+
+        public static enum FieldLocations {
+            AllianceSide,
+            NeutralLeftSide,
+            NeutralRightSide,
+            OpponentSide
+        }
+
+        // Placeholders
+        public static final Angle kRedLeftSideFeedHeading = Degrees.of(40);
+        public static final Angle kRedRightSideFeedHeading = Degrees.of(160);
+
+        // Placeholders
+        public static final Angle kBlueLeftSideFeedHeading = Degrees.of(-40);
+        public static final Angle kBlueRightSideFeedHeading = Degrees.of(-160);
     }
 }
