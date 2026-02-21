@@ -419,6 +419,13 @@ public class DriveSubsystem extends SubsystemBase {
                 estimation.m_timestamp, estimation.m_stdDevs);
     }
 
+    public ChassisSpeeds getChassisSpeeds() {
+        return ChassisSpeeds.fromRobotRelativeSpeeds(
+                DriveConstants.kDriveKinematics.toChassisSpeeds(m_frontLeft.getState(), m_frontRight.getState(),
+                        m_rearLeft.getState(), m_rearRight.getState()),
+                new Rotation2d(getHeading()));
+    }
+
     public Fixtures.FieldLocations getRobotLocation() {
         Optional<Alliance> alliance = DriverStation.getAlliance();
         Pose2d robotPose = getPose();

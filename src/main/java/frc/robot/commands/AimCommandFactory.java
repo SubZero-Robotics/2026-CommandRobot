@@ -3,14 +3,23 @@ package frc.robot.commands;
 import java.util.function.Supplier;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
+
 import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Radians;
 import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import frc.robot.Constants.Fixtures;
+import frc.robot.Constants.ShooterConstants;
 import frc.robot.Constants.TurretConstants;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.TurretSubsystem;
@@ -68,6 +77,31 @@ public class AimCommandFactory {
         }, m_drive, m_turret).until(() -> {
             return true;
         });
+    }
+
+    public void AimToHub() {
+        Pose2d hubPosition = DriverStation.getAlliance().get() == Alliance.Blue ? Fixtures.kBlueAllianceHub
+                : Fixtures.kRedAllianceHub;
+
+        Pose2d turretPose = m_drive.getPose().plus(TurretConstants.kTurretOffset).rotateBy(new Rotation2d());
+        ChassisSpeeds robotSpeeds = m_drive.getChassisSpeeds();
+
+        Pose2d distanceToHub = hubPosition.relativeTo(turretPose);
+
+        LinearVelocity xTurretVelocity = MetersPerSecond.of(ShooterConstants.kMuzzleVelocity.in(MetersPerSecond)
+                * Math.cos(turretPose.getRotation().getRadians()))
+                .plus(MetersPerSecond.of(robotSpeeds.vxMetersPerSecond));
+
+        LinearVelocity yTurretVelocity = MetersPerSecond.of(ShooterConstants.kMuzzleVelocity.in(MetersPerSecond)
+                * Math.sin(turretPose.getRotation().getRadians()))
+                .plus(MetersPerSecond.of(robotSpeeds.vyMetersPerSecond));
+
+        Distance xOffTarget = Meters.of((xTurretVelocity.in(MetersPerSecond) / distanceToHub.getMeasureX().in(Meters))
+                * xTurretVelocity.in(MetersPerSecond));
+        Distance yOffTarget = Meters.of((yTurretVelocity.in(MetersPerSecond) / distanceToHub.getMeasureY().in(Meters))
+                * yTurretVelocity.in(MetersPerSecond));
+
+        Pose2d newPoseToAimTo = hubPosition.plus(new Transform2d(xOffTarget, yOffTarget, new Rotation2d()));
     }
 
     public Command MoveTurretToHeadingCommand(Angle heading) {

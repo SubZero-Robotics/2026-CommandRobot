@@ -8,7 +8,9 @@ import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
@@ -34,6 +36,7 @@ import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearAcceleration;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.Time;
+import edu.wpi.first.units.measure.Velocity;
 
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide
@@ -201,6 +204,7 @@ public final class Constants {
         public static final double kEpsilon = 1e-6;
         public static final Angle kFullRotation = Radians.of(2.0 * Math.PI);
         public static final Angle kNoRotation = Radians.of(0.0);
+        public static final LinearAcceleration kGravity = MetersPerSecondPerSecond.of(9.807);
     }
 
     public static final class TurretConstants {
@@ -226,6 +230,9 @@ public final class Constants {
         public static final Angle kFeedMaxAngle2 = Degrees.of(120);
 
         public static final Angle kOvershootAmount = Degrees.of(10.0);
+
+        public static final Transform2d kTurretOffset = new Transform2d(Meters.of(0.5), Meters.of(0.5),
+                new Rotation2d());
     }
 
     public static final class ShooterConstants {
@@ -244,6 +251,10 @@ public final class Constants {
         public static final double kHoodGearRatio = (62 / 25) * (14 / 218);
 
         public static final Angle kFeedAngle = Degrees.of(90.0);
+
+        public static final LinearVelocity kMuzzleVelocity = MetersPerSecond.of(10);
+
+        public static final LinearVelocity kMaxMuzzleVelocity = MetersPerSecond.of(10.0);
     }
 
     public static final class Fixtures {

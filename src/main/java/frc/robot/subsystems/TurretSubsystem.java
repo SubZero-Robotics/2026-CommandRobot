@@ -14,6 +14,7 @@ import com.revrobotics.spark.config.SparkMaxConfig;
 
 import edu.wpi.first.math.system.plant.DCMotor;
 import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.RPM;
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.Seconds;
@@ -21,6 +22,7 @@ import static edu.wpi.first.units.Units.Seconds;
 import java.awt.Color;
 
 import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
@@ -136,6 +138,10 @@ public class TurretSubsystem extends SubsystemBase {
         // m_positionBuffer.pushElement(UtilityFunctions.WrapAngle(Rotations.of(m_absoluteEncoder.getPosition())),
         // RPM.of(m_absoluteEncoder.getVelocity()),
         // TurretConstants.kEncoderReadingDelay.in(Seconds));
+    }
+
+    public LinearVelocity getMuzzleVelocityAtHoodAngle() {
+        return MetersPerSecond.of(5);
     }
 
     @Override

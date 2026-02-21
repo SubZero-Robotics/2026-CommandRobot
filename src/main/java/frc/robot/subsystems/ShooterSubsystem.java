@@ -12,9 +12,13 @@ import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkBase.ControlType;
 
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants.NumericalConstants;
 import frc.robot.Constants.ShooterConstants;
 
 public class ShooterSubsystem extends SubsystemBase {
@@ -49,6 +53,43 @@ public class ShooterSubsystem extends SubsystemBase {
 
         m_shooterMotor.configure(m_shooterConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
         m_hoodMotor.configure(m_hoodConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
+    }
+
+    // Think of this as controlling the turret on a cross-section going from the
+    // turret at the angle it is at and the target. Forward is the distance away
+    // from the turret while maxZ is the maximum Z height you want the ball to
+    // have. endZ is the z position you want the ball to hit once forward is
+    // achieved
+    public LinearVelocity shootToPose(Distance forward, Distance maxZ, Distance endZ) {
+        double forwardMeters = forward.in(Meters);
+        double maxZMeters = maxZ.in(Meters);
+        double endZMeters = endZ.in(Meters);
+        double gravityMpsps = NumericalConstants.kGravity.in(MetersPerSecondPerSecond);
+
+        LinearVelocity vy = MetersPerSecond.of(Math
+                .sqrt((2.0 * Math.pow(gravityMpsps, 2.0) * maxZMeters)
+                        / (2 * gravityMpsps - 1.0)));
+
+        double vyMps = vy.in(MetersPerSecond);
+
+        LinearVelocity vx = MetersPerSecond
+                .of((-2.0 * vyMps * forwardMeters + Math.sqrt(Math.pow(2.0 * vyMps * forwardMeters, 2.0) +
+                        8.0 * endZMeters * gravityMpsps * Math.pow(forwardMeters, 2.0))) / (-4.0 * endZMeters));
+
+        double vxMps = vx.in(MetersPerSecond);
+
+        LinearVelocity shooterMuzzleVelocity = MetersPerSecond.of(Math.pow(vxMps, 2.0) + Math.pow(vyMps, 2.0));
+        Angle shooterAngle = Radians.of(Math.acos(vxMps / shooterMuzzleVelocity.in(MetersPerSecond)));
+
+        if (shooterMuzzleVelocity.gt(ShooterConstants.kMaxMuzzleVelocity)) {
+            System.out.println("Necessary velocity to hit target " + shooterMuzzleVelocity
+                    + " beyond max velocity of " + ShooterConstants.kMaxMuzzleVelocity + ".");
+            return null;
+        }
+
+        Aim(shooterAngle);
+
+        return shooterMuzzleVelocity;
     }
 
     public void Aim(Angle angle) {
