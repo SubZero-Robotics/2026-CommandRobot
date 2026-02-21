@@ -19,11 +19,14 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants.AutoConstants;
 import frc.robot.Constants.OIConstants;
 import frc.robot.subsystems.DriveSubsystem;
+import frc.robot.subsystems.LedSubsystem;
 import frc.robot.subsystems.TurretSubsystem;
 
 public class RobotContainer {
 
     private final DriveSubsystem m_drive = new DriveSubsystem();
+    
+    private final LedSubsystem m_ledsSubsystem = new LedSubsystem();
 
     private final CommandXboxController m_driverController = new CommandXboxController(
             OIConstants.kDriverControllerPort);
@@ -63,6 +66,10 @@ public class RobotContainer {
         m_driverController.a().whileFalse(m_drive.disableFaceHeading());
     }
 
+    public LedSubsystem getLedSubsystem() {
+        return m_ledsSubsystem;
+    }
+
     public Command getAutonomousCommand() {
         m_autoSelected = m_chooser.getSelected();
 
@@ -81,5 +88,5 @@ public class RobotContainer {
         return new RunCommand(() -> {
 
         }, m_drive, m_turret);
-    }
+    }    
 }

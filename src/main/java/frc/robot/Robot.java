@@ -20,7 +20,6 @@ public class Robot extends TimedRobot {
 // Optional<LumynDeviceConfig> cfg = mCx.LoadConfigurationFromDeploy();
 // cfg.ifPresent(mCx::ApplyConfiguration);
 
-  ConnectorX cX = new ConnectorX();
 
 
   private Command m_autonomousCommand;
@@ -37,13 +36,6 @@ public class Robot extends TimedRobot {
 
   @Override
   public void robotInit () {
-    //Connect to roboRIO USB ports
-    boolean cxConnected = cX.Connect(USBPort.kUSB1);
-    
-    //check connection status
-    if (cxConnected) {
-      System.out.println("Device Connected!");
-    }
     
   }
 
@@ -51,22 +43,7 @@ public class Robot extends TimedRobot {
   public void robotPeriodic() {
     CommandScheduler.getInstance().run();
   
-    // Register an event handler if you want to use ConnectorX to watch for sensor signals.
-    cX.AddEventHandler((Event e) -> {
-     switch (e.type) {
-       case Connected:
-         System.out.println("ConnectorX Error: Device Connected!");
-         break;
-        case Disconnected:
-          System.out.println("ConnectorX Error: Device Disconnected!");
-          break;
-        case Error:
-          System.out.println("ConnectorX Error: " + e);
-          break;
-       default:
-         // do nothing. Will drain the event queue of events.
-     }
-  });
+    
   }
 
   @Override
@@ -100,12 +77,7 @@ public class Robot extends TimedRobot {
 
   @Override
   public void teleopInit() {
-    cX.leds
-      .SetAnimation(Animation.Fill)
-      .ForZone("LED-Strip")
-      .WithColor(new Color(new Color8Bit(0,255,0)))
-      .WithDelay(Units.Milliseconds.of(1000))
-      .RunOnce(false);
+    m_robotContainer.getLedSubsystem().EnableLedSolid(Color.kAquamarine);
 
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
@@ -118,6 +90,7 @@ public class Robot extends TimedRobot {
 
   @Override
   public void teleopExit() {
+    m_robotContainer.getLedSubsystem().disableLeds();
   }
 
   @Override
