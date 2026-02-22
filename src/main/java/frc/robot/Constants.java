@@ -29,6 +29,9 @@ import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecondPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
+
+import java.util.HashMap;
+
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -37,6 +40,7 @@ import edu.wpi.first.units.measure.LinearAcceleration;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.units.measure.Velocity;
+import frc.robot.utils.ShootingEntry;
 
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide
@@ -231,8 +235,7 @@ public final class Constants {
 
         public static final Angle kOvershootAmount = Degrees.of(10.0);
 
-        public static final Transform2d kTurretOffset = new Transform2d(Meters.of(0.5), Meters.of(0.5),
-                new Rotation2d());
+        public static final Translation2d kTurretOffset = new Translation2d(Meters.of(0.0), Meters.of(0.0));
     }
 
     public static final class ShooterConstants {
@@ -252,19 +255,38 @@ public final class Constants {
 
         public static final Angle kFeedAngle = Degrees.of(90.0);
 
+        public static final AngularVelocity kPlaceholderWheelVelocity = RPM.of(2000);
         public static final LinearVelocity kMuzzleVelocity = MetersPerSecond.of(10);
 
         public static final LinearVelocity kMaxMuzzleVelocity = MetersPerSecond.of(10.0);
+
+        public static final ShootingEntry[] kShootingEntries = {
+                new ShootingEntry(Meters.of(0.0), kPlaceholderWheelVelocity, kMaxMuzzleVelocity, null, Seconds.of(1.0),
+                        kFeedAngle),
+                new ShootingEntry(Meters.of(1.0), kPlaceholderWheelVelocity, kMaxMuzzleVelocity, null, Seconds.of(1.0),
+                        kFeedAngle),
+                new ShootingEntry(Meters.of(2.0), kPlaceholderWheelVelocity, kMaxMuzzleVelocity, null, Seconds.of(1.0),
+                        kFeedAngle),
+                new ShootingEntry(Meters.of(3.0), kPlaceholderWheelVelocity, kMaxMuzzleVelocity, null, Seconds.of(1.0),
+                        kFeedAngle),
+                new ShootingEntry(Meters.of(4.0), kPlaceholderWheelVelocity, kMaxMuzzleVelocity, null, Seconds.of(1.0),
+                        kFeedAngle),
+                new ShootingEntry(Meters.of(5.0), kPlaceholderWheelVelocity, kMaxMuzzleVelocity, null, Seconds.of(1.0),
+                        kFeedAngle),
+        };
+
+        public static final LinearVelocity kMaxStationaryVelocity = MetersPerSecond.of(1e-1);
     }
 
     public static final class Fixtures {
-        public static final Pose2d kRedAllianceHub = new Pose2d();
-        public static final Pose2d kBlueAllianceHub = new Pose2d();
+        public static final Translation2d kRedAllianceHub = new Translation2d(Inches.of(182.11), Inches.of(154.84));
+        public static final Translation2d kBlueAllianceHub = new Translation2d(Inches.of(182.11),
+                Inches.of(651.22 - 182.11));
 
         // From a top down perspective of the field with the red alliance on the left
         // side
-        public static final Pose2d kTopFeedPose = new Pose2d();
-        public static final Pose2d kBottomFeedPose = new Pose2d();
+        public static final Translation2d kTopFeedPose = new Translation2d();
+        public static final Translation2d kBottomFeedPose = new Translation2d();
 
         public static final Distance kFieldYMidpoint = Inches.of(317.69 / 2.0);
 

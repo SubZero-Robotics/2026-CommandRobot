@@ -2,12 +2,9 @@ package frc.robot.utils;
 
 import static edu.wpi.first.units.Units.RPM;
 import static edu.wpi.first.units.Units.Radians;
-import static edu.wpi.first.units.Units.RotationsPerSecond;
-
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj.Timer;
-import frc.robot.Constants.NumericalConstants;
 
 public class PositionBuffer {
 
@@ -25,14 +22,6 @@ public class PositionBuffer {
         } catch (Exception e) {
             System.out.println("Ring Buffer Exception: " + e.getMessage());
         }
-    }
-
-    private double interpolate(double x1, double x2, double y1, double y2, double x) {
-        double dsx = x2 - x1;
-        double dy = y2 - y1;
-        double dx = x - x1;
-
-        return (dx / dsx > 0.0 ? dsx : NumericalConstants.kEpsilon) * dy + y1;
     }
 
     public TurretPosition getAngleAtTime(double requestedTime) {
@@ -64,7 +53,8 @@ public class PositionBuffer {
             midpoint = low + (high - low) / 2;
         }
 
-        // Linearly interpolate velocity if we aren't on the first/last timestamp
+        // Linearly UtilityFunctions.interpolate velocity if we aren't on the first/last
+        // timestamp
         if (midpoint != 0 && midpoint != m_positions.getLength() - 1) {
             double dt;
 
@@ -96,11 +86,12 @@ public class PositionBuffer {
                 }
             }
 
-            Angle angle = Radians.of(interpolate(firstTurretPosition.timestamp(), secondTurretPosition.timestamp(),
+            Angle angle = Radians.of(UtilityFunctions.interpolate(firstTurretPosition.timestamp(),
+                    secondTurretPosition.timestamp(),
                     firstTurretPosition.angle().in(Radians), secondTurretPosition.angle().in(Radians), requestedTime));
 
             AngularVelocity velocity = RPM
-                    .of(interpolate(firstTurretPosition.timestamp(), secondTurretPosition.timestamp(),
+                    .of(UtilityFunctions.interpolate(firstTurretPosition.timestamp(), secondTurretPosition.timestamp(),
                             firstTurretPosition.velocity().in(RPM), secondTurretPosition.velocity().in(RPM),
                             requestedTime));
 

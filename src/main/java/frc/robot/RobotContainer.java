@@ -4,12 +4,18 @@
 package frc.robot;
 
 import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Radians;
 
 import com.pathplanner.lib.commands.PathPlannerAuto;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -22,6 +28,7 @@ import frc.robot.Constants.OIConstants;
 import frc.robot.commands.AimCommandFactory;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.TurretSubsystem;
+import frc.robot.utils.TargetSolution;
 import frc.robot.utils.UtilityFunctions;
 
 public class RobotContainer {
@@ -37,6 +44,7 @@ public class RobotContainer {
     private final DriveSubsystem m_drive = new DriveSubsystem(m_turret::getRotationAtTime);
 
     AimCommandFactory m_aimFactory = new AimCommandFactory(m_drive, m_turret);
+    Field2d m_field;
 
     public RobotContainer() {
         m_chooser.setDefaultOption("Example Auto", AutoConstants.kExampleAutoName);
@@ -56,6 +64,8 @@ public class RobotContainer {
                                 -MathUtil.applyDeadband(m_driverController.getRightX(), OIConstants.kDriveDeadband),
                                 true),
                         m_drive));
+
+        m_field = m_drive.getField();
     }
 
     private void configureBindings() {
@@ -85,5 +95,18 @@ public class RobotContainer {
 
     public void periodic() {
         m_turret.addDriveHeading(UtilityFunctions.WrapAngle(m_drive.getHeading()));
+
+        TargetSolution solution = m_aimFactory.GetHubAimSolution();
+
+        Pose2d robotPose = m_drive.getPose();
+
+        Distance xDist = Meters.of(solution.distance().in(Meters)
+                * Math.cos(solution.hubAngle().minus(solution.phi()).in(Radians))).plus(robotPose.getMeasureX());
+        Distance yDist = Meters.of(solution.distance().in(Meters)
+                * Math.sin(solution.hubAngle().minus(solution.phi()).in(Radians))).plus(robotPose.getMeasureY());
+
+        Pose2d targetPose = new Pose2d(xDist, yDist, new Rotation2d());
+
+        m_field.getObject("targetPose").setPose(targetPose);
     }
 }
