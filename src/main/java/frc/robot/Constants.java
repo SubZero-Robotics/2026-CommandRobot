@@ -208,7 +208,7 @@ public final class Constants {
     }
 
     public static final class TurretConstants {
-        public static final int kMotorId = 20;
+        public static final int kMotorId = 999; // Was 20
         public static final Angle kMinAngle = Radians.of(0.0);
         public static final Angle kMaxAngle = Degrees.of(340);
 
@@ -237,9 +237,9 @@ public final class Constants {
 
     public static final class ShooterConstants {
         public static final int kShooterMotorId = 30;
-        public static final int kHoodMotorId = 31;
+        public static final int kHoodMotorId = 20; // Was 31
 
-        public static final double kHoodP = 0.1;
+        public static final double kHoodP = 5.0; // Only use this high P when converion factor is 1.
         public static final double kHoodI = 0.0;
         public static final double kHoodD = 0.0;
 
@@ -248,8 +248,12 @@ public final class Constants {
         public static final double kShooterD = 0.0;
 
         // Teeth on encoder gear to teeth on shaft, teeth on shaft to teeth on hood part
-        public static final double kHoodGearRatio = (62 / 25) * (14 / 218);
-
+        // NOTE: Need to use 14D so the result is a double, otherwise you end up with zero.
+        // 2.48 * 0.0642201834862385 = 0.1592660550458716
+        // 16.5 motor rotations to one absolute encoder rotation (roughly)
+        // NOTE: gear ration commented out for now is it isn't used
+        //public static final double kHoodGearRatio = (62D / 25) * (14D / 218);
+        public static final int kHoodSmartCurrentLimit = 20;
         public static final Angle kFeedAngle = Degrees.of(90.0);
 
         public static final LinearVelocity kMuzzleVelocity = MetersPerSecond.of(10);

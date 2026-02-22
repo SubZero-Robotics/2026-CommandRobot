@@ -17,11 +17,13 @@ import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import frc.robot.Constants.Fixtures;
 import frc.robot.Constants.ShooterConstants;
 import frc.robot.Constants.TurretConstants;
 import frc.robot.subsystems.DriveSubsystem;
+import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.TurretSubsystem;
 import frc.robot.utils.UtilityFunctions;
 
@@ -29,10 +31,12 @@ public class AimCommandFactory {
 
     private DriveSubsystem m_drive;
     private TurretSubsystem m_turret;
+    private ShooterSubsystem m_shooter;
 
-    public AimCommandFactory(DriveSubsystem drive, TurretSubsystem turret) {
+    public AimCommandFactory(DriveSubsystem drive, TurretSubsystem turret, ShooterSubsystem shooter) {
         m_drive = drive;
         m_turret = turret;
+        m_shooter = shooter;
     }
 
     public Command Aim(Supplier<Boolean> isFeedingLeftSide) {
@@ -108,6 +112,12 @@ public class AimCommandFactory {
         return new RunCommand(() -> {
             MoveTurretToHeading(heading);
         }, m_turret);
+    }
+    public Command MoveHoodToAbsoluteCommand(Angle angle) {
+        return new InstantCommand(() -> {
+            System.out.println("Move Hood to position " + angle);
+            m_shooter.MoveHoodToPosition(angle);
+        });
     }
 
     public void MoveTurretToHeading(Angle heading) {

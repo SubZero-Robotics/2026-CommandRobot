@@ -12,7 +12,6 @@ import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkBase.ControlType;
 
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
@@ -45,14 +44,18 @@ public class ShooterSubsystem extends SubsystemBase {
                 .p(ShooterConstants.kHoodP)
                 .i(ShooterConstants.kHoodI)
                 .d(ShooterConstants.kHoodD);
+        m_hoodConfig.smartCurrentLimit(ShooterConstants.kHoodSmartCurrentLimit);
         m_hoodConfig.closedLoop.feedbackSensor(FeedbackSensor.kAbsoluteEncoder);
+        m_hoodConfig.absoluteEncoder.inverted(true);
+        m_hoodConfig.inverted(true);
 
-        // Inverse since kHoodGearRatio gives encoder -> hood motion, and we need hood
-        // motion -> encoder
-        m_hoodConfig.encoder.positionConversionFactor(1.0 / ShooterConstants.kHoodGearRatio);
+        // .6 rotations = 30 degrees
+        // 1 rotation = 50 degrees
+        m_hoodConfig.absoluteEncoder.positionConversionFactor(1);
+        m_hoodConfig.encoder.positionConversionFactor(1);
 
-        m_shooterMotor.configure(m_shooterConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
-        m_hoodMotor.configure(m_hoodConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
+        m_shooterMotor.configure(m_shooterConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+        m_hoodMotor.configure(m_hoodConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     }
 
     // Think of this as controlling the turret on a cross-section going from the
@@ -87,14 +90,29 @@ public class ShooterSubsystem extends SubsystemBase {
             return null;
         }
 
-        Aim(shooterAngle);
+        MoveHoodToPosition(shooterAngle);
 
         return shooterMuzzleVelocity;
     }
 
-    public void Aim(Angle angle) {
-        m_hoodClosedLoopController.setSetpoint(angle.in(Rotations),
-                ControlType.kPosition);
+    // Position between 0 and .55
+    public void MoveHoodToPosition(Angle angle) {
+        System.out.println("Move hood to position: " + angle);
+       
+        // get target absolute encoder position. 0 starts in hood min, hood max is .55 (30 degrees of movement)
+        var targetPosition = angle.magnitude() * (0.55 / 30);
+        if(targetPosition < 0 || targetPosition > 0.55){
+            System.out.println("Hood target position out of bounds. Target: " + targetPosition);
+            return;
+        }
+        var curentPosition = m_absoluteEncoder.getPosition();
+        System.out.println("current hood: " + curentPosition);
+        if( curentPosition > 0.55){
+            System.out.println("Hood position icorrect for safe movement. Pos: " + curentPosition);
+            return;
+        }
+
+        m_hoodClosedLoopController.setSetpoint(targetPosition, ControlType.kPosition);
     }
 
     public void Spin(AngularVelocity shootSpeedVelocity) {
