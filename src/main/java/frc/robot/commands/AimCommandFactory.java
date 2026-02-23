@@ -165,11 +165,6 @@ public class AimCommandFactory {
         return a.gt(min) && a.lt(max);
     }
 
-    private static Angle angleDiff(Angle a1, Angle a2) {
-        Angle diff = a1.minus(a2);
-        return UtilityFunctions.WrapTo180(diff);
-    }
-
     private static Angle getClosestAngle(Angle a, Angle... others) {
         a = UtilityFunctions.WrapAngle(a);
 
@@ -180,11 +175,11 @@ public class AimCommandFactory {
         // System.out.println();
 
         Angle closest = UtilityFunctions.WrapAngle(others[0]);
-        double closestDistance = angleDiff(a, closest).abs(Degrees);
+        double closestDistance = UtilityFunctions.angleDiff(a, closest).abs(Degrees);
 
         for (int i = 1; i < others.length; i++) {
             Angle candidate = UtilityFunctions.WrapAngle(others[i]);
-            double dif = angleDiff(a, candidate).abs(Degrees);
+            double dif = UtilityFunctions.angleDiff(a, candidate).abs(Degrees);
 
             if (dif < closestDistance) {
                 closest = candidate;

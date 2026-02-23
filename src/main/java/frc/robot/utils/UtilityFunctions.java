@@ -29,4 +29,9 @@ public final class UtilityFunctions {
 
         return (dx / Math.abs(dsx) > 0.0 ? dsx : NumericalConstants.kEpsilon) * dy + y1;
     }
+
+    public static Angle angleDiff(Angle a1, Angle a2) {
+        Angle diff = a1.minus(a2);
+        return WrapTo180(diff);
+    }
 }

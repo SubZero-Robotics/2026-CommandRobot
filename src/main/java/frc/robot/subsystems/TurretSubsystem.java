@@ -151,4 +151,9 @@ public class TurretSubsystem extends SubsystemBase {
         m_max2.setAngle(TurretConstants.kFeedMaxAngle2.plus(robotRotation).in(Degrees));
         SmartDashboard.putData("Turret Rotation", m_simMech);
     }
+
+    public boolean isAtTarget() {
+        return UtilityFunctions.angleDiff(m_targetAngle, getRotation())
+                .abs(Degrees) < TurretConstants.kTurretAngleTolerance.in(Degrees);
+    }
 }

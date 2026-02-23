@@ -236,6 +236,8 @@ public final class Constants {
         public static final Angle kOvershootAmount = Degrees.of(10.0);
 
         public static final Translation2d kTurretOffset = new Translation2d(Meters.of(0.0), Meters.of(0.0));
+
+        public static final Angle kTurretAngleTolerance = Degrees.of(2.0);
     }
 
     public static final class ShooterConstants {
@@ -274,6 +276,8 @@ public final class Constants {
                 new ShootingEntry(Meters.of(5.0), kPlaceholderWheelVelocity, kMaxMuzzleVelocity, null, Seconds.of(1.0),
                         kFeedAngle),
         };
+
+        public static final Angle kHoodTolerence = Degrees.of(2.0);
 
         public static final LinearVelocity kMaxStationaryVelocity = MetersPerSecond.of(1e-1);
     }
