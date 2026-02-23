@@ -28,6 +28,7 @@ import frc.robot.Constants.AutoConstants;
 import frc.robot.Constants.OIConstants;
 import frc.robot.commands.AimCommandFactory;
 import frc.robot.subsystems.DriveSubsystem;
+import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.TurretSubsystem;
 import frc.robot.utils.TargetSolution;
 import frc.robot.utils.UtilityFunctions;
@@ -41,10 +42,10 @@ public class RobotContainer {
     private final SendableChooser<String> m_chooser = new SendableChooser<>();
 
     private final TurretSubsystem m_turret = new TurretSubsystem();
-
+    private final ShooterSubsystem m_shooter = new ShooterSubsystem();
     private final DriveSubsystem m_drive = new DriveSubsystem(m_turret::getRotationAtTime);
 
-    AimCommandFactory m_aimFactory = new AimCommandFactory(m_drive, m_turret);
+    AimCommandFactory m_aimFactory = new AimCommandFactory(m_drive, m_turret, m_shooter);
     Field2d m_field;
 
     // For getting data points for the lookup table
@@ -84,6 +85,9 @@ public class RobotContainer {
         m_driverController.a().whileTrue(new InstantCommand(() -> {
             m_turret.moveToAngle(commandedShooterAngle);
         }).until(m_turret::isAtTarget).andThen());
+
+       System.out.println("Bindings configured");
+        m_driverController.x().onTrue(m_aimFactory.MoveHoodToAbsoluteCommand(Degrees.of(30D)));
     }
 
     public Command getAutonomousCommand() {
@@ -96,7 +100,7 @@ public class RobotContainer {
 
     public Runnable pushTurretEncoderReading() {
         return () -> {
-            m_turret.pushCurrentEncoderReading();
+           m_turret.pushCurrentEncoderReading();
         };
     }
 
