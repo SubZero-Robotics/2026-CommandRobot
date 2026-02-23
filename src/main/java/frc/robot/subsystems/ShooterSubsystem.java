@@ -19,6 +19,7 @@ import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.NumericalConstants;
 import frc.robot.Constants.ShooterConstants;
+import frc.robot.utils.UtilityFunctions;
 
 public class ShooterSubsystem extends SubsystemBase {
 
@@ -32,6 +33,8 @@ public class ShooterSubsystem extends SubsystemBase {
 
     private final SparkMaxConfig m_shooterConfig = new SparkMaxConfig();
     private final SparkMaxConfig m_hoodConfig = new SparkMaxConfig();
+
+    Angle m_targetAngle = Degrees.of(0.0);
 
     public ShooterSubsystem() {
 
@@ -121,6 +124,15 @@ public class ShooterSubsystem extends SubsystemBase {
 
     public void StopShooting() {
         Spin(RPM.of(0));
+    }
+
+    public Angle GetHoodAngle() {
+        return Rotations.of(m_absoluteEncoder.getPosition());
+    }
+
+    public boolean AtTarget() {
+        return UtilityFunctions.angleDiff(GetHoodAngle(), m_targetAngle).abs(Degrees) < ShooterConstants.kHoodTolerence
+                .in(Degrees);
     }
 
     @Override

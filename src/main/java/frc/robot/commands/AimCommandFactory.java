@@ -5,15 +5,21 @@ import java.util.function.Supplier;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Radians;
+import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static edu.wpi.first.units.Units.Seconds;
+
 import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearVelocity;
+import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -25,6 +31,8 @@ import frc.robot.Constants.TurretConstants;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.TurretSubsystem;
+import frc.robot.utils.ShootingEntry;
+import frc.robot.utils.TargetSolution;
 import frc.robot.utils.UtilityFunctions;
 
 public class AimCommandFactory {
@@ -47,11 +55,12 @@ public class AimCommandFactory {
 
             switch (location) {
                 case AllianceSide: {
-                    Pose2d fixturePose = DriverStation.getAlliance().get() == Alliance.Blue ? Fixtures.kBlueAllianceHub
+                    Translation2d fixtureTranslation = DriverStation.getAlliance().get() == Alliance.Blue
+                            ? Fixtures.kBlueAllianceHub
                             : Fixtures.kRedAllianceHub;
 
-                    double dy = fixturePose.getX() - robotPose.getX();
-                    double dx = fixturePose.getY() - robotPose.getY();
+                    double dy = fixtureTranslation.getX() - robotPose.getX();
+                    double dx = fixtureTranslation.getY() - robotPose.getY();
 
                     Angle absHeading = Radians.of(Math.atan2(dy, dx));
                     Angle relHeading = absHeading.minus(robotAngle);
@@ -83,29 +92,24 @@ public class AimCommandFactory {
         });
     }
 
-    public void AimToHub() {
-        Pose2d hubPosition = DriverStation.getAlliance().get() == Alliance.Blue ? Fixtures.kBlueAllianceHub
+    public TargetSolution GetHubAimSolution() {
+        Translation2d hubPosition = DriverStation.getAlliance().get() == Alliance.Blue ? Fixtures.kBlueAllianceHub
                 : Fixtures.kRedAllianceHub;
 
-        Pose2d turretPose = m_drive.getPose().plus(TurretConstants.kTurretOffset).rotateBy(new Rotation2d());
+        Translation2d turretTranslation = m_drive.getPose().getTranslation().plus(TurretConstants.kTurretOffset);
+
+        Translation2d translationToHub = hubPosition.minus(turretTranslation);
+
+        Distance turretToHubDistance = Meters
+                .of(Math.hypot(translationToHub.getMeasureY().in(Meters), translationToHub.getMeasureX().in(Meters)));
+        Angle turretToHubAngle = Radians
+                .of(Math.atan2(translationToHub.getMeasureY().in(Meters), translationToHub.getMeasureX().in(Meters)));
+
         ChassisSpeeds robotSpeeds = m_drive.getChassisSpeeds();
 
-        Pose2d distanceToHub = hubPosition.relativeTo(turretPose);
-
-        LinearVelocity xTurretVelocity = MetersPerSecond.of(ShooterConstants.kMuzzleVelocity.in(MetersPerSecond)
-                * Math.cos(turretPose.getRotation().getRadians()))
-                .plus(MetersPerSecond.of(robotSpeeds.vxMetersPerSecond));
-
-        LinearVelocity yTurretVelocity = MetersPerSecond.of(ShooterConstants.kMuzzleVelocity.in(MetersPerSecond)
-                * Math.sin(turretPose.getRotation().getRadians()))
-                .plus(MetersPerSecond.of(robotSpeeds.vyMetersPerSecond));
-
-        Distance xOffTarget = Meters.of((xTurretVelocity.in(MetersPerSecond) / distanceToHub.getMeasureX().in(Meters))
-                * xTurretVelocity.in(MetersPerSecond));
-        Distance yOffTarget = Meters.of((yTurretVelocity.in(MetersPerSecond) / distanceToHub.getMeasureY().in(Meters))
-                * yTurretVelocity.in(MetersPerSecond));
-
-        Pose2d newPoseToAimTo = hubPosition.plus(new Transform2d(xOffTarget, yOffTarget, new Rotation2d()));
+        return getInterpolatedShootingParameters(turretToHubDistance,
+                MetersPerSecond.of(robotSpeeds.vxMetersPerSecond), MetersPerSecond.of(robotSpeeds.vyMetersPerSecond),
+                turretToHubAngle);
     }
 
     public Command MoveTurretToHeadingCommand(Angle heading) {
@@ -171,11 +175,6 @@ public class AimCommandFactory {
         return a.gt(min) && a.lt(max);
     }
 
-    private static Angle angleDiff(Angle a1, Angle a2) {
-        Angle diff = a1.minus(a2);
-        return UtilityFunctions.WrapTo180(diff);
-    }
-
     private static Angle getClosestAngle(Angle a, Angle... others) {
         a = UtilityFunctions.WrapAngle(a);
 
@@ -186,11 +185,11 @@ public class AimCommandFactory {
         // System.out.println();
 
         Angle closest = UtilityFunctions.WrapAngle(others[0]);
-        double closestDistance = angleDiff(a, closest).abs(Degrees);
+        double closestDistance = UtilityFunctions.angleDiff(a, closest).abs(Degrees);
 
         for (int i = 1; i < others.length; i++) {
             Angle candidate = UtilityFunctions.WrapAngle(others[i]);
-            double dif = angleDiff(a, candidate).abs(Degrees);
+            double dif = UtilityFunctions.angleDiff(a, candidate).abs(Degrees);
 
             if (dif < closestDistance) {
                 closest = candidate;
@@ -201,5 +200,89 @@ public class AimCommandFactory {
         }
 
         return closest;
+    }
+
+    private static int getFirstEntryIndex(Distance distance) {
+        int low = 0;
+        int high = ShooterConstants.kShootingEntries.length;
+        int mid = 0;
+
+        while (low < high) {
+            mid = (low + high) / 2;
+            ShootingEntry midEntry = ShooterConstants.kShootingEntries[mid];
+
+            if (distance.gt(midEntry.distance())) {
+                low = mid + 1;
+            } else {
+                high = mid;
+            }
+        }
+
+        ShootingEntry closestEntry = ShooterConstants.kShootingEntries[mid];
+
+        int previousEntryIndex;
+
+        if (distance.lt(closestEntry.distance())) {
+            if (mid == 0) {
+                previousEntryIndex = mid;
+            } else {
+                previousEntryIndex = mid - 1;
+            }
+        } else {
+            if (mid == ShooterConstants.kShootingEntries.length - 1) {
+                previousEntryIndex = mid - 1;
+            } else {
+                previousEntryIndex = mid;
+            }
+        }
+
+        return previousEntryIndex;
+    }
+
+    private static TargetSolution getInterpolatedShootingParameters(Distance distance, LinearVelocity vx,
+            LinearVelocity vy, Angle turretAngle) {
+
+        LinearVelocity robotVelocity = MetersPerSecond.of(Math.hypot(vx.in(MetersPerSecond), vy.in(MetersPerSecond)));
+
+        int firstEntryIndex = getFirstEntryIndex(distance);
+
+        ShootingEntry firstEntry = ShooterConstants.kShootingEntries[firstEntryIndex];
+        ShootingEntry secondEntry = ShooterConstants.kShootingEntries[firstEntryIndex + 1];
+
+        Angle phi = Radians.of(0.0);
+
+        if (robotVelocity.gt(ShooterConstants.kMaxStationaryVelocity)) {
+            Time timeOfFlight = Seconds.of(UtilityFunctions.interpolate(firstEntry.distance().in(Meters),
+                    secondEntry.distance().in(Meters), firstEntry.timeOfFlight().in(Seconds),
+                    secondEntry.timeOfFlight().in(Seconds), distance.in(Meters)));
+
+            LinearVelocity radialVelocityTorwardsHub = MetersPerSecond
+                    .of(vy.in(MetersPerSecond) * Math.sin(turretAngle.in(Radians))
+                            + vx.in(MetersPerSecond) * Math.cos(turretAngle.in(Radians)));
+
+            LinearVelocity tangentialVelocityFromHub = MetersPerSecond
+                    .of(vx.in(MetersPerSecond) * Math.sin(turretAngle.in(Radians))
+                            + vy.in(MetersPerSecond) * Math.cos(turretAngle.in(Radians)));
+
+            Distance sideDistance = tangentialVelocityFromHub.times(timeOfFlight);
+            distance = distance.minus(radialVelocityTorwardsHub.times(timeOfFlight));
+
+            phi = Radians.of(Math.atan(sideDistance.in(Meters) / distance.in(Meters)));
+
+            int transformedFirstEntryIndex = getFirstEntryIndex(distance);
+
+            firstEntry = ShooterConstants.kShootingEntries[transformedFirstEntryIndex];
+            secondEntry = ShooterConstants.kShootingEntries[transformedFirstEntryIndex + 1];
+        }
+
+        AngularVelocity wheelSpeed = RadiansPerSecond.of(UtilityFunctions.interpolate(firstEntry.distance().in(Meters),
+                secondEntry.distance().in(Meters), firstEntry.wheelVelocity().in(RadiansPerSecond),
+                secondEntry.wheelVelocity().in(RadiansPerSecond), distance.in(Meters)));
+
+        Angle hoodAngle = Radians.of(UtilityFunctions.interpolate(firstEntry.distance().in(Meters),
+                secondEntry.distance().in(Meters), firstEntry.shooterAngle().in(Radians),
+                secondEntry.shooterAngle().in(Radians), distance.in(Meters)));
+
+        return new TargetSolution(hoodAngle, wheelSpeed, phi, distance, turretAngle);
     }
 }

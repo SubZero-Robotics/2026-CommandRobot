@@ -19,8 +19,6 @@ import static edu.wpi.first.units.Units.RPM;
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.Seconds;
 
-import java.awt.Color;
-
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
@@ -152,5 +150,10 @@ public class TurretSubsystem extends SubsystemBase {
         m_min2.setAngle(TurretConstants.kFeedMinAngle2.plus(robotRotation).in(Degrees));
         m_max2.setAngle(TurretConstants.kFeedMaxAngle2.plus(robotRotation).in(Degrees));
         SmartDashboard.putData("Turret Rotation", m_simMech);
+    }
+
+    public boolean isAtTarget() {
+        return UtilityFunctions.angleDiff(m_targetAngle, getRotation())
+                .abs(Degrees) < TurretConstants.kTurretAngleTolerance.in(Degrees);
     }
 }
