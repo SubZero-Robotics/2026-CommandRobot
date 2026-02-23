@@ -259,6 +259,9 @@ public final class Constants {
         public static final LinearVelocity kMuzzleVelocity = MetersPerSecond.of(10);
 
         public static final LinearVelocity kMaxMuzzleVelocity = MetersPerSecond.of(10.0);
+
+        public static final double kHoodMinAbsolutePosition = 0.0;
+public static final double kHoodMaxAbsolutePosition = 0.55;
     }
 
     public static final class Fixtures {

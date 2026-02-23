@@ -100,14 +100,14 @@ public class ShooterSubsystem extends SubsystemBase {
         System.out.println("Move hood to position: " + angle);
        
         // get target absolute encoder position. 0 starts in hood min, hood max is .55 (30 degrees of movement)
-        var targetPosition = angle.in(Degrees) * (0.55 / 30);
-        if(targetPosition < 0 || targetPosition > 0.55){
+        var targetPosition = angle.in(Degrees) * (ShooterConstants.kHoodMaxAbsolutePosition / 30); // TODO: Make seperate constant
+        if(targetPosition < 0 || targetPosition > ShooterConstants.kHoodMaxAbsolutePosition){
             System.out.println("Hood target position out of bounds. Target: " + targetPosition);
             return;
         }
         var curentPosition = m_absoluteEncoder.getPosition();
         System.out.println("current hood: " + curentPosition);
-        if( curentPosition > 0.55){
+        if( curentPosition > ShooterConstants.kHoodMaxAbsolutePosition){
             System.out.println("Hood position icorrect for safe movement. Pos: " + curentPosition);
             return;
         }
