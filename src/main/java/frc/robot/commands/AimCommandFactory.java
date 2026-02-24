@@ -117,6 +117,7 @@ public class AimCommandFactory {
             MoveTurretToHeading(heading);
         }, m_turret);
     }
+
     public Command MoveHoodToAbsoluteCommand(Angle angle) {
         return new InstantCommand(() -> {
             System.out.println("Move Hood to position " + angle);
@@ -284,5 +285,18 @@ public class AimCommandFactory {
                 secondEntry.shooterAngle().in(Radians), distance.in(Meters)));
 
         return new TargetSolution(hoodAngle, wheelSpeed, phi, distance, turretAngle);
+    }
+
+    public Command Aim(Angle turretAngle, Angle hoodAngle) {
+        return new InstantCommand(() -> {
+            m_turret.moveToAngle(turretAngle);
+            m_shooter.MoveHoodToPosition(hoodAngle);
+        });
+    }
+
+    public Command Shoot(AngularVelocity shooterWheelVelocity) {
+        return new InstantCommand(() -> {
+            m_shooter.Spin(shooterWheelVelocity);
+        });
     }
 }

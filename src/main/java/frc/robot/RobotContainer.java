@@ -57,7 +57,7 @@ public class RobotContainer {
         SmartDashboard.putData("Auto Choices", m_chooser);
 
         SmartDashboard.putNumber("Wheelspeed in rotations per second", 0.0);
-        SmartDashboard.putNumber("Turret hood angle in degrees", 0.0);
+        SmartDashboard.putNumber("Shooter hood angle in degrees", 0.0);
         SmartDashboard.putNumber("Turret angle in degrees", 0.0);
 
         // Configure the button bindings
@@ -82,11 +82,14 @@ public class RobotContainer {
         // m_driverController.a()
         // .whileTrue(m_aimFactory.MoveTurretToHeadingCommand(Degrees.of(40)));
 
-        m_driverController.a().whileTrue(new InstantCommand(() -> {
-            m_turret.moveToAngle(commandedShooterAngle);
-        }).until(m_turret::isAtTarget).andThen());
+        m_driverController.b()
+                .onTrue(m_aimFactory.Aim(Degrees.of(SmartDashboard.getNumber("Turret angle in degrees", 0.0)),
+                        Degrees.of(SmartDashboard.getNumber("Shooter hood angle in degrees", 0.0))));
 
-       System.out.println("Bindings configured");
+        m_driverController.a().onTrue(
+                m_aimFactory.Shoot(RPM.of(SmartDashboard.getNumber("Wheelspeed in rotations per second", 0.0))));
+
+        System.out.println("Bindings configured");
         m_driverController.x().onTrue(m_aimFactory.MoveHoodToAbsoluteCommand(Degrees.of(30D)));
     }
 
@@ -100,7 +103,7 @@ public class RobotContainer {
 
     public Runnable pushTurretEncoderReading() {
         return () -> {
-           m_turret.pushCurrentEncoderReading();
+            m_turret.pushCurrentEncoderReading();
         };
     }
 
@@ -129,7 +132,7 @@ public class RobotContainer {
 
     public void periodic() {
         commandedWheelVelocity = RPM.of(SmartDashboard.getNumber("Wheelspeed in rotations per second", 0.0));
-        commandedShooterAngle = Degrees.of(SmartDashboard.getNumber("Turret hood angle in degrees", 0.0));
+        commandedShooterAngle = Degrees.of(SmartDashboard.getNumber("Shooter hood angle in degrees", 0.0));
 
         System.out.println(commandedWheelVelocity + ", " + commandedShooterAngle);
     }
