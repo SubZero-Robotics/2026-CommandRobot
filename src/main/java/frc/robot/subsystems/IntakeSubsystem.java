@@ -88,8 +88,10 @@ public class IntakeSubsystem extends SubsystemBase {
     public void periodic() {
         if (m_minLimitSwitch.isPressed()) {
             m_deploy1RelativeEncoder.setPosition(IntakeConstants.kMinExtension.in(Rotations));
+            m_deploy2RelativeEncoder.setPosition(IntakeConstants.kMinExtension.in(Rotations));
         } else if (m_maxLimitSwitch.isPressed()) {
             m_deploy1RelativeEncoder.setPosition(IntakeConstants.kMaxExtension.in(Rotations));
+            m_deploy2RelativeEncoder.setPosition(IntakeConstants.kMaxExtension.in(Rotations));
         }
     }
 }
