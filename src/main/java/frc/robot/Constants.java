@@ -82,16 +82,16 @@ public final class Constants {
         public static final double kBackRightChassisAngularOffset = Math.PI / 2;
 
         // SPARK MAX CAN IDs Drive Motors
-        public static final int kFrontLeftDrivingCanId = 2;
-        public static final int kRearLeftDrivingCanId = 3;
+        public static final int kFrontLeftDrivingCanId = 10;
+        public static final int kRearLeftDrivingCanId = 14;
         public static final int kFrontRightDrivingCanId = 1;
-        public static final int kRearRightDrivingCanId = 4;
+        public static final int kRearRightDrivingCanId = 2;
 
         // SPARK MAX CAN IDs Turning Motors
-        public static final int kFrontLeftTurningCanId = 6;
-        public static final int kRearLeftTurningCanId = 7;
-        public static final int kFrontRightTurningCanId = 5;
-        public static final int kRearRightTurningCanId = 8;
+        public static final int kFrontLeftTurningCanId = 11;
+        public static final int kRearLeftTurningCanId = 15;
+        public static final int kFrontRightTurningCanId = 62;
+        public static final int kRearRightTurningCanId = 3;
 
         // Auxiliary Device Can IDs
         public static final int kPidgeyCanId = 13;
@@ -215,7 +215,7 @@ public final class Constants {
     }
 
     public static final class TurretConstants {
-        public static final int kMotorId = 999; // Was 20
+        public static final int kMotorId = 18; // Was 20
         public static final Angle kMinAngle = Radians.of(0.0);
         public static final Angle kMaxAngle = Degrees.of(340);
 
@@ -247,8 +247,8 @@ public final class Constants {
     }
 
     public static final class ShooterConstants {
-        public static final int kShooterMotorId = 30;
-        public static final int kHoodMotorId = 20; // Was 31
+        public static final int kShooterMotorId = 70;
+        public static final int kHoodMotorId = 71; // Was 31
 
         public static final double kHoodP = 5.0; // Only use this high P when converion factor is 1.
         public static final double kHoodI = 0.0;

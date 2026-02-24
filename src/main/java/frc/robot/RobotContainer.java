@@ -134,7 +134,7 @@ public class RobotContainer {
         commandedWheelVelocity = RPM.of(SmartDashboard.getNumber("Wheelspeed in rotations per second", 0.0));
         commandedShooterAngle = Degrees.of(SmartDashboard.getNumber("Shooter hood angle in degrees", 0.0));
 
-        System.out.println(commandedWheelVelocity + ", " + commandedShooterAngle);
+        // System.out.println(commandedWheelVelocity + ", " + commandedShooterAngle);
     }
 
     private Angle getSmartdashBoardRequestedShooterAngle() {
