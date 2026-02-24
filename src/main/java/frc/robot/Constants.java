@@ -14,6 +14,7 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.LinearAcceleration;
@@ -151,5 +152,8 @@ public final class Constants {
 
     public static final class ClimberConstants {
         public static final int kMotorId = 1;
+        
+        public static final Angle kMaxExtension = Rotations.of(20.0 / 10.0);
+        public static final Angle kMinExtension = Rotations.of(0.0); // TODO : Get the Constants for max and minimum distance for the climber
     }
 }
