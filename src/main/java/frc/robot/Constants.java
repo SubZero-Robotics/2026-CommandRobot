@@ -178,7 +178,10 @@ public final class Constants {
 
         public static final Transform3d kRobotToCamOne = new Transform3d(new Translation3d(0.5, 0.0, 0.5),
                 new Rotation3d(0, 0, 0));
-        public static final Transform3d kRobotToCamTwo = new Transform3d(new Translation3d(0.5, 0.0, 0.5),
+
+        // These are not final numbers
+        public static final Transform3d kRobotToCamTwo = new Transform3d(
+                new Translation3d(Inches.of(8.375), Inches.of(-2.16), Inches.of(-20.668)),
                 new Rotation3d(0, 0, 0));
 
         public static final AprilTagFieldLayout kTagLayout = AprilTagFieldLayout
@@ -238,6 +241,9 @@ public final class Constants {
         public static final Translation2d kTurretOffset = new Translation2d(Meters.of(0.0), Meters.of(0.0));
 
         public static final Angle kTurretAngleTolerance = Degrees.of(2.0);
+
+        // TODO: Change to real numbers
+        public static Angle kNonAimTurretAngle = Degrees.of(25.0);
     }
 
     public static final class ShooterConstants {
@@ -253,11 +259,12 @@ public final class Constants {
         public static final double kShooterD = 0.0;
 
         // Teeth on encoder gear to teeth on shaft, teeth on shaft to teeth on hood part
-        // NOTE: Need to use 14D so the result is a double, otherwise you end up with zero.
+        // NOTE: Need to use 14D so the result is a double, otherwise you end up with
+        // zero.
         // 2.48 * 0.0642201834862385 = 0.1592660550458716
         // 16.5 motor rotations to one absolute encoder rotation (roughly)
         // NOTE: gear ration commented out for now is it isn't used
-        //public static final double kHoodGearRatio = (62D / 25) * (14D / 218);
+        // public static final double kHoodGearRatio = (62D / 25) * (14D / 218);
         public static final int kHoodSmartCurrentLimit = 20;
         public static final Angle kFeedAngle = Degrees.of(90.0);
 
@@ -286,7 +293,15 @@ public final class Constants {
         public static final LinearVelocity kMaxStationaryVelocity = MetersPerSecond.of(1e-1);
 
         public static final double kHoodMinAbsolutePosition = 0.0;
-public static final double kHoodMaxAbsolutePosition = 0.55;
+        public static final double kHoodMaxAbsolutePosition = 0.55;
+
+        public static final double kHoodDegreeConversionFactor = kHoodMaxAbsolutePosition / 30;
+
+        // TODO: Change to real numbers
+        public static AngularVelocity kNonAimShooterVelocity = RPM.of(500);
+        public static Angle kNonAimHoodAngle = Degrees.of(15.0);
+        public static AngularVelocity kFeedingWheelVelocity = RPM.of(500);
+        public static Angle kHoodFeedingPosition = Degrees.of(25.0);
     }
 
     public static final class Fixtures {
@@ -306,8 +321,7 @@ public static final double kHoodMaxAbsolutePosition = 0.55;
 
         public static enum FieldLocations {
             AllianceSide,
-            NeutralLeftSide,
-            NeutralRightSide,
+            NeutralSide,
             OpponentSide
         }
 

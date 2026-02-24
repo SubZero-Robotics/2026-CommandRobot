@@ -1,5 +1,6 @@
 package frc.robot.commands;
 
+import java.lang.annotation.Target;
 import java.util.function.Supplier;
 
 import edu.wpi.first.math.geometry.Pose2d;
@@ -23,6 +24,7 @@ import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import frc.robot.Constants.Fixtures;
@@ -41,55 +43,80 @@ public class AimCommandFactory {
     private TurretSubsystem m_turret;
     private ShooterSubsystem m_shooter;
 
+    private boolean m_isAiming = false;
+
+    private AngularVelocity m_wheelVelocity;
+
     public AimCommandFactory(DriveSubsystem drive, TurretSubsystem turret, ShooterSubsystem shooter) {
         m_drive = drive;
         m_turret = turret;
         m_shooter = shooter;
     }
 
-    public Command Aim(Supplier<Boolean> isFeedingLeftSide) {
+    public Command AimCommand(Supplier<Boolean> isFeedingLeftSide) {
         return new RunCommand(() -> {
-            Fixtures.FieldLocations location = m_drive.getRobotLocation();
-            Pose2d robotPose = m_drive.getPose();
-            Angle robotAngle = Radians.of(robotPose.getRotation().getRadians());
-
-            switch (location) {
-                case AllianceSide: {
-                    Translation2d fixtureTranslation = DriverStation.getAlliance().get() == Alliance.Blue
-                            ? Fixtures.kBlueAllianceHub
-                            : Fixtures.kRedAllianceHub;
-
-                    double dy = fixtureTranslation.getX() - robotPose.getX();
-                    double dx = fixtureTranslation.getY() - robotPose.getY();
-
-                    Angle absHeading = Radians.of(Math.atan2(dy, dx));
-                    Angle relHeading = absHeading.minus(robotAngle);
-
-                    m_turret.moveToAngle(relHeading);
-                    break;
-                }
-                case NeutralLeftSide: {
-                    // Heading changes 180 degrees depending on which alliance you are on
-                    Angle offset = DriverStation.getAlliance().get() == Alliance.Blue ? Degrees.of(0) : Degrees.of(180);
-                    Angle absHeading = isFeedingLeftSide.get() ? offset.minus(Degrees.of(50))
-                            : offset.plus(Degrees.of(50));
-                    Angle relHeading = absHeading.minus(robotAngle);
-
-                    robotPose = m_drive.getPose();
-                    break;
-                }
-                case NeutralRightSide: {
-                    break;
-                }
-                case OpponentSide: {
-                    break;
-                }
-                default:
-                    break;
-            }
-        }, m_drive, m_turret).until(() -> {
-            return true;
+            Aim(isFeedingLeftSide);
+            m_isAiming = true;
+        }, m_drive, m_turret).finallyDo(() -> {
+            m_isAiming = false;
+            m_wheelVelocity = ShooterConstants.kNonAimShooterVelocity;
         });
+    }
+
+    private void Aim(Supplier<Boolean> isFeedingLeftSide) {
+        Fixtures.FieldLocations location = m_drive.getRobotLocation();
+
+        switch (location) {
+            case AllianceSide: {
+                TargetSolution solution = GetHubAimSolution();
+
+                MoveTurretToHeading(solution.hubAngle());
+                m_shooter.MoveHoodToPosition(solution.hoodAngle());
+
+                m_wheelVelocity = solution.wheelSpeed();
+                break;
+            }
+            case NeutralSide: {
+                // Heading changes 180 degrees depending on which alliance you are on
+                Angle offset = DriverStation.getAlliance().get() == Alliance.Blue ? Degrees.of(0) : Degrees.of(180);
+                Angle absHeading = isFeedingLeftSide.get() ? offset.minus(Degrees.of(50))
+                        : offset.plus(Degrees.of(50));
+
+                m_shooter.MoveHoodToPosition(ShooterConstants.kHoodFeedingPosition);
+                m_wheelVelocity = ShooterConstants.kFeedingWheelVelocity;
+                MoveTurretToHeading(absHeading);
+                break;
+            }
+            case OpponentSide: {
+                System.out.println("Why are you here???");
+            }
+            default:
+                break;
+        }
+    }
+
+    public Command AimHoodToPositionCommand(Angle angle) {
+        return new RunCommand(() -> {
+            m_shooter.MoveHoodToPosition(angle);
+        }).until(m_shooter::AtTarget);
+    }
+
+    public Command AimTurretRelativeToRobot(Angle angle) {
+        return new RunCommand(() -> {
+            m_turret.moveToAngle(angle);
+        }, m_turret).until(m_turret::atTarget);
+    }
+
+    public Command ShootCommand() {
+        return new ConditionalCommand(new RunCommand(this::Shoot, m_shooter),
+                AimHoodToPositionCommand(ShooterConstants.kNonAimHoodAngle)
+                        .alongWith(AimTurretRelativeToRobot(TurretConstants.kNonAimTurretAngle))
+                        .andThen(new RunCommand(this::Shoot, m_shooter)),
+                () -> m_isAiming);
+    }
+
+    private void Shoot() {
+        m_shooter.Spin(m_wheelVelocity);
     }
 
     public TargetSolution GetHubAimSolution() {

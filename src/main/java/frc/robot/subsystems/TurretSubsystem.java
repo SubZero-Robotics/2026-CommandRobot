@@ -152,7 +152,7 @@ public class TurretSubsystem extends SubsystemBase {
         SmartDashboard.putData("Turret Rotation", m_simMech);
     }
 
-    public boolean isAtTarget() {
+    public boolean atTarget() {
         return UtilityFunctions.angleDiff(m_targetAngle, getRotation())
                 .abs(Degrees) < TurretConstants.kTurretAngleTolerance.in(Degrees);
     }

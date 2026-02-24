@@ -440,11 +440,7 @@ public class DriveSubsystem extends SubsystemBase {
         if (alliance.isPresent()) {
             if (alliance.get() == Alliance.Blue) {
                 if (x < Fixtures.kBlueSideNeutralBorder.in(Meters) && x > Fixtures.kRedSideNeutralBorder.in(Meters)) {
-                    if (y < Fixtures.kFieldYMidpoint.in(Meters)) {
-                        return Fixtures.FieldLocations.NeutralLeftSide;
-                    } else {
-                        return Fixtures.FieldLocations.NeutralRightSide;
-                    }
+                    return Fixtures.FieldLocations.NeutralSide;
                 } else if (x > Fixtures.kBlueSideNeutralBorder.in(Meters)) {
                     return Fixtures.FieldLocations.AllianceSide;
                 } else {
@@ -452,11 +448,7 @@ public class DriveSubsystem extends SubsystemBase {
                 }
             } else if (alliance.get() == Alliance.Red) {
                 if (x > Fixtures.kRedSideNeutralBorder.in(Meters) && x < Fixtures.kBlueSideNeutralBorder.in(Meters)) {
-                    if (y < Fixtures.kFieldYMidpoint.in(Meters)) {
-                        return Fixtures.FieldLocations.NeutralRightSide;
-                    } else {
-                        return Fixtures.FieldLocations.NeutralLeftSide;
-                    }
+                    return Fixtures.FieldLocations.NeutralSide;
                 } else if (x < Fixtures.kRedSideNeutralBorder.in(Meters)) {
                     return Fixtures.FieldLocations.AllianceSide;
                 } else {
