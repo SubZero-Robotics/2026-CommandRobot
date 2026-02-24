@@ -321,6 +321,12 @@ public class DriveSubsystem extends SubsystemBase {
         // getHeading()).in(Radians) + ", Current: "
         // + getHeading().in(Radians));
 
+        final double latestTime = Timer.getFPGATimestamp();
+        final double timeElapsed = latestTime - m_latestTime < 0.20 ? latestTime - m_latestTime
+                : DriveConstants.kPeriodicInterval.in(Seconds);
+
+        m_latestTime = latestTime;
+
         if (Math.abs(rot) > NumericalConstants.kEpsilon) {
             m_isManualRotate = true;
         }
@@ -337,11 +343,12 @@ public class DriveSubsystem extends SubsystemBase {
         // System.out.println("Target " + m_targetAutoAngle + ", Current" +
         // getHeading());
 
-        final var swerveModuleStates = DriveConstants.kDriveKinematics.toSwerveModuleStates(
+        final var swerveModuleStates = DriveConstants.kDriveKinematics.toSwerveModuleStates(ChassisSpeeds.discretize(
                 fieldRelative
                         ? ChassisSpeeds.fromFieldRelativeSpeeds(xSpeedDelivered, ySpeedDelivered, rotDelivered,
                                 new Rotation2d(getHeading()))
-                        : new ChassisSpeeds(xSpeedDelivered, ySpeedDelivered, rotDelivered));
+                        : new ChassisSpeeds(xSpeedDelivered, ySpeedDelivered, rotDelivered),
+                timeElapsed));
         SwerveDriveKinematics.desaturateWheelSpeeds(
                 swerveModuleStates, DriveConstants.kMaxSpeed.magnitude());
 
@@ -349,12 +356,6 @@ public class DriveSubsystem extends SubsystemBase {
         m_frontRight.setDesiredState(swerveModuleStates[1]);
         m_rearLeft.setDesiredState(swerveModuleStates[2]);
         m_rearRight.setDesiredState(swerveModuleStates[3]);
-
-        final double latestTime = Timer.getFPGATimestamp();
-        final double timeElapsed = latestTime - m_latestTime < 0.20 ? latestTime - m_latestTime
-                : DriveConstants.kPeriodicInterval.in(Seconds);
-
-        m_latestTime = latestTime;
     }
 
     public void drive(ChassisSpeeds speeds) {
