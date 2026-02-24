@@ -7,10 +7,11 @@ import com.lumynlabs.domain.led.Animation;
 
 import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj.util.Color;
-import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class LedSubsystem extends SubsystemBase{
+
+    private String m_LedStrip = "LED-Strip";
 
     ConnectorX cX = new ConnectorX();
 
@@ -41,20 +42,33 @@ public class LedSubsystem extends SubsystemBase{
      }
   });
 
+  
+
     }
 
     public void EnableLedSolid(Color color) {
 
         cX.leds
       .SetAnimation(Animation.Fill)
-      .ForZone("LED-Strip")
+      .ForZone(m_LedStrip)
       .WithColor(color)
       .WithDelay(Units.Milliseconds.of(0))
       .RunOnce(false);
     }
 
+    public void DisableLedSolid(Color color) {
+
+        cX.leds
+      .SetAnimation(Animation.Fill)
+      .ForZone(m_LedStrip)
+      .WithColor(color)
+      .WithDelay(Units.Milliseconds.of(0))
+      .RunOnce(false);
+      
+    }
+
     public void disableLeds() {
-        cX.leds.SetColor("LED-Strip", Color.kBlack);
+        cX.leds.SetColor(m_LedStrip, Color.kBlack);
     }
 
 

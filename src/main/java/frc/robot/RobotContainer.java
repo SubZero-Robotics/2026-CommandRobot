@@ -6,16 +6,21 @@ package frc.robot;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Radians;
 
+import com.lumynlabs.domain.led.Animation;
 import com.pathplanner.lib.commands.PathPlannerAuto;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.wpilibj.AddressableLED;
+import edu.wpi.first.wpilibj.AddressableLEDBuffer;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj.util.Color;
 import frc.robot.Constants.AutoConstants;
 import frc.robot.Constants.OIConstants;
 import frc.robot.subsystems.DriveSubsystem;
@@ -35,6 +40,9 @@ public class RobotContainer {
     private final SendableChooser<String> m_chooser = new SendableChooser<>();
 
     private final TurretSubsystem m_turret;
+
+      
+    
 
     public RobotContainer() {
         m_turret = new TurretSubsystem(m_drive::getPose);
@@ -57,13 +65,32 @@ public class RobotContainer {
                                 true),
                         m_drive));
 
+          
+
         // TODO: Get rid of this
         m_turret.setDefaultCommand(new RunCommand(() -> m_turret.moveToAngle(Radians.of(Math.PI / 4)), m_turret));
+        
+
+        
+    
     }
 
     private void configureBindings() {
         m_driverController.a().whileTrue(m_drive.faceCardinalHeadingRange(Degrees.of(342), Degrees.of(190)));
         m_driverController.a().whileFalse(m_drive.disableFaceHeading());
+
+    
+        m_driverController.b().whileTrue(
+            new InstantCommand(() -> {
+                m_ledsSubsystem.EnableLedSolid(Color.kDarkBlue);
+            })
+        );
+
+        m_driverController.b().whileFalse(
+            new InstantCommand(() -> {
+                m_ledsSubsystem.DisableLedSolid(Color.kRed);
+            })
+        );
     }
 
     public LedSubsystem getLedSubsystem() {
