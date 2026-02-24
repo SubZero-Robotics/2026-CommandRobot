@@ -21,6 +21,8 @@ import frc.robot.Constants.NumericalConstants;
 import frc.robot.Constants.ShooterConstants;
 import frc.robot.utils.UtilityFunctions;
 
+
+
 public class ShooterSubsystem extends SubsystemBase {
 
     SparkMax m_shooterMotor = new SparkMax(ShooterConstants.kShooterMotorId, MotorType.kBrushless);
@@ -35,6 +37,8 @@ public class ShooterSubsystem extends SubsystemBase {
     private final SparkMaxConfig m_hoodConfig = new SparkMaxConfig();
 
     Angle m_targetAngle = Degrees.of(0.0);
+
+    private boolean m_HoodIsUp = false;
 
     public ShooterSubsystem() {
 
@@ -115,6 +119,8 @@ public class ShooterSubsystem extends SubsystemBase {
             System.out.println("Hood position icorrect for safe movement. Pos: " + curentPosition);
             return;
         }
+        m_HoodIsUp = targetPosition > 0.05;
+        
 
         m_hoodClosedLoopController.setSetpoint(targetPosition, ControlType.kPosition);
     }
@@ -134,6 +140,10 @@ public class ShooterSubsystem extends SubsystemBase {
     public boolean AtTarget() {
         return UtilityFunctions.angleDiff(GetHoodAngle(), m_targetAngle).abs(Degrees) < ShooterConstants.kHoodTolerence
                 .in(Degrees);
+    }
+
+    public boolean HoodIsUp() {
+        return m_HoodIsUp;
     }
 
     @Override
