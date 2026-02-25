@@ -346,7 +346,7 @@ public class AimCommandFactory {
             return false;
         }
 
-        for (int i = 0; i <= angles.length; i += 2) {
+        for (int i = 0; i < angles.length - 1; i += 2) {
             Angle min = angles[i];
             Angle max = angles[i + 1];
             if (withinRange(min, max, candidate))

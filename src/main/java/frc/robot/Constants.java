@@ -316,7 +316,7 @@ public final class Constants {
         public static Angle kNonAimHoodAngle = Degrees.of(15.0);
         public static AngularVelocity kFeedingWheelVelocity = RPM.of(500);
         public static Angle kHoodFeedingPosition = Degrees.of(25.0);
-        public static Measure<AngleUnit> kTurretAngleRestrictiveShooterAngle;
+        public static Measure<AngleUnit> kTurretAngleRestrictiveShooterAngle = Degrees.of(10);
     }
 
     public static final class Fixtures {

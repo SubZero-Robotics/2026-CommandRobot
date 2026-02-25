@@ -32,6 +32,7 @@ import frc.robot.utils.Vision;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.Fixtures;
 import frc.robot.Constants.NumericalConstants;
+import frc.robot.Constants.OIConstants;
 import frc.robot.Constants.DriveConstants.RangeType;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -327,7 +328,7 @@ public class DriveSubsystem extends SubsystemBase {
 
         m_latestTime = latestTime;
 
-        if (Math.abs(rot) > NumericalConstants.kEpsilon) {
+        if (Math.abs(rot) > OIConstants.kDriveDeadband) {
             m_isManualRotate = true;
         }
 
