@@ -140,7 +140,7 @@ public class AimCommandFactory {
     }
 
     public Command MoveTurretToHeadingCommand(Angle heading) {
-        return new RunCommand(() -> {
+        return new InstantCommand(() -> {
             MoveTurretToHeading(heading);
         }, m_turret);
     }
@@ -149,6 +149,21 @@ public class AimCommandFactory {
         return new InstantCommand(() -> {
             System.out.println("Move Hood to position " + angle);
             m_shooter.MoveHoodToPosition(angle);
+        });
+    }
+
+    // TODO: DOES NOT WORK!!!1!1
+    public Command PointAtHub(boolean isRed) {
+        return new InstantCommand(() -> {
+            Translation2d hubPosition = isRed ? Fixtures.kRedAllianceHub : Fixtures.kBlueAllianceHub;
+            Translation2d robotPose = m_drive.getPose().getTranslation();
+
+            double dx = hubPosition.getMeasureX().minus(robotPose.getMeasureX()).in(Meters);
+            double dy = hubPosition.getMeasureY().minus(robotPose.getMeasureY()).in(Meters);
+
+            Angle angle = Radians.of(Math.atan2(dy, dx));
+
+            MoveTurretToHeading(angle);
         });
     }
 

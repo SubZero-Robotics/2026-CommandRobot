@@ -177,6 +177,8 @@ public class DriveSubsystem extends SubsystemBase {
     public void moveToAngle(Angle angle) {
         m_isManualRotate = false;
         m_targetAutoAngle = angle;
+
+        System.out.println("Hello");
     }
 
     public void moveByAngle(Angle angle) {

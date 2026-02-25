@@ -92,7 +92,7 @@ public class RobotContainer {
         // per second", 0.0))));
 
         System.out.println("Bindings configured");
-        m_driverController.x().onTrue(m_aimFactory.MoveTurretToHeadingCommand(Degrees.of(30D)));
+        m_driverController.x().onTrue(m_aimFactory.PointAtHub(true));
     }
 
     public Command getAutonomousCommand() {
