@@ -28,10 +28,13 @@ import static edu.wpi.first.units.Units.RPM;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecondPerSecond;
+import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.Seconds;
 
 import java.util.HashMap;
 
+import edu.wpi.first.units.AngleUnit;
+import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -230,11 +233,22 @@ public final class Constants {
 
         public static final int kSmartCurrentLimit = 40;
 
-        public static final Angle kFeedMinAngle1 = Degrees.of(240);
-        public static final Angle kFeedMaxAngle1 = Degrees.of(300);
+        public static final Angle kHubMinAngle1 = Rotations.of(0.375);
+        public static final Angle kHubMaxAngle1 = Rotations.of(0.582);
 
-        public static final Angle kFeedMinAngle2 = Degrees.of(60);
-        public static final Angle kFeedMaxAngle2 = Degrees.of(120);
+        public static final Angle kHubMinAngle2 = Rotations.of(0.833);
+        public static final Angle kHubMaxAngle2 = Rotations.of(0.000);
+
+        public static final Angle kFeedMinAngle = Rotations.of(0.375);
+        public static final Angle kFeedMaxAngle = Rotations.of(0.582);
+
+        public static final Angle[] kRestrictedAngles = new Angle[] {
+                kFeedMinAngle, kFeedMaxAngle
+        };
+
+        public static final Angle[] kUnrestrictedAngles = new Angle[] {
+                kHubMinAngle1, kHubMaxAngle1, kHubMinAngle2, kHubMaxAngle2
+        };
 
         public static final Angle kOvershootAmount = Degrees.of(10.0);
 
@@ -302,6 +316,7 @@ public final class Constants {
         public static Angle kNonAimHoodAngle = Degrees.of(15.0);
         public static AngularVelocity kFeedingWheelVelocity = RPM.of(500);
         public static Angle kHoodFeedingPosition = Degrees.of(25.0);
+        public static Measure<AngleUnit> kTurretAngleRestrictiveShooterAngle;
     }
 
     public static final class Fixtures {

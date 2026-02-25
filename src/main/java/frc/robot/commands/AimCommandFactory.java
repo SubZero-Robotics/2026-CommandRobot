@@ -157,15 +157,13 @@ public class AimCommandFactory {
 
         Angle robotRelativeTurretAngle = UtilityFunctions.WrapAngle(heading.minus(robotHeading));
 
-        if (withinRange(TurretConstants.kFeedMinAngle1, TurretConstants.kFeedMaxAngle1, robotRelativeTurretAngle)
-                || withinRange(TurretConstants.kFeedMinAngle2, TurretConstants.kFeedMaxAngle2,
-                        robotRelativeTurretAngle)) {
+        Angle[] currentRange = getCurrentTurretRange();
+
+        if (withinAngles(currentRange, robotRelativeTurretAngle)) {
             m_turret.moveToAngle(robotRelativeTurretAngle);
         } else {
             // Gets which ray the robot is closest to
-            Angle closest = getClosestAngle(robotRelativeTurretAngle, TurretConstants.kFeedMinAngle1,
-                    TurretConstants.kFeedMaxAngle1,
-                    TurretConstants.kFeedMinAngle2, TurretConstants.kFeedMaxAngle2);
+            Angle closest = getClosestAngle(robotRelativeTurretAngle, currentRange);
 
             // The overshoot is negative if the robot has to move in a negative direction;
             // same for positive
@@ -325,5 +323,36 @@ public class AimCommandFactory {
         return new InstantCommand(() -> {
             m_shooter.Spin(shooterWheelVelocity);
         });
+    }
+
+    // TODO: Make this better
+
+    // Our valid shooting ranges are going to change based on the shooter hood
+    // angle. If the hood angle is too low, then shooting the ball would lead to it
+    // hitting the side of the robot or other balls currently being held in the
+    // robot
+    private Angle[] getCurrentTurretRange() {
+        if (m_shooter.GetHoodAngle().lt(ShooterConstants.kTurretAngleRestrictiveShooterAngle)) {
+            return TurretConstants.kRestrictedAngles;
+        }
+
+        return TurretConstants.kUnrestrictedAngles;
+    }
+
+    // Must be organized where at every even index it contains the minimum and every
+    // odd index contains the max angle
+    private boolean withinAngles(Angle[] angles, Angle candidate) {
+        if (angles.length % 2 != 0) {
+            return false;
+        }
+
+        for (int i = 0; i <= angles.length; i += 2) {
+            Angle min = angles[i];
+            Angle max = angles[i + 1];
+            if (withinRange(min, max, candidate))
+                return true;
+        }
+
+        return false;
     }
 }

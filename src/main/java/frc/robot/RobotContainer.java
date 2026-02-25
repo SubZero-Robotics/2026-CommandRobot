@@ -82,15 +82,17 @@ public class RobotContainer {
         // m_driverController.a()
         // .whileTrue(m_aimFactory.MoveTurretToHeadingCommand(Degrees.of(40)));
 
-        m_driverController.b()
-                .onTrue(m_aimFactory.Aim(Degrees.of(SmartDashboard.getNumber("Turret angle in degrees", 0.0)),
-                        Degrees.of(SmartDashboard.getNumber("Shooter hood angle in degrees", 0.0))));
+        // m_driverController.b()
+        // .onTrue(m_aimFactory.Aim(Degrees.of(SmartDashboard.getNumber("Turret angle in
+        // degrees", 0.0)),
+        // Degrees.of(SmartDashboard.getNumber("Shooter hood angle in degrees", 0.0))));
 
-        m_driverController.a().onTrue(
-                m_aimFactory.Shoot(RPM.of(SmartDashboard.getNumber("Wheelspeed in rotations per second", 0.0))));
+        // m_driverController.a().onTrue(
+        // m_aimFactory.Shoot(RPM.of(SmartDashboard.getNumber("Wheelspeed in rotations
+        // per second", 0.0))));
 
         System.out.println("Bindings configured");
-        m_driverController.x().onTrue(m_aimFactory.MoveHoodToAbsoluteCommand(Degrees.of(30D)));
+        m_driverController.x().onTrue(m_aimFactory.MoveTurretToHeadingCommand(Degrees.of(30D)));
     }
 
     public Command getAutonomousCommand() {
