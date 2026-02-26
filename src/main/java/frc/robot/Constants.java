@@ -152,8 +152,11 @@ public final class Constants {
 
     public static final class ClimberConstants {
         public static final int kMotorId = 1;
+
+        public static final double kUp = 0.1;
+        public static final double kDown = -0.04;
         
-        public static final Angle kMaxExtension = Rotations.of(20.0 / 10.0);
+        public static final Angle kMaxExtension = Rotations.of(10.0);
         public static final Angle kMinExtension = Rotations.of(0.0); // TODO : Get the Constants for max and minimum distance for the climber
     }
 }
