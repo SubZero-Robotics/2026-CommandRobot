@@ -67,21 +67,35 @@ public class IntakeSubsystem extends SubsystemBase {
     }
 
     public void deployIntake() {
-        m_deploy1ClosedLoopController.setSetpoint(
+        if (IntakeConstants.kMaxExtension.gt(Rotations.of(m_deploy1RelativeEncoder.getPosition())) 
+            & IntakeConstants.kMaxExtension.gt(Rotations.of(m_deploy2RelativeEncoder.getPosition()))) {
+                m_deploy1ClosedLoopController.setSetpoint(IntakeConstants.kMaxExtension.in(Rotations), ControlType.kPosition);
+                m_deploy2ClosedLoopController.setSetpoint(IntakeConstants.kMaxExtension.in(Rotations), ControlType.kPosition);
+                System.out.println("Deploy position : " + IntakeConstants.kDeployRotations + "is to small");
+       } else {
+            m_deploy1ClosedLoopController.setSetpoint(
                 IntakeConstants.kDeployRotations.in(Rotations),
                 ControlType.kPosition);
-         m_deploy2ClosedLoopController.setSetpoint(
+            m_deploy2ClosedLoopController.setSetpoint(
                 IntakeConstants.kDeployRotations.in(Rotations),
-                ControlType.kPosition);
+                ControlType.kPosition); 
+        }
     }
 
     public void retractIntake() {
-        m_deploy1ClosedLoopController.setSetpoint(
+       if (IntakeConstants.kMinExtension.lt(Rotations.of(m_deploy1RelativeEncoder.getPosition())) 
+            & IntakeConstants.kMinExtension.lt(Rotations.of(m_deploy2RelativeEncoder.getPosition()))) {
+                m_deploy1ClosedLoopController.setSetpoint(IntakeConstants.kMinExtension.in(Rotations), ControlType.kPosition);
+                m_deploy2ClosedLoopController.setSetpoint(IntakeConstants.kMinExtension.in(Rotations), ControlType.kPosition);
+                System.out.println("Retract position : " + IntakeConstants.kRetractRotations + "is to small");
+       } else{
+            m_deploy1ClosedLoopController.setSetpoint(
                 IntakeConstants.kRetractRotations.in(Rotations),
                 ControlType.kPosition);
-        m_deploy1ClosedLoopController.setSetpoint(
+            m_deploy2ClosedLoopController.setSetpoint(
                 IntakeConstants.kRetractRotations.in(Rotations),
-                ControlType.kPosition);
+                ControlType.kPosition); 
+        }
     }
 
     @Override
