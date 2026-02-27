@@ -25,6 +25,7 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants.AutoConstants;
+import frc.robot.Constants.Fixtures;
 import frc.robot.Constants.OIConstants;
 import frc.robot.commands.AimCommandFactory;
 import frc.robot.subsystems.DriveSubsystem;
@@ -92,7 +93,7 @@ public class RobotContainer {
         // per second", 0.0))));
 
         System.out.println("Bindings configured");
-        m_driverController.x().onTrue(m_aimFactory.PointAtHub(true));
+        m_driverController.x().whileTrue(m_aimFactory.PointAtHub(true));
     }
 
     public Command getAutonomousCommand() {
@@ -136,7 +137,7 @@ public class RobotContainer {
         commandedWheelVelocity = RPM.of(SmartDashboard.getNumber("Wheelspeed in rotations per second", 0.0));
         commandedShooterAngle = Degrees.of(SmartDashboard.getNumber("Shooter hood angle in degrees", 0.0));
 
-        // System.out.println(commandedWheelVelocity + ", " + commandedShooterAngle);
+        System.out.println(m_drive.getRobotLocation());
     }
 
     private Angle getSmartdashBoardRequestedShooterAngle() {

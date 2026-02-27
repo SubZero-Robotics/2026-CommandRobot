@@ -154,7 +154,8 @@ public class AimCommandFactory {
 
     // TODO: DOES NOT WORK!!!1!1
     public Command PointAtHub(boolean isRed) {
-        return new InstantCommand(() -> {
+        return new RunCommand(() -> {
+            // TODO: Uncomment this at some point
             Translation2d hubPosition = isRed ? Fixtures.kRedAllianceHub : Fixtures.kBlueAllianceHub;
             Translation2d robotPose = m_drive.getPose().getTranslation();
 
@@ -164,7 +165,8 @@ public class AimCommandFactory {
             Angle angle = Radians.of(Math.atan2(dy, dx));
 
             MoveTurretToHeading(angle);
-        });
+            System.out.println(angle);
+        }).finallyDo(m_drive::disableFaceHeading);
     }
 
     public void MoveTurretToHeading(Angle heading) {
@@ -190,6 +192,7 @@ public class AimCommandFactory {
 
             Angle driveTarget = heading.minus(closest);
 
+            System.out.println();
             m_drive.moveToAngle(driveTarget);
             m_turret.moveToAngle(closest);
         }

@@ -178,11 +178,12 @@ public class DriveSubsystem extends SubsystemBase {
         m_isManualRotate = false;
         m_targetAutoAngle = angle;
 
-        System.out.println("Hello");
+        System.out.println("Is Manual Rotate is False in moveToAngle()");
     }
 
     public void moveByAngle(Angle angle) {
         m_isManualRotate = false;
+        System.out.println("Is Manual Rotate is False in moveByAngle()");
         m_targetAutoAngle = getHeading().plus(angle);
     }
 
@@ -195,6 +196,7 @@ public class DriveSubsystem extends SubsystemBase {
             return RangeType.Within;
         } else {
             m_isManualRotate = false;
+            System.out.println("Is Manual Rotate is False in faceCardinalHeadingRange");
             m_targetAutoAngle = getClosestAngle(minAngle, maxAngle, robotAngle);
             return m_targetAutoAngle.isEquivalent(minAngle) ? RangeType.CloseMin : RangeType.CloseMax;
         }
@@ -216,13 +218,12 @@ public class DriveSubsystem extends SubsystemBase {
             m_targetAutoAngle = Radians.of(Math.atan2(yFixtureDist, xFixtureDist));
 
             m_isManualRotate = false;
+            System.out.println("Is Manual Rotate is False in facePose()");
         });
     }
 
-    public Command disableFaceHeading() {
-        return new InstantCommand(() -> {
-            m_isManualRotate = true;
-        });
+    public void disableFaceHeading() {
+        m_isManualRotate = true;
     }
 
     @Override
@@ -260,7 +261,7 @@ public class DriveSubsystem extends SubsystemBase {
         // System.out.println("Current rotation: " +
         // getPose().getRotation().getRadians());
 
-        m_poseEstimator.update(new Rotation2d(getHeading()), getModulePositions());
+        m_poseEstimator.update(new Rotation2d(getGyroHeading()), getModulePositions());
         m_field.setRobotPose(m_poseEstimator.getEstimatedPosition());
 
         // System.out.println(m_poseEstimator.getEstimatedPosition());
@@ -270,6 +271,8 @@ public class DriveSubsystem extends SubsystemBase {
         SmartDashboard.putData(m_field);
 
         m_pidController.periodic();
+
+        SmartDashboard.putBoolean("Is manual rotate", m_isManualRotate);
     }
 
     /**
@@ -412,6 +415,12 @@ public class DriveSubsystem extends SubsystemBase {
      * @return the robot's heading in degrees, from -180 to 180
      */
     public Angle getHeading() {
+        // return pidgey.getYaw().getValue();
+        // TODO: Don't use this code
+        return m_poseEstimator.getEstimatedPosition().getRotation().getMeasure();
+    }
+
+    public Angle getGyroHeading() {
         return pidgey.getYaw().getValue();
     }
 
@@ -439,21 +448,20 @@ public class DriveSubsystem extends SubsystemBase {
         Pose2d robotPose = getPose();
 
         double x = robotPose.getX();
-        double y = robotPose.getY();
 
         if (alliance.isPresent()) {
             if (alliance.get() == Alliance.Blue) {
-                if (x < Fixtures.kBlueSideNeutralBorder.in(Meters) && x > Fixtures.kRedSideNeutralBorder.in(Meters)) {
+                if (x > Fixtures.kBlueSideNeutralBorder.in(Meters) && x < Fixtures.kRedSideNeutralBorder.in(Meters)) {
                     return Fixtures.FieldLocations.NeutralSide;
-                } else if (x > Fixtures.kBlueSideNeutralBorder.in(Meters)) {
+                } else if (x < Fixtures.kBlueSideNeutralBorder.in(Meters)) {
                     return Fixtures.FieldLocations.AllianceSide;
                 } else {
                     return Fixtures.FieldLocations.OpponentSide;
                 }
             } else if (alliance.get() == Alliance.Red) {
-                if (x > Fixtures.kRedSideNeutralBorder.in(Meters) && x < Fixtures.kBlueSideNeutralBorder.in(Meters)) {
+                if (x < Fixtures.kRedSideNeutralBorder.in(Meters) && x > Fixtures.kBlueSideNeutralBorder.in(Meters)) {
                     return Fixtures.FieldLocations.NeutralSide;
-                } else if (x < Fixtures.kRedSideNeutralBorder.in(Meters)) {
+                } else if (x > Fixtures.kRedSideNeutralBorder.in(Meters)) {
                     return Fixtures.FieldLocations.AllianceSide;
                 } else {
                     return Fixtures.FieldLocations.OpponentSide;

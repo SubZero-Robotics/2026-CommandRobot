@@ -31,6 +31,7 @@ import static edu.wpi.first.units.Units.RadiansPerSecondPerSecond;
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.Seconds;
 
+import java.lang.reflect.Field;
 import java.util.HashMap;
 
 import edu.wpi.first.units.AngleUnit;
@@ -320,19 +321,19 @@ public final class Constants {
     }
 
     public static final class Fixtures {
-        public static final Translation2d kRedAllianceHub = new Translation2d(Inches.of(182.11), Inches.of(154.84));
-        public static final Translation2d kBlueAllianceHub = new Translation2d(Inches.of(182.11),
-                Inches.of(651.22 - 182.11));
+        public static final Translation2d kBlueAllianceHub = new Translation2d(Inches.of(182.11), Inches.of(154.84));
+        public static final Translation2d kRedAllianceHub = new Translation2d(Inches.of(651.22 - 182.11),
+                Inches.of(158.84));
 
         // From a top down perspective of the field with the red alliance on the left
         // side
         public static final Translation2d kTopFeedPose = new Translation2d();
         public static final Translation2d kBottomFeedPose = new Translation2d();
 
-        public static final Distance kFieldYMidpoint = Inches.of(317.69 / 2.0);
+        public static final Distance kFieldYMidpoint = Inches.of(158.84);
 
-        public static final Distance kRedSideNeutralBorder = Inches.of(182.11);
-        public static final Distance kBlueSideNeutralBorder = Inches.of(651.22 - 182.11);
+        public static final Distance kBlueSideNeutralBorder = Inches.of(182.11);
+        public static final Distance kRedSideNeutralBorder = Inches.of(651.22 - 182.11);
 
         public static enum FieldLocations {
             AllianceSide,
@@ -340,13 +341,21 @@ public final class Constants {
             OpponentSide
         }
 
-        // Placeholders
-        public static final Angle kRedLeftSideFeedHeading = Degrees.of(40);
-        public static final Angle kRedRightSideFeedHeading = Degrees.of(160);
+        public static final HashMap<FieldLocations, String> kFieldLocationStringMap = new HashMap<>();
+
+        static {
+            kFieldLocationStringMap.put(FieldLocations.AllianceSide, "Alliance Side");
+            kFieldLocationStringMap.put(FieldLocations.NeutralSide, "Neutral Side");
+            kFieldLocationStringMap.put(FieldLocations.OpponentSide, "Opponent Side");
+        }
 
         // Placeholders
-        public static final Angle kBlueLeftSideFeedHeading = Degrees.of(-40);
-        public static final Angle kBlueRightSideFeedHeading = Degrees.of(-160);
+        public static final Angle kBlueLeftSideFeedHeading = Degrees.of(40);
+        public static final Angle kBlueRightSideFeedHeading = Degrees.of(160);
+
+        // Placeholders
+        public static final Angle kRedLeftSideFeedHeading = Degrees.of(-40);
+        public static final Angle kRedRightSideFeedHeading = Degrees.of(-160);
 
         public static final Pose2d kRedHubAprilTag = AprilTagFieldLayout.loadField(AprilTagFields.k2026RebuiltAndymark)
                 .getTagPose(3).get().toPose2d();
