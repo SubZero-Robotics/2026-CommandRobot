@@ -1,9 +1,14 @@
 package frc.robot.commands;
 
 import java.lang.annotation.Target;
+import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.function.Supplier;
 
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -26,8 +31,11 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
+import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.Fixtures;
+import frc.robot.Constants.NumericalConstants;
 import frc.robot.Constants.ShooterConstants;
 import frc.robot.Constants.TurretConstants;
 import frc.robot.subsystems.DriveSubsystem;
@@ -47,6 +55,8 @@ public class AimCommandFactory {
     private boolean m_isAiming = false;
 
     private AngularVelocity m_wheelVelocity;
+
+    private Translation2d m_lockedTag;
 
     private StagingSubsystem m_stager = new StagingSubsystem();
 
@@ -216,6 +226,72 @@ public class AimCommandFactory {
 
             MoveTurretToHeading(angle);
         }, m_turret);
+    }
+
+    // Aims the camera at april tags within range
+    public Command IdleCameraAim() {
+
+        // TODO: Finish 
+        return new ConditionalCommand(new RunCommand(() -> {
+            Angle absoluteMinAngle = m_drive.getHeading().plus(TurretConstants.kTurretCameraIdleViewMinAngle);
+            Angle absoluteMaxAngle = m_drive.getHeading().plus(TurretConstants.kTurretCameraIdleViewMaxAngle);
+            Pose2d robotPose = m_drive.getPose();
+            Translation2d robotTranslation = robotPose.getTranslation();
+
+            Angle toTagAngle = angleFromTranslation(robotTranslation, m_lockedTag);
+
+            if (!withinRange(absoluteMinAngle, absoluteMaxAngle, toTagAngle)) {
+                double omega = ChassisSpeeds.fromFieldRelativeSpeeds(m_drive.getChassisSpeeds(),
+                        robotPose.getRotation()).omegaRadiansPerSecond;
+
+                ArrayList<Translation2d> aprilTagsInView = aprilTagsWithinRange(absoluteMinAngle, absoluteMaxAngle,
+                        robotTranslation);
+
+                if (aprilTagsInView.isEmpty())
+                    return;
+
+                Angle targetAngle = omega > 0 ? TurretConstants.kTurretCameraIdleViewMinAngle
+                        : TurretConstants.kTurretCameraIdleViewMaxAngle;
+
+                Translation2d tag;
+                Angle lowestAngle = NumericalConstants.kFullRotation.div(2);
+
+                Angle closestAngle = getClosestAngle(targetAngle,
+                        (Angle[]) aprilTagsInView.stream().map((Translation2d t) -> {
+                            Angle a = angleFromTranslation(robotTranslation, t);
+
+                            return a;
+                        }).toArray());
+
+                m_turret.moveToAngle(closestAngle.minus(robotPose.getRotation().getMeasure()));
+                // m_lockedTag = tag;
+            }
+        }, m_turret), null, () -> m_turret.getCurrentCommand() == null);
+    }
+
+    private ArrayList<Translation2d> aprilTagsWithinRange(Angle min, Angle max, Translation2d referenceTranslation) {
+        ArrayList<Translation2d> anglesInRange = new ArrayList<>();
+
+        for (int i = 1; i <= 32; i++) {
+            Translation2d tag = AprilTagFieldLayout.loadField(AprilTagFields.k2026RebuiltAndymark).getTagPose(i).get()
+                    .toPose2d().getTranslation();
+
+            Angle angleToTag = angleFromTranslation(referenceTranslation,
+                    tag);
+
+            if (angleToTag.gt(min) && angleToTag.lt(max)) {
+                anglesInRange.add(tag);
+            }
+        }
+
+        return anglesInRange;
+    }
+
+    private Angle angleFromTranslation(Translation2d reference, Translation2d target) {
+        double dx = target.minus(reference).getX();
+        double dy = target.minus(reference).getY();
+
+        return Radians.of(Math.atan2(dy, dx));
     }
 
     private static boolean withinRange(Angle min, Angle max, Angle a) {

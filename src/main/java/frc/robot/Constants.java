@@ -243,6 +243,9 @@ public final class Constants {
         public static final Angle kFeedMinAngle = Rotations.of(0.375);
         public static final Angle kFeedMaxAngle = Rotations.of(0.582);
 
+        public static final Angle kTurretCameraIdleViewMinAngle = Rotations.of(0.375);
+        public static final Angle kTurretCameraIdleViewMaxAngle = Rotations.of(0.582);
+
         public static final Angle[] kRestrictedAngles = new Angle[] {
                 kFeedMinAngle, kFeedMaxAngle
         };
