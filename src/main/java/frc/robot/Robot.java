@@ -17,12 +17,13 @@ public class Robot extends TimedRobot {
   public Robot() {
     m_robotContainer = new RobotContainer();
     addPeriodic(m_robotContainer.pushTurretEncoderReading(),
-    Constants.TurretConstants.kEncoderReadInterval.in(Seconds));
+        Constants.TurretConstants.kEncoderReadInterval.in(Seconds));
   }
 
   @Override
   public void robotPeriodic() {
     CommandScheduler.getInstance().run();
+    m_robotContainer.periodic();
   }
 
   @Override
@@ -63,6 +64,7 @@ public class Robot extends TimedRobot {
 
   @Override
   public void teleopPeriodic() {
+    m_robotContainer.teleopPeriodic();
   }
 
   @Override
