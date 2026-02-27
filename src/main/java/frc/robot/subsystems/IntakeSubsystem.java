@@ -15,6 +15,7 @@ import com.revrobotics.spark.SparkRelativeEncoder;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
+import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.IntakeConstants;
@@ -50,10 +51,10 @@ public class IntakeSubsystem extends SubsystemBase {
         // m_deployConfig.closedLoop.feedbackSensor(FeedbackSensor.kAbsoluteEncoder);
         m_deploy1Config.idleMode(IdleMode.kBrake);
         m_deploy2Config.idleMode(IdleMode.kBrake);
-       
+
         m_deploy1Config.smartCurrentLimit(IntakeConstants.kDeployMotorCurrentLimit);
         m_deploy2Config.smartCurrentLimit(IntakeConstants.kDeployMotorCurrentLimit);
-        
+
         m_deployMotor1.configure(m_deploy1Config, ResetMode.kResetSafeParameters,
                 PersistMode.kPersistParameters);
         m_deployMotor2.configure(m_deploy1Config, ResetMode.kResetSafeParameters,
@@ -69,34 +70,40 @@ public class IntakeSubsystem extends SubsystemBase {
     }
 
     public void deployIntake() {
-        if (IntakeConstants.kMaxExtension.lt(Rotations.of(m_deploy1RelativeEncoder.getPosition())) 
-            & IntakeConstants.kMaxExtension.lt(Rotations.of(m_deploy2RelativeEncoder.getPosition()))) {
-                m_deploy1ClosedLoopController.setSetpoint(IntakeConstants.kMaxExtension.in(Rotations), ControlType.kPosition);
-                m_deploy2ClosedLoopController.setSetpoint(IntakeConstants.kMaxExtension.in(Rotations), ControlType.kPosition);
-                System.out.println("Deploy position : " + IntakeConstants.kDeployRotations + "is to small");
-       } else {
-            m_deploy1ClosedLoopController.setSetpoint(
-                IntakeConstants.kDeployRotations.in(Rotations),
-                ControlType.kPosition);
-            m_deploy2ClosedLoopController.setSetpoint(
-                IntakeConstants.kDeployRotations.in(Rotations),
-                ControlType.kPosition); 
+        Angle deploy1Position = Rotations.of(m_deploy1RelativeEncoder.getPosition());
+        Angle deploy2Position = Rotations.of(m_deploy2RelativeEncoder.getPosition());
+
+        if (deploy1Position.lt(IntakeConstants.kMaxExtension)) {
+            m_deploy1ClosedLoopController.setSetpoint(IntakeConstants.kDeployRotations.in(Rotations),
+                    ControlType.kPosition);
+        } else {
+            System.out.println("Attempting to extend when beyond limit hitting limit on deploy motor 1.");
+        }
+
+        if (deploy2Position.lt(IntakeConstants.kMaxExtension)) {
+            m_deploy1ClosedLoopController.setSetpoint(IntakeConstants.kDeployRotations.in(Rotations),
+                    ControlType.kPosition);
+        } else {
+            System.out.println("Attempting to extend beyond limit when hitting limit on deploy motor 2.");
         }
     }
 
     public void retractIntake() {
-       if (IntakeConstants.kMinExtension.gt(Rotations.of(m_deploy1RelativeEncoder.getPosition())) 
-            & IntakeConstants.kMinExtension.gt(Rotations.of(m_deploy2RelativeEncoder.getPosition()))) {
-                m_deploy1ClosedLoopController.setSetpoint(IntakeConstants.kMinExtension.in(Rotations), ControlType.kPosition);
-                m_deploy2ClosedLoopController.setSetpoint(IntakeConstants.kMinExtension.in(Rotations), ControlType.kPosition);
-                System.out.println("Retract position : " + IntakeConstants.kRetractRotations + "is to small");
-       } else{
-            m_deploy1ClosedLoopController.setSetpoint(
-                IntakeConstants.kRetractRotations.in(Rotations),
-                ControlType.kPosition);
-            m_deploy2ClosedLoopController.setSetpoint(
-                IntakeConstants.kRetractRotations.in(Rotations),
-                ControlType.kPosition); 
+        Angle deploy1Position = Rotations.of(m_deploy1RelativeEncoder.getPosition());
+        Angle deploy2Position = Rotations.of(m_deploy2RelativeEncoder.getPosition());
+
+        if (deploy1Position.gt(IntakeConstants.kMinExtension)) {
+            m_deploy1ClosedLoopController.setSetpoint(IntakeConstants.kDeployRotations.in(Rotations),
+                    ControlType.kPosition);
+        } else {
+            System.out.println("Attempting to retract beyond limit when hitting limit on deploy motor 1.");
+        }
+
+        if (deploy2Position.gt(IntakeConstants.kMinExtension)) {
+            m_deploy1ClosedLoopController.setSetpoint(IntakeConstants.kDeployRotations.in(Rotations),
+                    ControlType.kPosition);
+        } else {
+            System.out.println("Attempting to retract beyond limit when hitting limit on deploy motor 2.");
         }
     }
 
