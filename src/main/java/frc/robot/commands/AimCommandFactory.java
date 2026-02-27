@@ -231,40 +231,33 @@ public class AimCommandFactory {
     // Aims the camera at april tags within range
     public Command IdleCameraAim() {
 
-        // TODO: Finish 
+        // TODO: Finish
         return new ConditionalCommand(new RunCommand(() -> {
             Angle absoluteMinAngle = m_drive.getHeading().plus(TurretConstants.kTurretCameraIdleViewMinAngle);
             Angle absoluteMaxAngle = m_drive.getHeading().plus(TurretConstants.kTurretCameraIdleViewMaxAngle);
             Pose2d robotPose = m_drive.getPose();
+            Angle robotRotation = robotPose.getRotation().getMeasure();
             Translation2d robotTranslation = robotPose.getTranslation();
 
             Angle toTagAngle = angleFromTranslation(robotTranslation, m_lockedTag);
 
-            if (!withinRange(absoluteMinAngle, absoluteMaxAngle, toTagAngle)) {
-                double omega = ChassisSpeeds.fromFieldRelativeSpeeds(m_drive.getChassisSpeeds(),
-                        robotPose.getRotation()).omegaRadiansPerSecond;
-
+            if (!withinRange(robotRotation.plus(absoluteMinAngle), robotRotation.plus(absoluteMaxAngle), toTagAngle)) {
                 ArrayList<Translation2d> aprilTagsInView = aprilTagsWithinRange(absoluteMinAngle, absoluteMaxAngle,
                         robotTranslation);
 
                 if (aprilTagsInView.isEmpty())
                     return;
 
-                Angle targetAngle = omega > 0 ? TurretConstants.kTurretCameraIdleViewMinAngle
-                        : TurretConstants.kTurretCameraIdleViewMaxAngle;
+                var tags = aprilTagsWithinRange(absoluteMinAngle, absoluteMaxAngle, robotTranslation);
+                Translation2d closestTag = getClosestAngleApriltag(TurretConstants.kTurretCameraMidPoint,
+                        robotTranslation,
+                        (Translation2d[]) tags.toArray());
 
-                Translation2d tag;
-                Angle lowestAngle = NumericalConstants.kFullRotation.div(2);
+                Angle angleToTag = angleFromTranslation(robotTranslation, closestTag);
+                Angle turretRelativeAngleToTag = UtilityFunctions.WrapAngle(angleToTag.minus(robotRotation));
 
-                Angle closestAngle = getClosestAngle(targetAngle,
-                        (Angle[]) aprilTagsInView.stream().map((Translation2d t) -> {
-                            Angle a = angleFromTranslation(robotTranslation, t);
-
-                            return a;
-                        }).toArray());
-
-                m_turret.moveToAngle(closestAngle.minus(robotPose.getRotation().getMeasure()));
-                // m_lockedTag = tag;
+                m_lockedTag = closestTag;
+                m_turret.moveToAngle(turretRelativeAngleToTag);
             }
         }, m_turret), null, () -> m_turret.getCurrentCommand() == null);
     }
@@ -287,7 +280,7 @@ public class AimCommandFactory {
         return anglesInRange;
     }
 
-    private Angle angleFromTranslation(Translation2d reference, Translation2d target) {
+    private static Angle angleFromTranslation(Translation2d reference, Translation2d target) {
         double dx = target.minus(reference).getX();
         double dy = target.minus(reference).getY();
 
@@ -327,6 +320,29 @@ public class AimCommandFactory {
         }
 
         return closest;
+    }
+
+    private static Translation2d getClosestAngleApriltag(Angle referenceAngle, Translation2d robot,
+            Translation2d... tags) {
+        if (tags.length == 0)
+            return null;
+
+        referenceAngle = UtilityFunctions.WrapAngle(referenceAngle);
+
+        double closestDistance = 2 * Math.PI;
+        Translation2d closestPosition = new Translation2d();
+
+        for (Translation2d tag : tags) {
+            Angle candidate = UtilityFunctions.WrapAngle(angleFromTranslation(robot, tag));
+            double dif = UtilityFunctions.angleDiff(referenceAngle, candidate).abs(Degrees);
+
+            if (dif < closestDistance) {
+                closestDistance = dif;
+                closestPosition = tag;
+            }
+        }
+
+        return closestPosition;
     }
 
     private static int getFirstEntryIndex(Distance distance) {
