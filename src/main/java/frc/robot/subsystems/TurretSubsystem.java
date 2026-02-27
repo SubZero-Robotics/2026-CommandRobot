@@ -35,7 +35,6 @@ import frc.robot.utils.UtilityFunctions;
 public class TurretSubsystem extends SubsystemBase {
 
     private final SparkMax m_turretMotor = new SparkMax(TurretConstants.kMotorId, MotorType.kBrushless);
-    private final SparkMaxSim m_simTurretMotor = new SparkMaxSim(m_turretMotor, DCMotor.getNEO(1));
 
     private final AbsoluteEncoder m_absoluteEncoder = m_turretMotor.getAbsoluteEncoder();
     private final SparkClosedLoopController m_turretClosedLoopController = m_turretMotor.getClosedLoopController();

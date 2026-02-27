@@ -32,6 +32,7 @@ import frc.robot.Constants.ShooterConstants;
 import frc.robot.Constants.TurretConstants;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
+import frc.robot.subsystems.StagingSubsystem;
 import frc.robot.subsystems.TurretSubsystem;
 import frc.robot.utils.ShootingEntry;
 import frc.robot.utils.TargetSolution;
@@ -46,6 +47,8 @@ public class AimCommandFactory {
     private boolean m_isAiming = false;
 
     private AngularVelocity m_wheelVelocity;
+
+    private StagingSubsystem m_stager = new StagingSubsystem();
 
     public AimCommandFactory(DriveSubsystem drive, TurretSubsystem turret, ShooterSubsystem shooter) {
         m_drive = drive;
@@ -72,6 +75,8 @@ public class AimCommandFactory {
 
                 MoveTurretToHeading(solution.hubAngle());
                 m_shooter.MoveHoodToPosition(solution.hoodAngle());
+
+                m_drive.moveByAngle(solution.phi());
 
                 m_wheelVelocity = solution.wheelSpeed();
                 break;
@@ -112,7 +117,11 @@ public class AimCommandFactory {
                 AimHoodToPositionCommand(ShooterConstants.kNonAimHoodAngle)
                         .alongWith(AimTurretRelativeToRobot(TurretConstants.kNonAimTurretAngle))
                         .andThen(new RunCommand(this::Shoot, m_shooter)),
-                () -> m_isAiming);
+                () -> m_isAiming).alongWith(new RunCommand(() -> {
+                    m_stager.Agitate();
+                    m_stager.Feed();
+                    m_stager.Roll();
+                }, m_stager)).finallyDo(m_shooter::Stop);
     }
 
     private void Shoot() {
@@ -152,10 +161,8 @@ public class AimCommandFactory {
         });
     }
 
-    // TODO: DOES NOT WORK!!!1!1
     public Command PointAtHub(boolean isRed) {
         return new RunCommand(() -> {
-            // TODO: Uncomment this at some point
             Translation2d hubPosition = isRed ? Fixtures.kRedAllianceHub : Fixtures.kBlueAllianceHub;
             Translation2d robotPose = m_drive.getPose().getTranslation();
 

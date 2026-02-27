@@ -320,6 +320,17 @@ public final class Constants {
         public static Measure<AngleUnit> kTurretAngleRestrictiveShooterAngle = Degrees.of(10);
     }
 
+    public static final class StagingConstants {
+        public static int kFeedIntoHoodMotor = 30;
+        public static double kFeedIntoHoodSpeed = 0.4;
+
+        public static final int kAgitationMotorId = 31;
+        public static final double kAgitationSpeed = 0.2;
+
+        public static final int kRollerMotorId = 32;
+        public static final double kRollerSpeed = 0.3;
+    }
+
     public static final class Fixtures {
         public static final Translation2d kBlueAllianceHub = new Translation2d(Inches.of(182.11), Inches.of(154.84));
         public static final Translation2d kRedAllianceHub = new Translation2d(Inches.of(651.22 - 182.11),
