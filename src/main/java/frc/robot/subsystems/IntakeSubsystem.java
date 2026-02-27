@@ -32,8 +32,10 @@ public class IntakeSubsystem extends SubsystemBase {
     private final RelativeEncoder m_deploy1RelativeEncoder = m_deployMotor1.getEncoder();
     private final RelativeEncoder m_deploy2RelativeEncoder = m_deployMotor2.getEncoder();
 
-    private final SparkLimitSwitch m_minLimitSwitch = m_intakeMotor.getReverseLimitSwitch();
-    private final SparkLimitSwitch m_maxLimitSwitch = m_intakeMotor.getForwardLimitSwitch();
+    private final SparkLimitSwitch m_minLimitSwitch1 = m_intakeMotor.getReverseLimitSwitch();
+    private final SparkLimitSwitch m_minLimitSwitch2 = m_intakeMotor.getReverseLimitSwitch();
+    private final SparkLimitSwitch m_maxLimitSwitch1 = m_intakeMotor.getForwardLimitSwitch();
+    private final SparkLimitSwitch m_maxLimitSwitch2 = m_intakeMotor.getForwardLimitSwitch();
 
     private SparkMaxConfig m_deploy1Config = new SparkMaxConfig();
     private SparkMaxConfig m_deploy2Config = new SparkMaxConfig();
@@ -67,8 +69,8 @@ public class IntakeSubsystem extends SubsystemBase {
     }
 
     public void deployIntake() {
-        if (IntakeConstants.kMaxExtension.gt(Rotations.of(m_deploy1RelativeEncoder.getPosition())) 
-            & IntakeConstants.kMaxExtension.gt(Rotations.of(m_deploy2RelativeEncoder.getPosition()))) {
+        if (IntakeConstants.kMaxExtension.lt(Rotations.of(m_deploy1RelativeEncoder.getPosition())) 
+            & IntakeConstants.kMaxExtension.lt(Rotations.of(m_deploy2RelativeEncoder.getPosition()))) {
                 m_deploy1ClosedLoopController.setSetpoint(IntakeConstants.kMaxExtension.in(Rotations), ControlType.kPosition);
                 m_deploy2ClosedLoopController.setSetpoint(IntakeConstants.kMaxExtension.in(Rotations), ControlType.kPosition);
                 System.out.println("Deploy position : " + IntakeConstants.kDeployRotations + "is to small");
@@ -83,8 +85,8 @@ public class IntakeSubsystem extends SubsystemBase {
     }
 
     public void retractIntake() {
-       if (IntakeConstants.kMinExtension.lt(Rotations.of(m_deploy1RelativeEncoder.getPosition())) 
-            & IntakeConstants.kMinExtension.lt(Rotations.of(m_deploy2RelativeEncoder.getPosition()))) {
+       if (IntakeConstants.kMinExtension.gt(Rotations.of(m_deploy1RelativeEncoder.getPosition())) 
+            & IntakeConstants.kMinExtension.gt(Rotations.of(m_deploy2RelativeEncoder.getPosition()))) {
                 m_deploy1ClosedLoopController.setSetpoint(IntakeConstants.kMinExtension.in(Rotations), ControlType.kPosition);
                 m_deploy2ClosedLoopController.setSetpoint(IntakeConstants.kMinExtension.in(Rotations), ControlType.kPosition);
                 System.out.println("Retract position : " + IntakeConstants.kRetractRotations + "is to small");
@@ -100,10 +102,10 @@ public class IntakeSubsystem extends SubsystemBase {
 
     @Override
     public void periodic() {
-        if (m_minLimitSwitch.isPressed()) {
+        if (m_minLimitSwitch1.isPressed() || m_minLimitSwitch2.isPressed()) {
             m_deploy1RelativeEncoder.setPosition(IntakeConstants.kMinExtension.in(Rotations));
             m_deploy2RelativeEncoder.setPosition(IntakeConstants.kMinExtension.in(Rotations));
-        } else if (m_maxLimitSwitch.isPressed()) {
+        } else if (m_maxLimitSwitch1.isPressed() || m_maxLimitSwitch2.isPressed()) {
             m_deploy1RelativeEncoder.setPosition(IntakeConstants.kMaxExtension.in(Rotations));
             m_deploy2RelativeEncoder.setPosition(IntakeConstants.kMaxExtension.in(Rotations));
         }
