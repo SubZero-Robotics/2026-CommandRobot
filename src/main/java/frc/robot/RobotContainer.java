@@ -80,17 +80,17 @@ public class RobotContainer {
         m_driverController.a().whileFalse(m_drive.disableFaceHeading());
 
     
-        m_driverController.b().whileTrue(
-            new RunCommand(() -> {
-                m_ledsSubsystem.EnableLedSolid(Color.kDarkBlue);
-            })
-        );
+        // m_driverController.b().whileTrue(
+        //     new RunCommand(() -> {
+        //         m_ledsSubsystem.EnableLedSolid(Color.kDarkBlue);
+        //     })
+        // );
 
-        m_driverController.x().whileTrue(
-            new RunCommand(() -> {
-                m_ledsSubsystem.EnableLedBreathing(Color.kAqua, Color.kHoneydew);
-            })
-        );
+        // m_driverController.x().whileTrue(
+        //     new RunCommand(() -> {
+        //         m_ledsSubsystem.EnableLedBreathing(Color.kAqua, Color.kHoneydew);
+        //     })
+        // );
     }
 
     public LedSubsystem getLedSubsystem() {

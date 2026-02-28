@@ -46,7 +46,7 @@ public class LedSubsystem extends SubsystemBase{
   
 
     }
-
+/* 
     public void EnableLedSolid(Color color) {
 
         cX.leds
@@ -86,16 +86,14 @@ public class LedSubsystem extends SubsystemBase{
       .WithDelay(Units.Milliseconds.of(0))
       .RunOnce(false);
     }
-
+*/
     public void disableLeds() {
         cX.leds.SetColor(m_LedStrip, Color.kBlack);
     }
 
     @Override
     public void periodic() {
-      new RunCommand(() -> {
-        DisableLedSolid(Color.kRed);
-      });
+      
     }
 
 }

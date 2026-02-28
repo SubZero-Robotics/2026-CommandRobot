@@ -80,9 +80,9 @@ public class Robot extends TimedRobot {
 
   @Override
   public void teleopInit() {
-    m_robotContainer.getLedSubsystem().EnableLedSolid(Color.kRed);
+    // m_robotContainer.getLedSubsystem().EnableLedSolid(Color.kRed);
 
-    m_robotContainer.getLedSubsystem().DisableLedSolid(Color.kRed);
+    // m_robotContainer.getLedSubsystem().DisableLedSolid(Color.kRed);
 
 
     if (m_autonomousCommand != null) {
