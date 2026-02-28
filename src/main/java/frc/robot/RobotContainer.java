@@ -109,13 +109,13 @@ public class RobotContainer {
 
         // m_driverController.y().whileTrue(m_aimFactory.RunAllStager());
 
-        m_driverController.x().onTrue(DeployIntake());
+        // m_driverController.x().onTrue(DeployIntake());
 
-        m_driverController.a().onTrue(retractIntake());
+        // m_driverController.a().onTrue(retractIntake());
 
-        m_driverController.b().whileTrue(spinIntake());
+        // m_driverController.b().whileTrue(spinIntake());
 
-        m_driverController.y().whileTrue(m_aimFactory.RunAllStager());
+        // m_driverController.y().whileTrue(m_aimFactory.RunAllStager());
 
     }
 
@@ -152,7 +152,6 @@ public class RobotContainer {
         });
     }
 
-    
     public Command outTake() {
         return new RunCommand(() -> {
             m_intake.spinIntake(IntakeConstants.kDefaultIntakeSpeed.times(-1));
