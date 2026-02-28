@@ -416,10 +416,10 @@ public final class Constants {
                 public static final int kIntakeMotorId = 7;
 
                 // 10 teeth on pinion, 20 teeth on rack
-                public static final Angle kDeployRotations = Rotations.of(20.0 / 10.0).times(5.0);
+                public static final Angle kDeployRotations = Rotations.of(9.5);
                 public static final Angle kRetractRotations = Rotations.of(0.0);
 
-                public static final Angle kMaxExtension = Rotations.of(20.0 / 10.0).times(5.0);
+                public static final Angle kMaxExtension = Rotations.of(9.5);
                 public static final Angle kMinExtension = Rotations.of(0.0);
 
                 public static final int kDeployMotorCurrentLimit = 40;

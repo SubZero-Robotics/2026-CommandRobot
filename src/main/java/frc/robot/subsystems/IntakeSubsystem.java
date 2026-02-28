@@ -165,10 +165,10 @@ public class IntakeSubsystem extends SubsystemBase {
         DogLog.log("Deploy motor can ID 8 setpoint", m_deploy2ClosedLoopController.getSetpoint());
         DogLog.log("Deploy motor can ID 13 setpoint", m_deploy1ClosedLoopController.getSetpoint());
 
-        // DogLog.log("Min limit one", m_minLimitSwitch1.isPressed());
-        // DogLog.log("Min limit two", m_minLimitSwitch2.isPressed());
+        DogLog.log("Min limit one", m_minLimitSwitch1.isPressed());
+        DogLog.log("Min limit two", m_minLimitSwitch2.isPressed());
 
-        // DogLog.log("Max limit one", m_maxLimitSwitch1.isPressed());
-        // DogLog.log("Max limit two", m_maxLimitSwitch2.isPressed());
+        DogLog.log("Max limit one", m_maxLimitSwitch1.isPressed());
+        DogLog.log("Max limit two", m_maxLimitSwitch2.isPressed());
     }
 }
