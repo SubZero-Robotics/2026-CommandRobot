@@ -4,6 +4,7 @@
 package frc.robot;
 
 import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.DegreesPerSecond;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.RPM;
 import static edu.wpi.first.units.Units.Radians;
@@ -109,13 +110,17 @@ public class RobotContainer {
 
         // m_driverController.y().whileTrue(m_aimFactory.RunAllStager());
 
-        m_driverController.x().onTrue(DeployIntake());
+        // m_driverController.x().onTrue(DeployIntake());
 
-        m_driverController.a().onTrue(retractIntake());
+        // m_driverController.a().onTrue(retractIntake());
 
-        m_driverController.b().whileTrue(spinIntake());
+        // m_driverController.b().whileTrue(spinIntake());
 
         m_driverController.y().whileTrue(m_aimFactory.RunAllStager());
+
+        m_driverController.a().onTrue(m_aimFactory.MoveHoodToAbsoluteCommand(Degrees.of(15)));
+
+        m_driverController.b().onTrue(m_aimFactory.ShootCommand()).onFalse(m_aimFactory.StopShoot());
 
     }
 

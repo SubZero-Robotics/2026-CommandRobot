@@ -38,7 +38,8 @@ public class ShooterSubsystem extends SubsystemBase {
         m_shooterConfig.closedLoop
                 .p(ShooterConstants.kShooterP)
                 .i(ShooterConstants.kShooterI)
-                .d(ShooterConstants.kShooterD);
+                .d(ShooterConstants.kShooterD)
+                .feedForward.kV(ShooterConstants.kShooterFF);
 
         m_hoodConfig.closedLoop
                 .p(ShooterConstants.kHoodP)

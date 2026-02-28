@@ -286,9 +286,10 @@ public final class Constants {
                 public static final double kHoodI = 0.0;
                 public static final double kHoodD = 0.0;
 
-                public static final double kShooterP = 0.1;
+                public static final double kShooterP = 0.0001;
                 public static final double kShooterI = 0.0;
                 public static final double kShooterD = 0.0;
+                public static final double kShooterFF = 0.0019;
 
                 // Teeth on encoder gear to teeth on shaft, teeth on shaft to teeth on hood part
                 // NOTE: Need to use 14D so the result is a double, otherwise you end up with

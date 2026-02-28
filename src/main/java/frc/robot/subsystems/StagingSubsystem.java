@@ -1,6 +1,7 @@
 package frc.robot.subsystems;
 
 import com.revrobotics.spark.SparkLowLevel.MotorType;
+import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.spark.SparkMax;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -10,6 +11,12 @@ public class StagingSubsystem extends SubsystemBase {
     SparkMax m_feedIntoHoodMotor = new SparkMax(StagingConstants.kFeedIntoHoodMotor, MotorType.kBrushless);
     SparkMax m_agitationMotor = new SparkMax(StagingConstants.kAgitationMotorId, MotorType.kBrushless);
     SparkMax m_rollerMotor = new SparkMax(StagingConstants.kRollerMotorId, MotorType.kBrushless);
+
+    SparkMaxConfig m_agitateConfig = new SparkMaxConfig();
+
+    public StagingSubsystem() {
+        
+    }
 
     public void Agitate() {
         m_agitationMotor.set(StagingConstants.kAgitationSpeed);

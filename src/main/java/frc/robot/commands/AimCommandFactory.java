@@ -39,10 +39,7 @@ import frc.robot.Constants.Fixtures;
 import frc.robot.Constants.NumericalConstants;
 import frc.robot.Constants.ShooterConstants;
 import frc.robot.Constants.TurretConstants;
-import frc.robot.subsystems.DriveSubsystem;
-import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.*;
-import frc.robot.subsystems.TurretSubsystem;
 import frc.robot.utils.ShootingEntry;
 import frc.robot.utils.TargetSolution;
 import frc.robot.utils.UtilityFunctions;
@@ -55,7 +52,7 @@ public class AimCommandFactory {
 
     private boolean m_isAiming = false;
 
-    private AngularVelocity m_wheelVelocity = RPM.of(60);
+    private AngularVelocity m_wheelVelocity = RPM.of(5000);
 
     private Translation2d m_lockedTag;
 
@@ -123,17 +120,17 @@ public class AimCommandFactory {
         }, m_turret).until(m_turret::atTarget);
     }
 
-    public Command ShootCommand() {
-        return new ConditionalCommand(new RunCommand(this::Shoot, m_shooter),
-                AimHoodToPositionCommand(ShooterConstants.kNonAimHoodAngle)
-                        .alongWith(AimTurretRelativeToRobot(TurretConstants.kNonAimTurretAngle))
-                        .andThen(new RunCommand(this::Shoot, m_shooter)),
-                () -> m_isAiming).alongWith(new RunCommand(() -> {
-                    m_stager.Agitate();
-                    m_stager.Feed();
-                    m_stager.Roll();
-                }, m_stager)).finallyDo(m_shooter::Stop);
-    }
+    // public Command ShootCommand() {
+    // return new ConditionalCommand(new RunCommand(this::Shoot, m_shooter),
+    // AimHoodToPositionCommand(ShooterConstants.kNonAimHoodAngle)
+    // .alongWith(AimTurretRelativeToRobot(TurretConstants.kNonAimTurretAngle))
+    // .andThen(new RunCommand(this::Shoot, m_shooter)),
+    // () -> m_isAiming).alongWith(new RunCommand(() -> {
+    // m_stager.Agitate();
+    // m_stager.Feed();
+    // m_stager.Roll();
+    // }, m_stager)).finallyDo(m_shooter::Stop);
+    // }
 
     public Command RunAllStager() {
         return new RunCommand(() -> {
@@ -149,6 +146,18 @@ public class AimCommandFactory {
 
     private void Shoot() {
         m_shooter.Spin(m_wheelVelocity);
+    }
+
+    public Command ShootCommand() {
+        return new InstantCommand(() -> {
+            Shoot();
+        });
+    }
+
+    public Command StopShoot() {
+        return new InstantCommand(() -> {
+            m_shooter.Stop();
+        });
     }
 
     public TargetSolution GetHubAimSolution() {
