@@ -52,7 +52,7 @@ public class AimCommandFactory {
 
     private boolean m_isAiming = false;
 
-    private AngularVelocity m_wheelVelocity = RPM.of(5000);
+    private AngularVelocity m_wheelVelocity = RPM.of(4000);
 
     private Translation2d m_lockedTag;
 
