@@ -10,6 +10,9 @@ import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
+
+import dev.doglog.DogLog;
+
 import com.revrobotics.spark.config.SparkMaxConfig;
 
 import edu.wpi.first.math.system.plant.DCMotor;
@@ -27,6 +30,7 @@ import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Robot;
 import frc.robot.Constants.TurretConstants;
 import frc.robot.utils.PositionBuffer;
 import frc.robot.utils.TurretPosition;
@@ -52,6 +56,7 @@ public class TurretSubsystem extends SubsystemBase {
     private MechanismLigament2d m_max1 = new MechanismLigament2d("max1", 2, 0);
     private MechanismLigament2d m_min2 = new MechanismLigament2d("min2", 2, 0);
     private MechanismLigament2d m_max2 = new MechanismLigament2d("max2", 2, 0);
+    private MechanismLigament2d m_robotHeading = new MechanismLigament2d("robotHeading", 2, 0);
 
     private Angle robotRotation;
 
@@ -65,6 +70,7 @@ public class TurretSubsystem extends SubsystemBase {
         m_config.idleMode(IdleMode.kBrake);
         m_config.absoluteEncoder.inverted(true);
         m_config.inverted(true);
+        m_config.smartCurrentLimit(TurretConstants.kTurretMotorAmpLimit);
         m_turretMotor.configure(m_config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
         m_positionBuffer.pushElement(UtilityFunctions.WrapAngle(Rotations.of(m_absoluteEncoder.getPosition())),
@@ -85,22 +91,27 @@ public class TurretSubsystem extends SubsystemBase {
         m_max2 = m_mechRoot.append(m_max2);
         m_max2.setColor(new Color8Bit("#FF0000"));
 
+        m_robotHeading = m_mechRoot.append(m_robotHeading);
+        m_robotHeading.setColor(new Color8Bit("#32CD32"));
+
         robotRotation = Degrees.of(0);
     }
 
     public void moveToAngle(Angle angle) {
-
+        angle = angle.plus(TurretConstants.kAngularDistanceToFrontOfRobot);
         angle = UtilityFunctions.WrapAngle(angle);
+
+        System.out.println(angle + "is commanded angle for turret");
 
         if (angle.gt(TurretConstants.kMaxAngle)) {
             System.out
-                    .println("Angle " + angle + "is bigger than maximum angle " +
-                            TurretConstants.kMaxAngle + ".");
+                    .println("Angle " + angle.in(Degrees) + "is bigger than maximum angle " +
+                            TurretConstants.kMaxAngle.in(Degrees) + ".");
             return;
         } else if (angle.lt(TurretConstants.kMinAngle)) {
             System.out.println(
-                    "Angle " + angle + "is to smaller than minimum angle " +
-                            TurretConstants.kMinAngle + ".");
+                    "Angle " + angle.in(Degrees) + "is to smaller than minimum angle " +
+                            TurretConstants.kMinAngle.in(Degrees) + ".");
             return;
         }
 
@@ -110,7 +121,12 @@ public class TurretSubsystem extends SubsystemBase {
     }
 
     public Angle getRotation() {
-        return UtilityFunctions.WrapAngle(Rotations.of(m_absoluteEncoder.getPosition()));
+        if (Robot.isReal())
+            return UtilityFunctions.WrapAngle(
+                    Rotations.of(m_absoluteEncoder.getPosition())
+                            .minus(TurretConstants.kAngularDistanceToFrontOfRobot));
+
+        return UtilityFunctions.WrapAngle(m_targetAngle.minus(TurretConstants.kAngularDistanceToFrontOfRobot));
     }
 
     public void addDriveHeading(Angle angle) {
@@ -125,9 +141,14 @@ public class TurretSubsystem extends SubsystemBase {
 
     @Override
     public void periodic() {
-        m_positionBuffer.pushElement(UtilityFunctions.WrapAngle(Rotations.of(m_absoluteEncoder.getPosition())),
+        m_positionBuffer.pushElement(
+                UtilityFunctions.WrapAngle(getRotation()),
                 RPM.of(m_absoluteEncoder.getVelocity()),
                 TurretConstants.kEncoderReadingDelay.in(Seconds));
+
+        DogLog.log("Turret rotation relative to front of robot", getRotation().in(Degrees));
+        DogLog.log("Turret rotation relative to turret zero", UtilityFunctions
+                .WrapAngle(getRotation().minus(TurretConstants.kAngularDistanceToFrontOfRobot)).in(Degrees));
     }
 
     // Connected to another periodic loop that runs quicker than 0.02 seconds
@@ -143,11 +164,13 @@ public class TurretSubsystem extends SubsystemBase {
 
     @Override
     public void simulationPeriodic() {
-        m_simLigament.setAngle(m_targetAngle.plus(robotRotation).in(Degrees));
+        m_simLigament.setAngle(
+                m_targetAngle.plus(robotRotation).minus(TurretConstants.kAngularDistanceToFrontOfRobot).in(Degrees));
         m_min1.setAngle(TurretConstants.kHubMinAngle1.plus(robotRotation).in(Degrees));
         m_max1.setAngle(TurretConstants.kHubMaxAngle1.plus(robotRotation).in(Degrees));
         m_min2.setAngle(TurretConstants.kHubMinAngle2.plus(robotRotation).in(Degrees));
         m_max2.setAngle(TurretConstants.kHubMaxAngle2.plus(robotRotation).in(Degrees));
+        m_robotHeading.setAngle(robotRotation.in(Degrees));
         SmartDashboard.putData("Turret Rotation", m_simMech);
     }
 

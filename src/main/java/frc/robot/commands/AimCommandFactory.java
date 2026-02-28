@@ -17,6 +17,7 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
+import static edu.wpi.first.units.Units.RPM;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
@@ -40,7 +41,7 @@ import frc.robot.Constants.ShooterConstants;
 import frc.robot.Constants.TurretConstants;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
-import frc.robot.subsystems.StagingSubsystem;
+import frc.robot.subsystems.*;
 import frc.robot.subsystems.TurretSubsystem;
 import frc.robot.utils.ShootingEntry;
 import frc.robot.utils.TargetSolution;
@@ -54,7 +55,7 @@ public class AimCommandFactory {
 
     private boolean m_isAiming = false;
 
-    private AngularVelocity m_wheelVelocity;
+    private AngularVelocity m_wheelVelocity = RPM.of(60);
 
     private Translation2d m_lockedTag;
 
@@ -134,6 +135,18 @@ public class AimCommandFactory {
                 }, m_stager)).finallyDo(m_shooter::Stop);
     }
 
+    public Command RunAllStager() {
+        return new RunCommand(() -> {
+            m_stager.Agitate();
+            m_stager.Feed();
+            m_stager.Roll();
+        }, m_stager).finallyDo(() -> {
+            m_stager.StopAgitate();
+            m_stager.StopFeed();
+            m_stager.StopRoll();
+        });
+    }
+
     private void Shoot() {
         m_shooter.Spin(m_wheelVelocity);
     }
@@ -159,7 +172,7 @@ public class AimCommandFactory {
     }
 
     public Command MoveTurretToHeadingCommand(Angle heading) {
-        return new InstantCommand(() -> {
+        return new RunCommand(() -> {
             MoveTurretToHeading(heading);
         }, m_turret);
     }
@@ -191,7 +204,8 @@ public class AimCommandFactory {
 
         Angle robotRelativeTurretAngle = UtilityFunctions.WrapAngle(heading.minus(robotHeading));
 
-        Angle[] currentRange = getCurrentTurretRange();
+        // Angle[] currentRange = getCurrentTurretRange();
+        Angle[] currentRange = TurretConstants.kUnrestrictedAngles;
 
         if (withinAngles(currentRange, robotRelativeTurretAngle)) {
             m_turret.moveToAngle(robotRelativeTurretAngle);
@@ -209,7 +223,7 @@ public class AimCommandFactory {
 
             Angle driveTarget = heading.minus(closest);
 
-            System.out.println();
+            // System.out.println();
             m_drive.moveToAngle(driveTarget);
             m_turret.moveToAngle(closest);
         }
@@ -303,6 +317,10 @@ public class AimCommandFactory {
         // }
         // System.out.print(a.in(Degrees) + " is robot heading");
         // System.out.println();
+
+        if (others.length == 0) {
+            return null;
+        }
 
         Angle closest = UtilityFunctions.WrapAngle(others[0]);
         double closestDistance = UtilityFunctions.angleDiff(a, closest).abs(Degrees);

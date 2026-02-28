@@ -9,7 +9,7 @@ import frc.robot.Constants.StagingConstants;
 public class StagingSubsystem extends SubsystemBase {
     SparkMax m_feedIntoHoodMotor = new SparkMax(StagingConstants.kFeedIntoHoodMotor, MotorType.kBrushless);
     SparkMax m_agitationMotor = new SparkMax(StagingConstants.kAgitationMotorId, MotorType.kBrushless);
-    SparkMax m_rollerMotor = new SparkMax(StagingConstants.kRollerMotorId, null);
+    SparkMax m_rollerMotor = new SparkMax(StagingConstants.kRollerMotorId, MotorType.kBrushless);
 
     public void Agitate() {
         m_agitationMotor.set(StagingConstants.kAgitationSpeed);
@@ -24,5 +24,17 @@ public class StagingSubsystem extends SubsystemBase {
     // Refers to the roller that rolls balls into the feeder
     public void Roll() {
         m_rollerMotor.set(StagingConstants.kRollerSpeed);
+    }
+
+    public void StopAgitate() {
+        m_agitationMotor.stopMotor();
+    }
+
+    public void StopFeed() {
+        m_feedIntoHoodMotor.stopMotor();
+    }
+
+    public void StopRoll() {
+        m_rollerMotor.stopMotor();
     }
 }

@@ -15,6 +15,9 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableEntry;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -268,9 +271,9 @@ public class DriveSubsystem extends SubsystemBase {
 
         m_vision.periodic();
 
-        SmartDashboard.putData(m_field);
-
         m_pidController.periodic();
+
+        SmartDashboard.putData(m_field);
 
         SmartDashboard.putBoolean("Is manual rotate", m_isManualRotate);
     }
@@ -415,9 +418,9 @@ public class DriveSubsystem extends SubsystemBase {
      * @return the robot's heading in degrees, from -180 to 180
      */
     public Angle getHeading() {
-        // return pidgey.getYaw().getValue();
+        return pidgey.getYaw().getValue();
         // TODO: Don't use this code
-        return m_poseEstimator.getEstimatedPosition().getRotation().getMeasure();
+        // return m_poseEstimator.getEstimatedPosition().getRotation().getMeasure();
     }
 
     public Angle getGyroHeading() {

@@ -13,6 +13,7 @@ import com.pathplanner.lib.commands.PathPlannerAuto;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
@@ -22,19 +23,24 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants.AutoConstants;
 import frc.robot.Constants.Fixtures;
+import frc.robot.Constants.IntakeConstants;
 import frc.robot.Constants.OIConstants;
+import frc.robot.Constants.ShooterConstants;
 import frc.robot.commands.AimCommandFactory;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
+import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.TurretSubsystem;
-import frc.robot.utils.TargetSolution;
-import frc.robot.utils.UtilityFunctions;
+import frc.robot.utils.*;
 
 public class RobotContainer {
+
+    private final IntakeSubsystem m_intake = new IntakeSubsystem();
 
     private final CommandXboxController m_driverController = new CommandXboxController(
             OIConstants.kDriverControllerPort);
@@ -57,9 +63,11 @@ public class RobotContainer {
         m_chooser.setDefaultOption("Example Auto", AutoConstants.kExampleAutoName);
         SmartDashboard.putData("Auto Choices", m_chooser);
 
-        SmartDashboard.putNumber("Wheelspeed in rotations per second", 0.0);
-        SmartDashboard.putNumber("Shooter hood angle in degrees", 0.0);
-        SmartDashboard.putNumber("Turret angle in degrees", 0.0);
+        NetworkTableInstance inst = NetworkTableInstance.getDefault();
+
+        // SmartDashboard.putNumber("Wheelspeed in rotations per second", 0.0);
+        // SmartDashboard.putNumber("Shooter hood angle in degrees", 0.0);
+        // SmartDashboard.putNumber("Turret angle in degrees", 0.0);
 
         // Configure the button bindings
         configureBindings();
@@ -83,14 +91,32 @@ public class RobotContainer {
         // m_driverController.a()
         // .whileTrue(m_aimFactory.MoveTurretToHeadingCommand(Degrees.of(40)));
 
-        m_driverController.b()
-                .whileTrue(m_aimFactory.Aim(Degrees.of(SmartDashboard.getNumber("Turret angle in degrees", 0.0)),
-                        Degrees.of(SmartDashboard.getNumber("Shooter hood angle in degrees", 0.0))));
+        // m_driverController.b()
+        // .whileTrue(m_aimFactory.Aim(Degrees.of(SmartDashboard.getNumber("Turret angle
+        // in degrees", 0.0)),
+        // Degrees.of(SmartDashboard.getNumber("Shooter hood angle in degrees", 0.0))));
 
-        m_driverController.a().whileTrue(m_aimFactory.ShootCommand());
+        // m_driverController.a().whileTrue(m_aimFactory.ShootCommand());
 
-        System.out.println("Bindings configured");
-        m_driverController.x().whileTrue(m_aimFactory.PointAtHub(true));
+        // System.out.println("Bindings configured");
+        // m_driverController.x().whileTrue(m_aimFactory.PointAtHub(true));
+
+        // m_driverController.x().whileTrue(m_aimFactory.MoveTurretToHeadingCommand(Degrees.of(40)));
+
+        // m_driverController.x().whileTrue(
+        // m_aimFactory.Shoot(ShooterConstants.kFeedingWheelVelocity)
+        // .finallyDo(() -> m_aimFactory.Shoot(RPM.of(0.0))));
+
+        // m_driverController.y().whileTrue(m_aimFactory.RunAllStager());
+
+        m_driverController.x().onTrue(DeployIntake());
+
+        m_driverController.a().onTrue(retractIntake());
+
+        m_driverController.b().whileTrue(spinIntake());
+
+        m_driverController.y().whileTrue(m_aimFactory.RunAllStager());
+
     }
 
     public Command getAutonomousCommand() {
@@ -111,6 +137,37 @@ public class RobotContainer {
         return new RunCommand(() -> {
 
         }, m_drive, m_turret);
+    }
+
+    public Command spinIntake() {
+        return new RunCommand(() -> {
+            m_intake.spinIntake(IntakeConstants.kDefaultIntakeSpeed);
+        }).finallyDo(m_intake::stopIntake);
+    }
+
+    public Command retractIntake() {
+        return new InstantCommand(() -> {
+            m_intake.retractIntake();
+        });
+    }
+
+    public Command outTake() {
+        return new RunCommand(() -> {
+            m_intake.spinIntake(IntakeConstants.kDefaultIntakeSpeed.times(-1));
+        });
+    }
+
+    public Command DeployIntake() {
+        return new InstantCommand(() -> {
+            m_intake.deployIntake();
+        });
+
+    }
+
+    public Command SpinIntake() {
+        return new InstantCommand(() -> {
+            m_intake.spinIntake(IntakeConstants.kDefaultIntakeSpeed);
+        });
     }
 
     public void teleopPeriodic() {

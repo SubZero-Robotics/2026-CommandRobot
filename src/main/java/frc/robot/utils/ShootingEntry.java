@@ -7,7 +7,7 @@ import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.Time;
 
 public record ShootingEntry(Distance distance, AngularVelocity wheelVelocity, LinearVelocity muzzleVelocity,
-        Distance maxHeight,
-        Time timeOfFlight, Angle shooterAngle) {
+                Distance maxHeight,
+                Time timeOfFlight, Angle shooterAngle) {
 
 }
