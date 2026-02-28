@@ -348,7 +348,7 @@ public final class Constants {
                 public static double kFeedIntoHoodSpeed = 0.10;
 
                 public static final int kAgitationMotorId = 9;
-                public static final double kAgitationSpeed = 0.00;
+                public static final double kAgitationSpeed = -0.15;
 
                 public static final int kRollerMotorId = 12;
                 public static final double kRollerSpeed = 0.25;
@@ -406,9 +406,10 @@ public final class Constants {
                 public static final double kI2 = 0;
                 public static final double kD2 = 0;
 
-                public static final double kPIn = 0.1;
+                public static final double kPIn = 0.0003;
                 public static final double kIIn = 0;
-                public static final double kDIn = 0;
+                public static final double kDIn = 0.0005;
+                public static final double kFFIn = 0.00192;
 
                 public static final int kDeployMotor1Id = 13;
                 public static final int kDeployMotor2Id = 8;
@@ -422,8 +423,8 @@ public final class Constants {
                 public static final Angle kMinExtension = Rotations.of(0.0);
 
                 public static final int kDeployMotorCurrentLimit = 40;
-                public static final int kIntakeMotorCurrentLimit = 30;
+                public static final int kIntakeMotorCurrentLimit = 80;
 
-                public static final AngularVelocity kDefaultIntakeSpeed = RotationsPerSecond.of(-(0.01 * Math.PI));
+                public static final AngularVelocity kDefaultIntakeSpeed = RPM.of(-2000);
         }
 }

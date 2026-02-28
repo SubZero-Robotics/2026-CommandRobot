@@ -55,13 +55,14 @@ public class IntakeSubsystem extends SubsystemBase {
                 .d(IntakeConstants.kD1);
         m_deploy2Config.closedLoop.p(IntakeConstants.kP2).i(IntakeConstants.kI2)
                 .d(IntakeConstants.kD2);
-        m_intakeConfig.closedLoop.p(IntakeConstants.kPIn).i(IntakeConstants.kIIn).d(IntakeConstants.kDIn);
+        m_intakeConfig.closedLoop.p(IntakeConstants.kPIn).i(IntakeConstants.kIIn).d(IntakeConstants.kDIn).feedForward
+                .kV(IntakeConstants.kFFIn);
         // Apparently there is no absolute encoder :(
         // m_deployConfig.closedLoop.feedbackSensor(FeedbackSensor.kAbsoluteEncoder);
         m_deploy1Config.idleMode(IdleMode.kCoast);
         m_deploy2Config.idleMode(IdleMode.kCoast); // TODO: change to brake
         m_intakeConfig.idleMode(IdleMode.kBrake);
-        
+
         m_deploy1Config.smartCurrentLimit(IntakeConstants.kDeployMotorCurrentLimit);
         m_deploy2Config.smartCurrentLimit(IntakeConstants.kDeployMotorCurrentLimit);
         m_intakeConfig.smartCurrentLimit(IntakeConstants.kIntakeMotorCurrentLimit);
@@ -71,8 +72,8 @@ public class IntakeSubsystem extends SubsystemBase {
                 PersistMode.kPersistParameters);
         m_deployMotor2.configure(m_deploy2Config, ResetMode.kResetSafeParameters,
                 PersistMode.kPersistParameters);
-        m_intakeMotor.configure(m_intakeConfig, ResetMode.kResetSafeParameters, 
-            PersistMode.kPersistParameters);
+        m_intakeMotor.configure(m_intakeConfig, ResetMode.kResetSafeParameters,
+                PersistMode.kPersistParameters);
     }
 
     public void spinIntake(AngularVelocity velocity) {
@@ -113,14 +114,14 @@ public class IntakeSubsystem extends SubsystemBase {
 
         if (deploy1Position.gt(IntakeConstants.kMinExtension)) {
             m_deploy1ClosedLoopController.setSetpoint(IntakeConstants.kRetractRotations.in(Rotations),
-            ControlType.kPosition);
+                    ControlType.kPosition);
         } else {
             System.out.println("Attempting to retract beyond limit when hitting limit on deploy motor 1.");
         }
 
         if (deploy2Position.gt(IntakeConstants.kMinExtension)) {
             m_deploy2ClosedLoopController.setSetpoint(IntakeConstants.kRetractRotations.in(Rotations),
-            ControlType.kPosition);
+                    ControlType.kPosition);
         } else {
             System.out.println("Attempting to retract beyond limit when hitting limit on deploy motor 2.");
         }

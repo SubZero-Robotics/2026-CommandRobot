@@ -56,6 +56,7 @@ public class TurretSubsystem extends SubsystemBase {
     private MechanismLigament2d m_max1 = new MechanismLigament2d("max1", 2, 0);
     private MechanismLigament2d m_min2 = new MechanismLigament2d("min2", 2, 0);
     private MechanismLigament2d m_max2 = new MechanismLigament2d("max2", 2, 0);
+    private MechanismLigament2d m_robotHeading = new MechanismLigament2d("robotHeading", 2, 0);
 
     private Angle robotRotation;
 
@@ -90,6 +91,9 @@ public class TurretSubsystem extends SubsystemBase {
         m_max2 = m_mechRoot.append(m_max2);
         m_max2.setColor(new Color8Bit("#FF0000"));
 
+        m_robotHeading = m_mechRoot.append(m_robotHeading);
+        m_robotHeading.setColor(new Color8Bit("#32CD32"));
+
         robotRotation = Degrees.of(0);
     }
 
@@ -122,7 +126,7 @@ public class TurretSubsystem extends SubsystemBase {
                     Rotations.of(m_absoluteEncoder.getPosition())
                             .minus(TurretConstants.kAngularDistanceToFrontOfRobot));
 
-        return m_targetAngle;
+        return UtilityFunctions.WrapAngle(m_targetAngle.minus(TurretConstants.kAngularDistanceToFrontOfRobot));
     }
 
     public void addDriveHeading(Angle angle) {
@@ -162,14 +166,11 @@ public class TurretSubsystem extends SubsystemBase {
     public void simulationPeriodic() {
         m_simLigament.setAngle(
                 m_targetAngle.plus(robotRotation).minus(TurretConstants.kAngularDistanceToFrontOfRobot).in(Degrees));
-        m_min1.setAngle(TurretConstants.kHubMinAngle1.plus(robotRotation)
-                .minus(TurretConstants.kAngularDistanceToFrontOfRobot).in(Degrees));
-        m_max1.setAngle(TurretConstants.kHubMaxAngle1.plus(robotRotation)
-                .minus(TurretConstants.kAngularDistanceToFrontOfRobot).in(Degrees));
-        m_min2.setAngle(TurretConstants.kHubMinAngle2.plus(robotRotation)
-                .minus(TurretConstants.kAngularDistanceToFrontOfRobot).in(Degrees));
-        m_max2.setAngle(TurretConstants.kHubMaxAngle2.plus(robotRotation)
-                .minus(TurretConstants.kAngularDistanceToFrontOfRobot).in(Degrees));
+        m_min1.setAngle(TurretConstants.kHubMinAngle1.plus(robotRotation).in(Degrees));
+        m_max1.setAngle(TurretConstants.kHubMaxAngle1.plus(robotRotation).in(Degrees));
+        m_min2.setAngle(TurretConstants.kHubMinAngle2.plus(robotRotation).in(Degrees));
+        m_max2.setAngle(TurretConstants.kHubMaxAngle2.plus(robotRotation).in(Degrees));
+        m_robotHeading.setAngle(robotRotation.in(Degrees));
         SmartDashboard.putData("Turret Rotation", m_simMech);
     }
 

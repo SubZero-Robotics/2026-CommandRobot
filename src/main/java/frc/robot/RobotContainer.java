@@ -101,13 +101,22 @@ public class RobotContainer {
         // System.out.println("Bindings configured");
         // m_driverController.x().whileTrue(m_aimFactory.PointAtHub(true));
 
-        m_driverController.x().whileTrue(m_aimFactory.MoveTurretToHeadingCommand(Degrees.of(40)));
+        // m_driverController.x().whileTrue(m_aimFactory.MoveTurretToHeadingCommand(Degrees.of(40)));
 
         // m_driverController.x().whileTrue(
         // m_aimFactory.Shoot(ShooterConstants.kFeedingWheelVelocity)
         // .finallyDo(() -> m_aimFactory.Shoot(RPM.of(0.0))));
 
         // m_driverController.y().whileTrue(m_aimFactory.RunAllStager());
+
+        m_driverController.x().onTrue(DeployIntake());
+
+        m_driverController.a().onTrue(retractIntake());
+
+        m_driverController.b().whileTrue(spinIntake());
+
+        m_driverController.y().whileTrue(m_aimFactory.RunAllStager());
+
     }
 
     public Command getAutonomousCommand() {
@@ -133,7 +142,7 @@ public class RobotContainer {
     public Command spinIntake() {
         return new RunCommand(() -> {
             m_intake.spinIntake(IntakeConstants.kDefaultIntakeSpeed);
-        });
+        }).finallyDo(m_intake::stopIntake);
     }
 
     public Command retractIntake() {
@@ -143,6 +152,7 @@ public class RobotContainer {
         });
     }
 
+    
     public Command outTake() {
         return new RunCommand(() -> {
             m_intake.spinIntake(IntakeConstants.kDefaultIntakeSpeed.times(-1));
