@@ -9,6 +9,8 @@ import static edu.wpi.first.units.Units.RPM;
 import static edu.wpi.first.units.Units.Radians;
 
 import com.pathplanner.lib.commands.PathPlannerAuto;
+import com.lumynlabs.devices.ConnectorX;
+import com.lumynlabs.connection.usb.USBPort;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -28,6 +30,7 @@ import frc.robot.Constants.AutoConstants;
 import frc.robot.Constants.OIConstants;
 import frc.robot.commands.AimCommandFactory;
 import frc.robot.subsystems.DriveSubsystem;
+import frc.robot.subsystems.LedSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.TurretSubsystem;
 import frc.robot.utils.TargetSolution;
@@ -41,9 +44,16 @@ public class RobotContainer {
     private String m_autoSelected;
     private final SendableChooser<String> m_chooser = new SendableChooser<>();
 
+    private final LedSubsystem m_ledSubsystem = new LedSubsystem();
     private final TurretSubsystem m_turret = new TurretSubsystem();
-    private final ShooterSubsystem m_shooter = new ShooterSubsystem();
+    private final ShooterSubsystem m_shooter = new ShooterSubsystem(m_ledSubsystem);
     private final DriveSubsystem m_drive = new DriveSubsystem(m_turret::getRotationAtTime);
+
+    ConnectorX cX = new ConnectorX();
+
+    boolean cxConnected = cX.Connect(USBPort.kUSB1);
+
+    //HoodGreenLight
 
     AimCommandFactory m_aimFactory = new AimCommandFactory(m_drive, m_turret, m_shooter);
     Field2d m_field;

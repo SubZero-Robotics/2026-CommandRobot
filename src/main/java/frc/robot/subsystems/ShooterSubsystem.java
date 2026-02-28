@@ -17,6 +17,7 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj.util.Color;
 import frc.robot.Constants.NumericalConstants;
 import frc.robot.Constants.ShooterConstants;
 import frc.robot.utils.UtilityFunctions;
@@ -38,9 +39,11 @@ public class ShooterSubsystem extends SubsystemBase {
 
     Angle m_targetAngle = Degrees.of(0.0);
 
-    private boolean m_HoodIsUp = false;
+    LedSubsystem m_LedSubsystem;
 
-    public ShooterSubsystem() {
+    private boolean m_HoodIsUp = false;
+    
+    public ShooterSubsystem(LedSubsystem ledSubsystem) {
 
         m_shooterConfig.closedLoop
                 .p(ShooterConstants.kShooterP)
@@ -63,6 +66,8 @@ public class ShooterSubsystem extends SubsystemBase {
 
         m_shooterMotor.configure(m_shooterConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
         m_hoodMotor.configure(m_hoodConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+
+        m_LedSubsystem = ledSubsystem;
     }
 
     // Think of this as controlling the turret on a cross-section going from the
@@ -120,6 +125,12 @@ public class ShooterSubsystem extends SubsystemBase {
             return;
         }
         m_HoodIsUp = targetPosition > 0.05;
+
+        if (m_HoodIsUp = true) {
+            m_LedSubsystem.SetSolid (Color.kRed);
+        } else {
+            m_LedSubsystem.SetSolid (Color.kGreen);
+        }
         
 
         m_hoodClosedLoopController.setSetpoint(targetPosition, ControlType.kPosition);
