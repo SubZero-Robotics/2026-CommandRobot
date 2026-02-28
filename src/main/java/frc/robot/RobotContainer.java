@@ -81,14 +81,14 @@ public class RobotContainer {
 
     
         m_driverController.b().whileTrue(
-            new InstantCommand(() -> {
+            new RunCommand(() -> {
                 m_ledsSubsystem.EnableLedSolid(Color.kDarkBlue);
             })
         );
 
-        m_driverController.b().whileFalse(
-            new InstantCommand(() -> {
-                m_ledsSubsystem.DisableLedSolid(Color.kRed);
+        m_driverController.x().whileTrue(
+            new RunCommand(() -> {
+                m_ledsSubsystem.EnableLedBreathing(Color.kAqua, Color.kHoneydew);
             })
         );
     }

@@ -7,6 +7,7 @@ import com.lumynlabs.domain.led.Animation;
 
 import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj.util.Color;
+import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class LedSubsystem extends SubsystemBase{
@@ -67,9 +68,34 @@ public class LedSubsystem extends SubsystemBase{
       
     }
 
+    public void EnableLedBlinking(Color color) {
+      cX.leds
+      .SetAnimation(Animation.Blink)
+      .ForZone(m_LedStrip)
+      .WithColor(color)
+      .WithDelay(Units.Milliseconds.of(0))
+      .RunOnce(false);
+    }
+
+    public void EnableLedBreathing(Color colorOne, Color colorTwo) {
+      cX.leds
+      .SetAnimation(Animation.AlternateBreathe)
+      .ForZone(m_LedStrip)
+      .WithColor(colorOne)
+      .WithColor(colorTwo)
+      .WithDelay(Units.Milliseconds.of(0))
+      .RunOnce(false);
+    }
+
     public void disableLeds() {
         cX.leds.SetColor(m_LedStrip, Color.kBlack);
     }
 
+    @Override
+    public void periodic() {
+      new RunCommand(() -> {
+        DisableLedSolid(Color.kRed);
+      });
+    }
 
 }
