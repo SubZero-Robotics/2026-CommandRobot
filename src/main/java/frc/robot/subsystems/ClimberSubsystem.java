@@ -15,38 +15,32 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import com.revrobotics.RelativeEncoder;
 import frc.robot.Constants.ClimberConstants;
 
-public class ClimberSubsystem extends SubsystemBase{
+public class ClimberSubsystem extends SubsystemBase {
     SparkMax m_climbMotor = new SparkMax(ClimberConstants.kMotorCanId, MotorType.kBrushless);
 
     RelativeEncoder m_relativeEncoder = m_climbMotor.getEncoder();
 
     private final SparkLimitSwitch m_minLimitSwitch = m_climbMotor.getReverseLimitSwitch();
     private final SparkLimitSwitch m_maxLimitSwitch = m_climbMotor.getForwardLimitSwitch();
-    
+
     public double GetPosition() {
         return m_relativeEncoder.getPosition();
     }
 
     public void climbUp() {
 
-        if (!atMax())
-        {
+        if (!atMax()) {
             m_climbMotor.set(ClimberConstants.kUpVelocity);
-        } 
-        else 
-        {
+        } else {
             Stop();
         }
     }
 
     public void climbDown() {
 
-        if (!atMin())
-        {
+        if (!atMin()) {
             m_climbMotor.set(ClimberConstants.kDownVelocity);
-        } 
-        else 
-        {
+        } else {
             Stop();
         }
     }
@@ -77,7 +71,7 @@ public class ClimberSubsystem extends SubsystemBase{
             m_relativeEncoder.setPosition(ClimberConstants.kLimitMinExtension);
         }
 
-        SmartDashboard.putNumber("Climber Position", GetPosition());
-        SmartDashboard.putData("Zero", ZeroCommand());
+        // SmartDashboard.putNumber("Climber Position", GetPosition());
+        // SmartDashboard.putData("Zero", ZeroCommand());
     }
 }
