@@ -101,7 +101,7 @@ public class TurretSubsystem extends SubsystemBase {
         angle = angle.plus(TurretConstants.kAngularDistanceToFrontOfRobot);
         angle = UtilityFunctions.WrapAngle(angle);
 
-        System.out.println(angle + "is commanded angle for turret");
+        // System.out.println(angle + "is commanded angle for turret");
 
         if (angle.gt(TurretConstants.kMaxAngle)) {
             System.out
@@ -175,7 +175,6 @@ public class TurretSubsystem extends SubsystemBase {
     }
 
     public boolean atTarget() {
-        return UtilityFunctions.angleDiff(m_targetAngle, getRotation())
-                .abs(Degrees) < TurretConstants.kTurretAngleTolerance.in(Degrees);
+        return m_turretClosedLoopController.isAtSetpoint();
     }
 }

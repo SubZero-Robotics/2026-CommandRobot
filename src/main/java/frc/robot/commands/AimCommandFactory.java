@@ -3,6 +3,7 @@ package frc.robot.commands;
 import java.util.ArrayList;
 import java.util.function.Supplier;
 
+import dev.doglog.DogLog;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -62,6 +63,7 @@ public class AimCommandFactory {
             m_isAiming = true;
         }, m_turret).finallyDo(() -> {
             m_isAiming = false;
+            m_shooter.MoveHoodToPosition(ShooterConstants.kDefaultHoodPosition);
             m_wheelVelocity = ShooterConstants.kNonAimShooterVelocity;
         });
     }
@@ -73,12 +75,13 @@ public class AimCommandFactory {
             case AllianceSide: {
                 TargetSolution solution = GetHubAimSolution();
 
-                MoveTurretToHeading(solution.hubAngle());
-                m_shooter.MoveHoodToPosition(solution.hoodAngle());
-
-                m_drive.moveByAngle(solution.phi());
+                MoveTurretToHeading(solution.hubAngle().minus(solution.phi()));
+                DogLog.log("Range from hub (meters)", solution.distance().in(Meters));
+                // System.out.println(solution.phi());
+                // m_shooter.MoveHoodToPosition(solution.hoodAngle());
 
                 m_wheelVelocity = solution.wheelSpeed();
+                System.out.println(m_wheelVelocity.in(RPM) + " is RPM target.");
                 break;
             }
             case NeutralSide: {
@@ -105,7 +108,7 @@ public class AimCommandFactory {
     public Command AimHoodToPositionCommand(Angle angle) {
         return new RunCommand(() -> {
             m_shooter.MoveHoodToPosition(angle);
-        }).until(m_shooter::AtTarget);
+        }).until(m_shooter::AtHoodTarget);
     }
 
     public Command AimTurretRelativeToRobot(Angle angle) {
@@ -114,24 +117,28 @@ public class AimCommandFactory {
         }, m_turret).until(m_turret::atTarget);
     }
 
-    // public Command ShootCommand() {
-    // return new ConditionalCommand(new RunCommand(this::Shoot, m_shooter),
-    // AimHoodToPositionCommand(ShooterConstants.kNonAimHoodAngle)
-    // .alongWith(AimTurretRelativeToRobot(TurretConstants.kNonAimTurretAngle))
-    // .andThen(new RunCommand(this::Shoot, m_shooter)),
-    // () -> m_isAiming).alongWith(new RunCommand(() -> {
-    // m_stager.Agitate();
-    // m_stager.Feed();
-    // m_stager.Roll();
-    // }, m_stager)).finallyDo(m_shooter::Stop);
-    // }
+    public Command ShootWhileAimedCommand() {
+
+        DogLog.log("Aiming", m_isAiming);
+
+        return new ConditionalCommand(ShootCommand(),
+                AimHoodToPositionCommand(ShooterConstants.kNonAimHoodAngle)
+                        .alongWith(AimTurretRelativeToRobot(TurretConstants.kNonAimTurretAngle))
+                        .andThen(new RunCommand(this::Shoot, m_shooter)),
+                () -> m_isAiming).until(m_shooter::AtWheelVelocityTarget).andThen(RunAllStager())
+                .finallyDo(m_shooter::Stop);
+    }
 
     public Command RunAllStager() {
-        return new RunCommand(() -> {
+        return new InstantCommand(() -> {
             m_stager.Agitate();
             m_stager.Feed();
             m_stager.Roll();
-        }, m_stager).finallyDo(() -> {
+        }, m_stager);
+    }
+
+    public Command stopStaging() {
+        return new InstantCommand(() -> {
             m_stager.StopAgitate();
             m_stager.StopFeed();
             m_stager.StopRoll();
@@ -139,6 +146,7 @@ public class AimCommandFactory {
     }
 
     private void Shoot() {
+        // System.out.println(m_wheelVelocity + " is wheel velocity");
         m_shooter.Spin(m_wheelVelocity);
     }
 
@@ -195,7 +203,7 @@ public class AimCommandFactory {
     }
 
     public void MoveHoodToAngle(Angle angle) {
-        System.out.println("Move Hood to angle " + angle.in(Degrees) + " degrees.");
+        // System.out.println("Move Hood to angle " + angle.in(Degrees) + " degrees.");
         m_shooter.MoveHoodToPosition(angle);
     }
 
@@ -459,6 +467,9 @@ public class AimCommandFactory {
                 secondEntry.distance().in(Meters), firstEntry.shooterAngle().in(Radians),
                 secondEntry.shooterAngle().in(Radians), distance.in(Meters)));
 
+        DogLog.log("Last entry", firstEntry.toString());
+        DogLog.log("Next entry ", secondEntry.toString());
+
         return new TargetSolution(hoodAngle, wheelSpeed, phi, distance, turretAngle);
     }
 
@@ -470,9 +481,9 @@ public class AimCommandFactory {
     }
 
     public Command Shoot(AngularVelocity shooterWheelVelocity) {
-        return new InstantCommand(() -> {
+        return new RunCommand(() -> {
             m_shooter.Spin(shooterWheelVelocity);
-        });
+        }).finallyDo(m_shooter::Stop);
     }
 
     // TODO: Make this better

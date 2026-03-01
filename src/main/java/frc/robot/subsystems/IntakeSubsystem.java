@@ -59,8 +59,8 @@ public class IntakeSubsystem extends SubsystemBase {
                 .kV(IntakeConstants.kFFIn);
         // Apparently there is no absolute encoder :(
         // m_deployConfig.closedLoop.feedbackSensor(FeedbackSensor.kAbsoluteEncoder);
-        m_deploy1Config.idleMode(IdleMode.kCoast);
-        m_deploy2Config.idleMode(IdleMode.kCoast); // TODO: change to brake
+        m_deploy1Config.idleMode(IdleMode.kBrake);
+        m_deploy2Config.idleMode(IdleMode.kBrake); // TODO: change to brake
         m_intakeConfig.idleMode(IdleMode.kBrake);
 
         m_deploy1Config.smartCurrentLimit(IntakeConstants.kDeployMotorCurrentLimit);

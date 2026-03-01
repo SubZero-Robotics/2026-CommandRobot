@@ -4,11 +4,10 @@
 package frc.robot;
 
 import static edu.wpi.first.units.Units.Degrees;
-import static edu.wpi.first.units.Units.DegreesPerSecond;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.RPM;
 import static edu.wpi.first.units.Units.Radians;
-import static edu.wpi.first.units.Units.RotationsPerSecond;
+import static edu.wpi.first.units.Units.RadiansPerSecond;
 
 import com.pathplanner.lib.commands.PathPlannerAuto;
 
@@ -17,7 +16,6 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.networktables.DoubleSubscriber;
-import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
@@ -26,13 +24,12 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants.AutoConstants;
-import frc.robot.Constants.Fixtures;
 import frc.robot.Constants.IntakeConstants;
 import frc.robot.Constants.OIConstants;
 import frc.robot.Constants.ShooterConstants;
@@ -118,18 +115,31 @@ public class RobotContainer {
         // m_driverController.rightBumper().whileTrue(m_aimFactory.AimCommand(false));
         // m_driverController.leftBumper().whileTrue(m_aimFactory.AimCommand(true));
 
-        m_driverController.x().whileTrue(spinIntake());
+        // m_driverController.a().whileTrue(m_aimFactory.RunAllStager());
 
-        m_driverController.y().onTrue(new InstantCommand(() -> {
-            double shooterVelocity = m_shooterVelocityGetter.get();
-            m_aimFactory.ShootAtVelocity(RPM.of(shooterVelocity));
-            System.out.println("Shooting at velocity of " + shooterVelocity + " RPM.");
-        }));
+        // m_driverController.y().onTrue(new InstantCommand(() -> {
+        // double shooterVelocity = m_shooterVelocityGetter.get();
+        // m_aimFactory.ShootAtVelocity(RPM.of(shooterVelocity));
+        // System.out.println("Shooting at velocity of " + shooterVelocity + " RPM.");
+        // }).andThen(new
+        // WaitCommand(ShooterConstants.kRampTime)).andThen(m_aimFactory.RunAllStager())
+        // .finallyDo(m_aimFactory::StopShoot));
 
-        m_driverController.x().onTrue(new InstantCommand(() -> {
-            double hoodAngle = m_hoodAngleGetter.get();
-            m_aimFactory.MoveHoodToAngle(Degrees.of(hoodAngle));
-        }));
+        m_driverController.leftBumper().whileTrue(m_aimFactory.AimCommand(true));
+        m_driverController.rightBumper().whileTrue(m_aimFactory.AimCommand(false));
+
+        m_driverController.a()
+                .onTrue(m_aimFactory.ShootCommand().alongWith(Commands.waitUntil(m_shooter::AtWheelVelocityTarget))
+                        .andThen(m_aimFactory.RunAllStager()))
+                .onFalse(m_aimFactory.stopShootCommand().andThen(m_aimFactory.stopStaging()));
+
+        m_driverController.x().whileTrue(m_aimFactory.PointAtHub(false));
+        m_driverController.y().whileTrue(m_aimFactory.Shoot(RPM.of(4000)));
+
+        // m_driverController.x().onTrue(new InstantCommand(() -> {
+        // // double hoodAngle = m_hoodAngleGetter.get();
+        // // m_aimFactory.MoveHoodToAngle(Degrees.of(hoodAngle));
+        // }));
 
         // m_driverController.a().onTrue(m_aimFactory.MoveHoodToAbsoluteCommand(Degrees.of(15)));
 
@@ -203,11 +213,14 @@ public class RobotContainer {
         Pose2d targetPose = new Pose2d(xDist, yDist, new Rotation2d());
 
         m_field.getObject("targetPose").setPose(targetPose);
+
     }
 
     public void periodic() {
         commandedWheelVelocity = RPM.of(SmartDashboard.getNumber("Wheelspeed in rotations per second", 0.0));
         commandedShooterAngle = Degrees.of(SmartDashboard.getNumber("Shooter hood angle in degrees", 0.0));
+
+        DogLog.log("At Shooter Velocity Target", m_shooter.AtWheelVelocityTarget());
 
         // System.out.println(m_drive.getRobotLocation());
     }

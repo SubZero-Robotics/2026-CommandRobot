@@ -15,7 +15,7 @@ public class StagingSubsystem extends SubsystemBase {
     SparkMaxConfig m_agitateConfig = new SparkMaxConfig();
 
     public StagingSubsystem() {
-        
+        m_agitateConfig.smartCurrentLimit(StagingConstants.kAgitationAmpLimit);
     }
 
     public void Agitate() {

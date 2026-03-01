@@ -421,7 +421,7 @@ public class DriveSubsystem extends SubsystemBase {
      */
     public Angle getHeading() {
         return pidgey.getYaw().getValue();
-        // TODO: Don't use this code
+        // Don't use this code
         // return m_poseEstimator.getEstimatedPosition().getRotation().getMeasure();
     }
 

@@ -276,7 +276,7 @@ public final class Constants {
                 public static final Angle kTurretAngleTolerance = Degrees.of(2.0);
 
                 // TODO: Change to real numbers
-                public static Angle kNonAimTurretAngle = Degrees.of(25.0);
+                public static Angle kNonAimTurretAngle = Degrees.of(0.0);
                 public static int kTurretMotorAmpLimit = 10;
 
                 public static final Angle kAngularDistanceToFrontOfRobot = Rotations.of(0.605);
@@ -295,6 +295,8 @@ public final class Constants {
                 public static final double kShooterD = 0.0;
                 public static final double kShooterFF = 0.0019;
 
+                public static final AngularVelocity kShooterVelocityTolerance = RPM.of(500);
+
                 // Teeth on encoder gear to teeth on shaft, teeth on shaft to teeth on hood part
                 // NOTE: Need to use 14D so the result is a double, otherwise you end up with
                 // zero.
@@ -303,7 +305,7 @@ public final class Constants {
                 // NOTE: gear ration commented out for now is it isn't used
                 // public static final double kHoodGearRatio = (62D / 25) * (14D / 218);
                 public static final int kHoodSmartCurrentLimit = 20;
-                public static final Angle kFeedAngle = Degrees.of(90.0);
+                public static final Angle kFeedAngle = Degrees.of(25.0);
 
                 public static final AngularVelocity kPlaceholderWheelVelocity = RPM.of(2000);
                 public static final LinearVelocity kMuzzleVelocity = MetersPerSecond.of(10);
@@ -345,25 +347,31 @@ public final class Constants {
                 public static final double kHoodDegreeConversionFactor = kHoodMaxAbsolutePosition / 30;
 
                 // TODO: Change to real numbers
-                public static AngularVelocity kNonAimShooterVelocity = RPM.of(500);
-                public static Angle kNonAimHoodAngle = Degrees.of(15.0);
-                public static AngularVelocity kFeedingWheelVelocity = RPM.of(60);
-                public static Angle kHoodFeedingPosition = Degrees.of(25.0);
-                public static Measure<AngleUnit> kTurretAngleRestrictiveShooterAngle = Degrees.of(10);
+                public static final AngularVelocity kNonAimShooterVelocity = RPM.of(500);
+                public static final Angle kNonAimHoodAngle = Degrees.of(15.0);
+                public static final AngularVelocity kFeedingWheelVelocity = RPM.of(4000);
+                public static final Angle kHoodFeedingPosition = Degrees.of(25.0);
+                public static final Measure<AngleUnit> kTurretAngleRestrictiveShooterAngle = Degrees.of(10);
 
-                public static Angle kHoodStartingAngle = Degrees.of(0.0);
-                public static AngularVelocity kShooterStartVelocity = RPM.of(0.0);
+                public static final Angle kHoodStartingAngle = Degrees.of(0.0);
+                public static final AngularVelocity kShooterStartVelocity = RPM.of(0.0);
+                public static final Angle kDefaultHoodPosition = Degrees.of(4.0);
 
                 public static final Time kRampTime = Seconds.of(0.4);
-                public static final Command kRampWaitCommand = new WaitCommand(kRampTime.in(Seconds));
+
+                // Absolute encoder wraps backwards, so it doesn't read -0.001, it reads 0.999.
+                // This is the min rotational amount where we can reasonably assume that the
+                // hood has just gone backwards a little too far, beyond the zero of the encoder
+                public static final Angle kWrapBackMin = Rotations.of(0.9);
         }
 
         public static final class StagingConstants {
                 public static int kFeedIntoHoodMotor = 16;
                 public static double kFeedIntoHoodSpeed = 0.10;
+                public static final int kAgitationAmpLimit = 4;
 
                 public static final int kAgitationMotorId = 9;
-                public static final double kAgitationSpeed = -0.15;
+                public static final double kAgitationSpeed = -0.3;
 
                 public static final int kRollerMotorId = 12;
                 public static final double kRollerSpeed = 0.15;
@@ -400,7 +408,7 @@ public final class Constants {
                 }
 
                 // Placeholders
-                public static final Angle kFeedOffset = Degrees.of(30);
+                public static final Angle kFeedOffset = Degrees.of(12);
 
                 public static final Translation2d kRedHubAprilTag = AprilTagFieldLayout
                                 .loadField(AprilTagFields.k2026RebuiltAndymark)
