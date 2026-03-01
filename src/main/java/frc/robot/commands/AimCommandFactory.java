@@ -1,16 +1,11 @@
 package frc.robot.commands;
 
-import java.lang.annotation.Target;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.function.Supplier;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 
@@ -32,11 +27,8 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
-import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.Fixtures;
-import frc.robot.Constants.NumericalConstants;
 import frc.robot.Constants.ShooterConstants;
 import frc.robot.Constants.TurretConstants;
 import frc.robot.subsystems.*;
@@ -64,17 +56,17 @@ public class AimCommandFactory {
         m_shooter = shooter;
     }
 
-    public Command AimCommand(Supplier<Boolean> isFeedingLeftSide) {
+    public Command AimCommand(boolean isFeedingLeftSide) {
         return new RunCommand(() -> {
             Aim(isFeedingLeftSide);
             m_isAiming = true;
-        }, m_drive, m_turret).finallyDo(() -> {
+        }, m_turret).finallyDo(() -> {
             m_isAiming = false;
             m_wheelVelocity = ShooterConstants.kNonAimShooterVelocity;
         });
     }
 
-    private void Aim(Supplier<Boolean> isFeedingLeftSide) {
+    private void Aim(boolean isFeedingLeftSide) {
         Fixtures.FieldLocations location = m_drive.getRobotLocation();
 
         switch (location) {
@@ -91,9 +83,11 @@ public class AimCommandFactory {
             }
             case NeutralSide: {
                 // Heading changes 180 degrees depending on which alliance you are on
-                Angle offset = DriverStation.getAlliance().get() == Alliance.Blue ? Degrees.of(0) : Degrees.of(180);
-                Angle absHeading = isFeedingLeftSide.get() ? offset.minus(Degrees.of(50))
-                        : offset.plus(Degrees.of(50));
+                Angle offset = DriverStation.getAlliance().get() == Alliance.Red ? Degrees.of(0) : Degrees.of(180);
+                Angle absHeading = isFeedingLeftSide ? offset.minus(Fixtures.kFeedOffset)
+                        : offset.plus(Fixtures.kFeedOffset);
+
+                absHeading = UtilityFunctions.WrapAngle(absHeading);
 
                 m_shooter.MoveHoodToPosition(ShooterConstants.kHoodFeedingPosition);
                 m_wheelVelocity = ShooterConstants.kFeedingWheelVelocity;

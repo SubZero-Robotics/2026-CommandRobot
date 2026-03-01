@@ -395,12 +395,7 @@ public final class Constants {
                 }
 
                 // Placeholders
-                public static final Angle kBlueLeftSideFeedHeading = Degrees.of(40);
-                public static final Angle kBlueRightSideFeedHeading = Degrees.of(160);
-
-                // Placeholders
-                public static final Angle kRedLeftSideFeedHeading = Degrees.of(-40);
-                public static final Angle kRedRightSideFeedHeading = Degrees.of(-160);
+                public static final Angle kFeedOffset = Degrees.of(30);
 
                 public static final Pose2d kRedHubAprilTag = AprilTagFieldLayout
                                 .loadField(AprilTagFields.k2026RebuiltAndymark)

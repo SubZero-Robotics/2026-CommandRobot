@@ -115,9 +115,8 @@ public class RobotContainer {
 
         // m_driverController.y().whileTrue(m_aimFactory.RunAllStager());
 
-        m_driverController.rightBumper().onTrue(DeployIntake());
-
-        m_driverController.leftBumper().onTrue(retractIntake());
+        // m_driverController.rightBumper().whileTrue(m_aimFactory.AimCommand(false));
+        // m_driverController.leftBumper().whileTrue(m_aimFactory.AimCommand(true));
 
         m_driverController.x().whileTrue(spinIntake());
 
