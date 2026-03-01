@@ -24,6 +24,7 @@ import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.MetersPerSecondPerSecond;
+import static edu.wpi.first.units.Units.Milliseconds;
 import static edu.wpi.first.units.Units.RPM;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
@@ -50,6 +51,8 @@ import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.Per;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.units.measure.Velocity;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.utils.ShootingEntry;
 
 /**
@@ -342,6 +345,12 @@ public final class Constants {
                 public static AngularVelocity kFeedingWheelVelocity = RPM.of(60);
                 public static Angle kHoodFeedingPosition = Degrees.of(25.0);
                 public static Measure<AngleUnit> kTurretAngleRestrictiveShooterAngle = Degrees.of(10);
+
+                public static Angle kHoodStartingAngle = Degrees.of(0.0);
+                public static AngularVelocity kShooterStartVelocity = RPM.of(0.0);
+
+                public static final Time kRampTime = Seconds.of(0.4);
+                public static final Command kRampWaitCommand = new WaitCommand(kRampTime.in(Seconds));
         }
 
         public static final class StagingConstants {

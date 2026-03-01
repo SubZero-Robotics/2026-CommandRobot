@@ -154,10 +154,18 @@ public class AimCommandFactory {
         });
     }
 
-    public Command StopShoot() {
+    public void ShootAtVelocity(AngularVelocity velocity) {
+        m_shooter.Spin(velocity);
+    }
+
+    public Command stopShootCommand() {
         return new InstantCommand(() -> {
-            m_shooter.Stop();
+            StopShoot();
         });
+    }
+
+    public void StopShoot() {
+        m_shooter.Stop();
     }
 
     public TargetSolution GetHubAimSolution() {
@@ -186,11 +194,15 @@ public class AimCommandFactory {
         }, m_turret);
     }
 
-    public Command MoveHoodToAbsoluteCommand(Angle angle) {
+    public Command moveHoodToAngleCommand(Angle angle) {
         return new InstantCommand(() -> {
-            System.out.println("Move Hood to position " + angle);
-            m_shooter.MoveHoodToPosition(angle);
+            MoveHoodToAngle(angle);
         });
+    }
+
+    public void MoveHoodToAngle(Angle angle) {
+        System.out.println("Move Hood to angle " + angle.in(Degrees) + " degrees.");
+        m_shooter.MoveHoodToPosition(angle);
     }
 
     public Command PointAtHub(boolean isRed) {

@@ -38,8 +38,7 @@ public class ShooterSubsystem extends SubsystemBase {
         m_shooterConfig.closedLoop
                 .p(ShooterConstants.kShooterP)
                 .i(ShooterConstants.kShooterI)
-                .d(ShooterConstants.kShooterD)
-                .feedForward.kV(ShooterConstants.kShooterFF);
+                .d(ShooterConstants.kShooterD).feedForward.kV(ShooterConstants.kShooterFF);
 
         m_hoodConfig.closedLoop
                 .p(ShooterConstants.kHoodP)
@@ -61,7 +60,7 @@ public class ShooterSubsystem extends SubsystemBase {
 
     // Position between 0 and .55
     public void MoveHoodToPosition(Angle angle) {
-        System.out.println("Move hood to position: " + angle);
+        // System.out.println("Move hood to position: " + angle);
 
         // get target absolute encoder position. 0 starts in hood min, hood max is .55
         // (30 degrees of movement)
@@ -71,7 +70,6 @@ public class ShooterSubsystem extends SubsystemBase {
             return;
         }
         var curentPosition = m_absoluteEncoder.getPosition();
-        System.out.println("current hood: " + curentPosition);
         if (curentPosition > ShooterConstants.kHoodMaxAbsolutePosition) {
             System.out.println("Hood position icorrect for safe movement. Pos: " + curentPosition);
             return;

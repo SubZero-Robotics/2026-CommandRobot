@@ -8,12 +8,15 @@ import static edu.wpi.first.units.Units.DegreesPerSecond;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.RPM;
 import static edu.wpi.first.units.Units.Radians;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import com.pathplanner.lib.commands.PathPlannerAuto;
 
+import dev.doglog.DogLog;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.networktables.DoubleSubscriber;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -26,6 +29,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants.AutoConstants;
 import frc.robot.Constants.Fixtures;
@@ -60,12 +64,13 @@ public class RobotContainer {
     Angle commandedShooterAngle;
     AngularVelocity commandedWheelVelocity;
 
+    DoubleSubscriber m_hoodAngleGetter = DogLog.tunable("Hood Angle (in degrees)", ShooterConstants.kHoodStartingAngle);
+    DoubleSubscriber m_shooterVelocityGetter = DogLog.tunable("Motor Velocity (in RPM)",
+            ShooterConstants.kShooterStartVelocity);
+
     public RobotContainer() {
         m_chooser.setDefaultOption("Example Auto", AutoConstants.kExampleAutoName);
         SmartDashboard.putData("Auto Choices", m_chooser);
-
-        NetworkTableInstance inst = NetworkTableInstance.getDefault();
-
         // SmartDashboard.putNumber("Wheelspeed in rotations per second", 0.0);
         // SmartDashboard.putNumber("Shooter hood angle in degrees", 0.0);
         // SmartDashboard.putNumber("Turret angle in degrees", 0.0);
@@ -116,11 +121,20 @@ public class RobotContainer {
 
         // m_driverController.b().whileTrue(spinIntake());
 
-        m_driverController.y().whileTrue(m_aimFactory.RunAllStager());
+        m_driverController.y().onTrue(new InstantCommand(() -> {
+            double shooterVelocity = m_shooterVelocityGetter.get();
+            m_aimFactory.ShootAtVelocity(RPM.of(shooterVelocity));
+            System.out.println("Shooting at velocity of " + shooterVelocity + " RPM.");
+        }));
 
-        m_driverController.a().onTrue(m_aimFactory.MoveHoodToAbsoluteCommand(Degrees.of(15)));
+        m_driverController.x().onTrue(new InstantCommand(() -> {
+            double hoodAngle = m_hoodAngleGetter.get();
+            m_aimFactory.MoveHoodToAngle(Degrees.of(hoodAngle));
+        }));
 
-        m_driverController.b().onTrue(m_aimFactory.ShootCommand()).onFalse(m_aimFactory.StopShoot());
+        // m_driverController.a().onTrue(m_aimFactory.MoveHoodToAbsoluteCommand(Degrees.of(15)));
+
+        // m_driverController.b().onTrue(m_aimFactory.ShootCommand()).onFalse(m_aimFactory.StopShoot());
 
     }
 
