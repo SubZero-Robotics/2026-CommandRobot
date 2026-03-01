@@ -115,11 +115,11 @@ public class RobotContainer {
 
         // m_driverController.y().whileTrue(m_aimFactory.RunAllStager());
 
-        // m_driverController.x().onTrue(DeployIntake());
+        m_driverController.rightBumper().onTrue(DeployIntake());
 
-        // m_driverController.a().onTrue(retractIntake());
+        m_driverController.leftBumper().onTrue(retractIntake());
 
-        // m_driverController.b().whileTrue(spinIntake());
+        m_driverController.x().whileTrue(spinIntake());
 
         m_driverController.y().onTrue(new InstantCommand(() -> {
             double shooterVelocity = m_shooterVelocityGetter.get();

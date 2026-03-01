@@ -361,7 +361,7 @@ public final class Constants {
                 public static final double kAgitationSpeed = -0.15;
 
                 public static final int kRollerMotorId = 12;
-                public static final double kRollerSpeed = 0.25;
+                public static final double kRollerSpeed = 0.15;
         }
 
         public static final class Fixtures {
