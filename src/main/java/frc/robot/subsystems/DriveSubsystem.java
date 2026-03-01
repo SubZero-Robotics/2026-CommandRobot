@@ -45,6 +45,8 @@ import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 
+import dev.doglog.DogLog;
+
 import static edu.wpi.first.units.Units.*;
 
 import java.util.Optional;
@@ -273,6 +275,9 @@ public class DriveSubsystem extends SubsystemBase {
         SmartDashboard.putData(m_field);
 
         SmartDashboard.putBoolean("Is manual rotate", m_isManualRotate);
+
+        DogLog.log("X dist to april tag in meters", getPose().getTranslation().minus(Fixtures.kRedHubAprilTag).getX());
+        DogLog.log("Y dist to april tag in meters", getPose().getTranslation().minus(Fixtures.kRedHubAprilTag).getY());
     }
 
     /**

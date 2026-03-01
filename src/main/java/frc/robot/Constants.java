@@ -397,9 +397,9 @@ public final class Constants {
                 // Placeholders
                 public static final Angle kFeedOffset = Degrees.of(30);
 
-                public static final Pose2d kRedHubAprilTag = AprilTagFieldLayout
+                public static final Translation2d kRedHubAprilTag = AprilTagFieldLayout
                                 .loadField(AprilTagFields.k2026RebuiltAndymark)
-                                .getTagPose(3).get().toPose2d();
+                                .getTagPose(3).get().toPose2d().getTranslation();
         }
 
         public static final class IntakeConstants {
