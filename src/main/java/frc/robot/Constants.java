@@ -20,6 +20,7 @@ import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
 import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.Inch;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
@@ -206,8 +207,8 @@ public final class Constants {
                 public static final Distance kTurretCameraDistanceToCenter = Meters.of(0.13);
                 public static final Distance kCameraTwoZ = Inches.of(18.0);
 
-                public static final Translation3d kTurretCenterOfRotation = new Translation3d(Meters.of(0.0),
-                                Meters.of(0.0),
+                public static final Translation3d kTurretCenterOfRotation = new Translation3d(Inches.of(6.25),
+                                Inches.of(-6.151),
                                 Inches.of(18));
 
                 public static final Angle kCameraTwoPitch = Degrees.of(15.0);
@@ -270,7 +271,7 @@ public final class Constants {
 
                 public static final Angle kOvershootAmount = Degrees.of(10.0);
 
-                public static final Translation2d kTurretOffset = new Translation2d(Meters.of(0.0), Meters.of(0.0));
+                public static final Translation2d kTurretOffset = new Translation2d(Inches.of(6.25), Inches.of(-6.151));
 
                 public static final Angle kTurretAngleTolerance = Degrees.of(2.0);
 
@@ -309,25 +310,29 @@ public final class Constants {
 
                 public static final LinearVelocity kMaxMuzzleVelocity = MetersPerSecond.of(10.0);
 
+                public static final Distance kHubRobotTurretOffset = Inches.of(47);
+
                 public static final ShootingEntry[] kShootingEntries = {
-                                new ShootingEntry(Meters.of(0.0), kPlaceholderWheelVelocity, kMaxMuzzleVelocity, null,
+                                new ShootingEntry(Inches.of(30).plus(kHubRobotTurretOffset), RPM.of(3519), null,
+                                                Inches.of(101.9),
+                                                Seconds.of(0.812),
+                                                Degrees.of(0)),
+                                new ShootingEntry(Inches.of(59).plus(kHubRobotTurretOffset), RPM.of(3565), null,
+                                                Inches.of(102.335),
+                                                Seconds.of(0.822),
+                                                Degrees.of(0)),
+                                new ShootingEntry(Inches.of(89).plus(kHubRobotTurretOffset), RPM.of(3975), null,
+                                                Inches.of(120.62),
                                                 Seconds.of(1.0),
-                                                kFeedAngle),
-                                new ShootingEntry(Meters.of(1.0), kPlaceholderWheelVelocity, kMaxMuzzleVelocity, null,
-                                                Seconds.of(1.0),
-                                                kFeedAngle),
-                                new ShootingEntry(Meters.of(2.0), kPlaceholderWheelVelocity, kMaxMuzzleVelocity, null,
-                                                Seconds.of(1.0),
-                                                kFeedAngle),
-                                new ShootingEntry(Meters.of(3.0), kPlaceholderWheelVelocity, kMaxMuzzleVelocity, null,
-                                                Seconds.of(1.0),
-                                                kFeedAngle),
-                                new ShootingEntry(Meters.of(4.0), kPlaceholderWheelVelocity, kMaxMuzzleVelocity, null,
-                                                Seconds.of(1.0),
-                                                kFeedAngle),
-                                new ShootingEntry(Meters.of(5.0), kPlaceholderWheelVelocity, kMaxMuzzleVelocity, null,
-                                                Seconds.of(1.0),
-                                                kFeedAngle),
+                                                Degrees.of(0)),
+                                new ShootingEntry(Inches.of(122).plus(kHubRobotTurretOffset), RPM.of(4375), null,
+                                                Inches.of(134.055333),
+                                                Seconds.of(1.217),
+                                                Degrees.of(0)),
+                                new ShootingEntry(Inches.of(148).plus(kHubRobotTurretOffset), RPM.of(4600), null,
+                                                Inches.of(147.348333),
+                                                Seconds.of(1.322),
+                                                kFeedAngle)
                 };
 
                 public static final Angle kHoodTolerence = Degrees.of(2.0);
