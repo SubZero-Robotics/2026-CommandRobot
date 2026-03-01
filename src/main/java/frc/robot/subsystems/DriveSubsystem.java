@@ -118,7 +118,7 @@ public class DriveSubsystem extends SubsystemBase {
         } catch (Exception e) {
             e.printStackTrace();
 
-            // TODO: Find a better solution to ensure config is initialized when
+            // TO DO: Find a better solution to ensure config is initialized when
             // AutoBuilder.configure() is reached
             return;
         }
