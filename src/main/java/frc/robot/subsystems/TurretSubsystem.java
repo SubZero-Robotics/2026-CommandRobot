@@ -146,9 +146,10 @@ public class TurretSubsystem extends SubsystemBase {
                 RPM.of(m_absoluteEncoder.getVelocity()),
                 TurretConstants.kEncoderReadingDelay.in(Seconds));
 
-        DogLog.log("Turret rotation relative to front of robot", getRotation().in(Degrees));
-        DogLog.log("Turret rotation relative to turret zero", UtilityFunctions
-                .WrapAngle(getRotation().minus(TurretConstants.kAngularDistanceToFrontOfRobot)).in(Degrees));
+        // DogLog.log("Turret rotation relative to front of robot",
+        // getRotation().in(Degrees));
+        // DogLog.log("Turret rotation relative to turret zero", UtilityFunctions
+        // .WrapAngle(getRotation().minus(TurretConstants.kAngularDistanceToFrontOfRobot)).in(Degrees));
     }
 
     // Connected to another periodic loop that runs quicker than 0.02 seconds

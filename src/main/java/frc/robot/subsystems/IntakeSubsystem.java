@@ -61,7 +61,7 @@ public class IntakeSubsystem extends SubsystemBase {
         // m_deployConfig.closedLoop.feedbackSensor(FeedbackSensor.kAbsoluteEncoder);
         m_deploy1Config.idleMode(IdleMode.kBrake);
         m_deploy2Config.idleMode(IdleMode.kBrake); // TODO: change to brake
-        m_intakeConfig.idleMode(IdleMode.kBrake);
+        m_intakeConfig.idleMode(IdleMode.kCoast);
 
         m_deploy1Config.smartCurrentLimit(IntakeConstants.kDeployMotorCurrentLimit);
         m_deploy2Config.smartCurrentLimit(IntakeConstants.kDeployMotorCurrentLimit);
@@ -157,18 +157,20 @@ public class IntakeSubsystem extends SubsystemBase {
         // if (m_maxLimitSwitch2.isPressed())
         // System.out.println("Max Two");
 
-        DogLog.log("Deploy motor 1: canID 13 position",
-                m_deploy1RelativeEncoder.getPosition());
-        DogLog.log("Deploy motor 2: canID 8 position",
-                m_deploy2RelativeEncoder.getPosition());
+        // DogLog.log("Deploy motor 1: canID 13 position",
+        // m_deploy1RelativeEncoder.getPosition());
+        // DogLog.log("Deploy motor 2: canID 8 position",
+        // m_deploy2RelativeEncoder.getPosition());
 
-        DogLog.log("Deploy motor can ID 8 setpoint", m_deploy2ClosedLoopController.getSetpoint());
-        DogLog.log("Deploy motor can ID 13 setpoint", m_deploy1ClosedLoopController.getSetpoint());
+        // DogLog.log("Deploy motor can ID 8 setpoint",
+        // m_deploy2ClosedLoopController.getSetpoint());
+        // DogLog.log("Deploy motor can ID 13 setpoint",
+        // m_deploy1ClosedLoopController.getSetpoint());
 
-        DogLog.log("Min limit one", m_minLimitSwitch1.isPressed());
-        DogLog.log("Min limit two", m_minLimitSwitch2.isPressed());
+        // DogLog.log("Min limit one", m_minLimitSwitch1.isPressed());
+        // DogLog.log("Min limit two", m_minLimitSwitch2.isPressed());
 
-        DogLog.log("Max limit one", m_maxLimitSwitch1.isPressed());
-        DogLog.log("Max limit two", m_maxLimitSwitch2.isPressed());
+        // DogLog.log("Max limit one", m_maxLimitSwitch1.isPressed());
+        // DogLog.log("Max limit two", m_maxLimitSwitch2.isPressed());
     }
 }

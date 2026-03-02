@@ -192,8 +192,9 @@ public final class Constants {
                 // Confidence of encoder readings for vision; should be tuned
                 public static final double kEncoderConfidence = 0.15;
 
-                public static final Transform3d kRobotToCamOne = new Transform3d(new Translation3d(0.5, 0.0, 0.5),
-                                new Rotation3d(0, 0, 0));
+                public static final Transform3d kRobotToCamOne = new Transform3d(
+                                new Translation3d(Inches.of(-3.854), Inches.of(-4.358), Inches.of(20.585)),
+                                new Rotation3d(0, 23, 0));
 
                 // These are not final numbers
                 public static final Transform3d kRobotToCamTwo = new Transform3d(
@@ -207,8 +208,8 @@ public final class Constants {
                 public static final Distance kTurretCameraDistanceToCenter = Meters.of(0.13);
                 public static final Distance kCameraTwoZ = Inches.of(18.0);
 
-                public static final Translation3d kTurretCenterOfRotation = new Translation3d(Inches.of(6.25),
-                                Inches.of(-6.151),
+                public static final Translation3d kTurretCenterOfRotation = new Translation3d(Inches.of(-6.25),
+                                Inches.of(6.151),
                                 Inches.of(18));
 
                 public static final Angle kCameraTwoPitch = Degrees.of(15.0);
@@ -271,7 +272,8 @@ public final class Constants {
 
                 public static final Angle kOvershootAmount = Degrees.of(10.0);
 
-                public static final Translation2d kTurretOffset = new Translation2d(Inches.of(6.25), Inches.of(-6.151));
+                public static final Translation2d kTurretOffset = new Translation2d(Inches.of(-6.25),
+                                Inches.of(6.151));
 
                 public static final Angle kTurretAngleTolerance = Degrees.of(2.0);
 
@@ -355,7 +357,7 @@ public final class Constants {
 
                 public static final Angle kHoodStartingAngle = Degrees.of(0.0);
                 public static final AngularVelocity kShooterStartVelocity = RPM.of(0.0);
-                public static final Angle kDefaultHoodPosition = Degrees.of(4.0);
+                public static final Angle kDefaultHoodPosition = Degrees.of(0.0);
 
                 public static final Time kRampTime = Seconds.of(0.4);
 
@@ -366,15 +368,19 @@ public final class Constants {
         }
 
         public static final class StagingConstants {
-                public static int kFeedIntoHoodMotor = 16;
-                public static double kFeedIntoHoodSpeed = 0.10;
                 public static final int kAgitationAmpLimit = 4;
 
+                public static int kFeedIntoHoodMotor = 16;
+                public static double kFeedIntoHoodSpeed = 0.10;
+                public static double kReverseFeedSpeed = -0.1;
+
                 public static final int kAgitationMotorId = 9;
-                public static final double kAgitationSpeed = -0.3;
+                public static final double kAgitationSpeed = -0.45;
+                public static double kReverseAgitationSpeed = 0.1;
 
                 public static final int kRollerMotorId = 12;
-                public static final double kRollerSpeed = 0.15;
+                public static final double kRollerSpeed = 0.4;
+                public static double kReverseRollingSpeed = -0.1;
         }
 
         public static final class Fixtures {
@@ -443,6 +449,6 @@ public final class Constants {
                 public static final int kDeployMotorCurrentLimit = 40;
                 public static final int kIntakeMotorCurrentLimit = 80;
 
-                public static final AngularVelocity kDefaultIntakeSpeed = RPM.of(-2000);
+                public static final AngularVelocity kDefaultIntakeSpeed = RPM.of(-3200);
         }
 }

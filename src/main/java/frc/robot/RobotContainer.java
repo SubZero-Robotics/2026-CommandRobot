@@ -134,7 +134,10 @@ public class RobotContainer {
                 .onFalse(m_aimFactory.stopShootCommand().andThen(m_aimFactory.stopStaging()));
 
         m_driverController.x().whileTrue(m_aimFactory.PointAtHub(false));
-        m_driverController.y().whileTrue(m_aimFactory.Shoot(RPM.of(4000)));
+        m_driverController.y().onTrue(m_aimFactory.ReverseStager()).onFalse(m_aimFactory.stopStaging());
+
+        m_driverController.leftTrigger().onTrue(DeployIntake().alongWith(SpinIntake()))
+                .onFalse(retractIntake().alongWith(StopIntake()));
 
         // m_driverController.x().onTrue(new InstantCommand(() -> {
         // // double hoodAngle = m_hoodAngleGetter.get();
@@ -170,7 +173,13 @@ public class RobotContainer {
     public Command spinIntake() {
         return new RunCommand(() -> {
             m_intake.spinIntake(IntakeConstants.kDefaultIntakeSpeed);
-        }).finallyDo(m_intake::stopIntake);
+        });
+    }
+
+    public Command StopIntake() {
+        return new InstantCommand(() -> {
+            m_intake.stopIntake();
+        });
     }
 
     public Command retractIntake() {
@@ -214,13 +223,14 @@ public class RobotContainer {
 
         m_field.getObject("targetPose").setPose(targetPose);
 
+        m_aimFactory.periodic();
     }
 
     public void periodic() {
         commandedWheelVelocity = RPM.of(SmartDashboard.getNumber("Wheelspeed in rotations per second", 0.0));
         commandedShooterAngle = Degrees.of(SmartDashboard.getNumber("Shooter hood angle in degrees", 0.0));
 
-        DogLog.log("At Shooter Velocity Target", m_shooter.AtWheelVelocityTarget());
+        // DogLog.log("At Shooter Velocity Target", m_shooter.AtWheelVelocityTarget());
 
         // System.out.println(m_drive.getRobotLocation());
     }

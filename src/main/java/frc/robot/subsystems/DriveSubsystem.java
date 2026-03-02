@@ -274,10 +274,12 @@ public class DriveSubsystem extends SubsystemBase {
 
         SmartDashboard.putData(m_field);
 
-        SmartDashboard.putBoolean("Is manual rotate", m_isManualRotate);
+        // SmartDashboard.putBoolean("Is manual rotate", m_isManualRotate);
 
-        DogLog.log("X dist to april tag in meters", getPose().getTranslation().minus(Fixtures.kRedHubAprilTag).getX());
-        DogLog.log("Y dist to april tag in meters", getPose().getTranslation().minus(Fixtures.kRedHubAprilTag).getY());
+        // DogLog.log("X dist to april tag in meters",
+        // getPose().getTranslation().minus(Fixtures.kRedHubAprilTag).getX());
+        // DogLog.log("Y dist to april tag in meters",
+        // getPose().getTranslation().minus(Fixtures.kRedHubAprilTag).getY());
     }
 
     /**

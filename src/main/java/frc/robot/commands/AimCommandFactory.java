@@ -51,6 +51,8 @@ public class AimCommandFactory {
 
     private StagingSubsystem m_stager = new StagingSubsystem();
 
+    TargetSolution m_solution;
+
     public AimCommandFactory(DriveSubsystem drive, TurretSubsystem turret, ShooterSubsystem shooter) {
         m_drive = drive;
         m_turret = turret;
@@ -61,11 +63,17 @@ public class AimCommandFactory {
         return new RunCommand(() -> {
             Aim(isFeedingLeftSide);
             m_isAiming = true;
-        }, m_turret).finallyDo(() -> {
+        }, m_turret, m_shooter).finallyDo(() -> {
             m_isAiming = false;
             m_shooter.MoveHoodToPosition(ShooterConstants.kDefaultHoodPosition);
             m_wheelVelocity = ShooterConstants.kNonAimShooterVelocity;
         });
+    }
+
+    public void periodic() {
+        m_solution = GetHubAimSolution();
+        m_wheelVelocity = m_solution.wheelSpeed();
+        DogLog.log("RPM target", m_wheelVelocity.in(RPM));
     }
 
     private void Aim(boolean isFeedingLeftSide) {
@@ -73,15 +81,20 @@ public class AimCommandFactory {
 
         switch (location) {
             case AllianceSide: {
-                TargetSolution solution = GetHubAimSolution();
+
+                TargetSolution solution;
+
+                if (m_solution == null) {
+                    solution = GetHubAimSolution();
+                } else {
+                    solution = m_solution;
+                }
 
                 MoveTurretToHeading(solution.hubAngle().minus(solution.phi()));
-                DogLog.log("Range from hub (meters)", solution.distance().in(Meters));
+                // DogLog.log("Range from hub (meters)", solution.distance().in(Meters));
                 // System.out.println(solution.phi());
-                // m_shooter.MoveHoodToPosition(solution.hoodAngle());
-
+                m_shooter.MoveHoodToPosition(solution.hoodAngle());
                 m_wheelVelocity = solution.wheelSpeed();
-                System.out.println(m_wheelVelocity.in(RPM) + " is RPM target.");
                 break;
             }
             case NeutralSide: {
@@ -119,7 +132,7 @@ public class AimCommandFactory {
 
     public Command ShootWhileAimedCommand() {
 
-        DogLog.log("Aiming", m_isAiming);
+        // DogLog.log("Aiming", m_isAiming);
 
         return new ConditionalCommand(ShootCommand(),
                 AimHoodToPositionCommand(ShooterConstants.kNonAimHoodAngle)
@@ -263,6 +276,14 @@ public class AimCommandFactory {
 
             MoveTurretToHeading(angle);
         }, m_turret);
+    }
+
+    public Command ReverseStager() {
+        return new InstantCommand(() -> {
+            m_stager.reverseAgitater();
+            m_stager.reverseRoller();
+            m_stager.reverseFeeder();
+        });
     }
 
     // Aims the camera at april tags within range
@@ -467,8 +488,11 @@ public class AimCommandFactory {
                 secondEntry.distance().in(Meters), firstEntry.shooterAngle().in(Radians),
                 secondEntry.shooterAngle().in(Radians), distance.in(Meters)));
 
-        DogLog.log("Last entry", firstEntry.toString());
-        DogLog.log("Next entry ", secondEntry.toString());
+        DogLog.log("First Entry", firstEntry.toString());
+        DogLog.log("Second Entry", secondEntry.toString());
+
+        // DogLog.log("Last entry", firstEntry.toString());
+        // DogLog.log("Next entry ", secondEntry.toString());
 
         return new TargetSolution(hoodAngle, wheelSpeed, phi, distance, turretAngle);
     }

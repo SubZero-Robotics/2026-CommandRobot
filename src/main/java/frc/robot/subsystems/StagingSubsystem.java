@@ -12,10 +12,7 @@ public class StagingSubsystem extends SubsystemBase {
     SparkMax m_agitationMotor = new SparkMax(StagingConstants.kAgitationMotorId, MotorType.kBrushless);
     SparkMax m_rollerMotor = new SparkMax(StagingConstants.kRollerMotorId, MotorType.kBrushless);
 
-    SparkMaxConfig m_agitateConfig = new SparkMaxConfig();
-
     public StagingSubsystem() {
-        m_agitateConfig.smartCurrentLimit(StagingConstants.kAgitationAmpLimit);
     }
 
     public void Agitate() {
@@ -43,5 +40,17 @@ public class StagingSubsystem extends SubsystemBase {
 
     public void StopRoll() {
         m_rollerMotor.stopMotor();
+    }
+
+    public void reverseAgitater() {
+        m_agitationMotor.set(StagingConstants.kReverseAgitationSpeed);
+    }
+
+    public void reverseRoller() {
+        m_rollerMotor.set(StagingConstants.kReverseRollingSpeed);
+    }
+
+    public void reverseFeeder() {
+        m_feedIntoHoodMotor.set(StagingConstants.kReverseFeedSpeed);
     }
 }
