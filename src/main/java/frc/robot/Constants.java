@@ -280,6 +280,7 @@ public final class Constants {
                 // TODO: Change to real numbers
                 public static Angle kNonAimTurretAngle = Degrees.of(0.0);
                 public static int kTurretMotorAmpLimit = 10;
+                public static final Angle kTurretTorwardsFront = Degrees.of(0.0);
 
                 public static final Angle kAngularDistanceToFrontOfRobot = Rotations.of(0.605);
         }
@@ -440,15 +441,15 @@ public final class Constants {
                 public static final int kIntakeMotorId = 7;
 
                 // 10 teeth on pinion, 20 teeth on rack
-                public static final Angle kDeployRotations = Rotations.of(9.5);
+                public static final Angle kDeployRotations = Rotations.of(9.3);
                 public static final Angle kRetractRotations = Rotations.of(0.0);
 
-                public static final Angle kMaxExtension = Rotations.of(9.5);
+                public static final Angle kMaxExtension = Rotations.of(9.3);
                 public static final Angle kMinExtension = Rotations.of(0.0);
 
                 public static final int kDeployMotorCurrentLimit = 40;
                 public static final int kIntakeMotorCurrentLimit = 80;
 
-                public static final AngularVelocity kDefaultIntakeSpeed = RPM.of(-3200);
+                public static final AngularVelocity kDefaultIntakeSpeed = RPM.of(-2500);
         }
 }

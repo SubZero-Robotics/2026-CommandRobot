@@ -30,6 +30,7 @@ import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import frc.robot.Constants.Fixtures;
+import frc.robot.Constants.IntakeConstants;
 import frc.robot.Constants.ShooterConstants;
 import frc.robot.Constants.TurretConstants;
 import frc.robot.subsystems.*;
@@ -37,7 +38,7 @@ import frc.robot.utils.ShootingEntry;
 import frc.robot.utils.TargetSolution;
 import frc.robot.utils.UtilityFunctions;
 
-public class AimCommandFactory {
+public class CommandFactory {
 
     private DriveSubsystem m_drive;
     private TurretSubsystem m_turret;
@@ -50,10 +51,11 @@ public class AimCommandFactory {
     private Translation2d m_lockedTag;
 
     private StagingSubsystem m_stager = new StagingSubsystem();
+    private IntakeSubsystem m_intake = new IntakeSubsystem();
 
     TargetSolution m_solution;
 
-    public AimCommandFactory(DriveSubsystem drive, TurretSubsystem turret, ShooterSubsystem shooter) {
+    public CommandFactory(DriveSubsystem drive, TurretSubsystem turret, ShooterSubsystem shooter) {
         m_drive = drive;
         m_turret = turret;
         m_shooter = shooter;
@@ -63,17 +65,31 @@ public class AimCommandFactory {
         return new RunCommand(() -> {
             Aim(isFeedingLeftSide);
             m_isAiming = true;
-        }, m_turret, m_shooter).finallyDo(() -> {
-            m_isAiming = false;
-            m_shooter.MoveHoodToPosition(ShooterConstants.kDefaultHoodPosition);
-            m_wheelVelocity = ShooterConstants.kNonAimShooterVelocity;
-        });
+        }, m_turret, m_shooter);
+    }
+
+    public void StopAim() {
+        m_isAiming = false;
+        m_shooter.MoveHoodToPosition(ShooterConstants.kDefaultHoodPosition);
+        m_wheelVelocity = ShooterConstants.kNonAimShooterVelocity;
+    }
+
+    public Command StopAimCommand() {
+        return new InstantCommand(this::StopAim);
     }
 
     public void periodic() {
         m_solution = GetHubAimSolution();
         m_wheelVelocity = m_solution.wheelSpeed();
         DogLog.log("RPM target", m_wheelVelocity.in(RPM));
+    }
+
+    public void AimTurretToFront() {
+        m_turret.moveToAngle(TurretConstants.kTurretTorwardsFront);
+    }
+
+    public Command AimTurretToFrontCommand() {
+        return new InstantCommand(this::AimTurretToFrontCommand);
     }
 
     private void Aim(boolean isFeedingLeftSide) {
@@ -173,7 +189,7 @@ public class AimCommandFactory {
         m_shooter.Spin(velocity);
     }
 
-    public Command stopShootCommand() {
+    public Command StopShootCommand() {
         return new InstantCommand(() -> {
             StopShoot();
         });
@@ -181,6 +197,37 @@ public class AimCommandFactory {
 
     public void StopShoot() {
         m_shooter.Stop();
+    }
+
+    public Command StopIntake() {
+        return new InstantCommand(() -> {
+            m_intake.stopIntake();
+        });
+    }
+
+    public Command RetractIntake() {
+        return new InstantCommand(() -> {
+            m_intake.retractIntake();
+        });
+    }
+
+    public Command OutTake() {
+        return new InstantCommand(() -> {
+            m_intake.spinIntake(IntakeConstants.kDefaultIntakeSpeed.times(-1));
+        });
+    }
+
+    public Command DeployIntake() {
+        return new InstantCommand(() -> {
+            m_intake.deployIntake();
+        });
+
+    }
+
+    public Command SpinIntake() {
+        return new InstantCommand(() -> {
+            m_intake.spinIntake(IntakeConstants.kDefaultIntakeSpeed);
+        });
     }
 
     public TargetSolution GetHubAimSolution() {
@@ -495,6 +542,12 @@ public class AimCommandFactory {
         // DogLog.log("Next entry ", secondEntry.toString());
 
         return new TargetSolution(hoodAngle, wheelSpeed, phi, distance, turretAngle);
+    }
+
+    public Command AutoIntakeOut() {
+        return new InstantCommand(() -> {
+
+        });
     }
 
     public Command Aim(Angle turretAngle, Angle hoodAngle) {

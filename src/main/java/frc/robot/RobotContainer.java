@@ -9,6 +9,7 @@ import static edu.wpi.first.units.Units.RPM;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 
+import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.commands.PathPlannerAuto;
 
 import dev.doglog.DogLog;
@@ -33,7 +34,7 @@ import frc.robot.Constants.AutoConstants;
 import frc.robot.Constants.IntakeConstants;
 import frc.robot.Constants.OIConstants;
 import frc.robot.Constants.ShooterConstants;
-import frc.robot.commands.AimCommandFactory;
+import frc.robot.commands.CommandFactory;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
@@ -41,9 +42,6 @@ import frc.robot.subsystems.TurretSubsystem;
 import frc.robot.utils.*;
 
 public class RobotContainer {
-
-    private final IntakeSubsystem m_intake = new IntakeSubsystem();
-
     private final CommandXboxController m_driverController = new CommandXboxController(
             OIConstants.kDriverControllerPort);
 
@@ -54,7 +52,7 @@ public class RobotContainer {
     private final ShooterSubsystem m_shooter = new ShooterSubsystem();
     private final DriveSubsystem m_drive = new DriveSubsystem(m_turret::getRotationAtTime);
 
-    AimCommandFactory m_aimFactory = new AimCommandFactory(m_drive, m_turret, m_shooter);
+    CommandFactory m_commandFactory = new CommandFactory(m_drive, m_turret, m_shooter);
     Field2d m_field;
 
     // For getting data points for the lookup table
@@ -66,6 +64,13 @@ public class RobotContainer {
             ShooterConstants.kShooterStartVelocity);
 
     public RobotContainer() {
+        NamedCommands.registerCommand("Deploy Intake", m_commandFactory.DeployIntake());
+        NamedCommands.registerCommand("Retract Intake", m_commandFactory.RetractIntake());
+        NamedCommands.registerCommand("Aim", m_commandFactory.AimCommand(false));
+        NamedCommands.registerCommand("Stop Aim", m_commandFactory.StopAimCommand());
+        NamedCommands.registerCommand("Shoot", m_commandFactory.ShootCommand());
+        NamedCommands.registerCommand("Stop Shoot", m_commandFactory.StopShootCommand());
+
         m_chooser.setDefaultOption("Example Auto", AutoConstants.kExampleAutoName);
         SmartDashboard.putData("Auto Choices", m_chooser);
         // SmartDashboard.putNumber("Wheelspeed in rotations per second", 0.0);
@@ -125,19 +130,22 @@ public class RobotContainer {
         // WaitCommand(ShooterConstants.kRampTime)).andThen(m_aimFactory.RunAllStager())
         // .finallyDo(m_aimFactory::StopShoot));
 
-        m_driverController.leftBumper().whileTrue(m_aimFactory.AimCommand(true));
-        m_driverController.rightBumper().whileTrue(m_aimFactory.AimCommand(false));
+        m_driverController.leftBumper().whileTrue(m_commandFactory.AimCommand(true))
+                .onFalse(m_commandFactory.StopAimCommand());
+        m_driverController.rightBumper().whileTrue(m_commandFactory.AimCommand(false))
+                .onFalse(m_commandFactory.StopAimCommand());
 
         m_driverController.a()
-                .onTrue(m_aimFactory.ShootCommand().alongWith(Commands.waitUntil(m_shooter::AtWheelVelocityTarget))
-                        .andThen(m_aimFactory.RunAllStager()))
-                .onFalse(m_aimFactory.stopShootCommand().andThen(m_aimFactory.stopStaging()));
+                .onTrue(m_commandFactory.ShootCommand().alongWith(Commands.waitUntil(m_shooter::AtWheelVelocityTarget))
+                        .andThen(m_commandFactory.RunAllStager()))
+                .onFalse(m_commandFactory.StopShootCommand().andThen(m_commandFactory.stopStaging()));
 
-        m_driverController.x().whileTrue(m_aimFactory.PointAtHub(false));
-        m_driverController.y().onTrue(m_aimFactory.ReverseStager()).onFalse(m_aimFactory.stopStaging());
+        m_driverController.x().whileTrue(m_commandFactory.PointAtHub(false));
+        m_driverController.y().onTrue(m_commandFactory.ReverseStager()).onFalse(m_commandFactory.stopStaging());
 
-        m_driverController.leftTrigger().onTrue(DeployIntake().alongWith(SpinIntake()))
-                .onFalse(retractIntake().alongWith(StopIntake()));
+        m_driverController.leftTrigger()
+                .onTrue(m_commandFactory.DeployIntake().alongWith(m_commandFactory.SpinIntake()))
+                .onFalse(m_commandFactory.RetractIntake().alongWith(m_commandFactory.StopIntake()));
 
         // m_driverController.x().onTrue(new InstantCommand(() -> {
         // // double hoodAngle = m_hoodAngleGetter.get();
@@ -170,47 +178,10 @@ public class RobotContainer {
         }, m_drive, m_turret);
     }
 
-    public Command spinIntake() {
-        return new RunCommand(() -> {
-            m_intake.spinIntake(IntakeConstants.kDefaultIntakeSpeed);
-        });
-    }
-
-    public Command StopIntake() {
-        return new InstantCommand(() -> {
-            m_intake.stopIntake();
-        });
-    }
-
-    public Command retractIntake() {
-        return new InstantCommand(() -> {
-            m_intake.retractIntake();
-        });
-    }
-
-    public Command outTake() {
-        return new RunCommand(() -> {
-            m_intake.spinIntake(IntakeConstants.kDefaultIntakeSpeed.times(-1));
-        });
-    }
-
-    public Command DeployIntake() {
-        return new InstantCommand(() -> {
-            m_intake.deployIntake();
-        });
-
-    }
-
-    public Command SpinIntake() {
-        return new InstantCommand(() -> {
-            m_intake.spinIntake(IntakeConstants.kDefaultIntakeSpeed);
-        });
-    }
-
     public void teleopPeriodic() {
         m_turret.addDriveHeading(UtilityFunctions.WrapAngle(m_drive.getHeading()));
 
-        TargetSolution solution = m_aimFactory.GetHubAimSolution();
+        TargetSolution solution = m_commandFactory.GetHubAimSolution();
 
         Pose2d robotPose = m_drive.getPose();
 
@@ -223,7 +194,7 @@ public class RobotContainer {
 
         m_field.getObject("targetPose").setPose(targetPose);
 
-        m_aimFactory.periodic();
+        m_commandFactory.periodic();
     }
 
     public void periodic() {
