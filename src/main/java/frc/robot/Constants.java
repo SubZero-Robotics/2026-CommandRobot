@@ -3,14 +3,13 @@
 // the WPILib BSD license file in the root directory of this project.
 package frc.robot;
 
+import java.util.HashMap;
+
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
@@ -19,41 +18,26 @@ import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.AngleUnit;
+import edu.wpi.first.units.Measure;
 import static edu.wpi.first.units.Units.Degrees;
-import static edu.wpi.first.units.Units.Inch;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.MetersPerSecondPerSecond;
-import static edu.wpi.first.units.Units.Milliseconds;
 import static edu.wpi.first.units.Units.RPM;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecondPerSecond;
 import static edu.wpi.first.units.Units.Rotations;
-import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
-
-import java.lang.reflect.Field;
-import java.util.HashMap;
-
-import edu.wpi.first.units.AngleUnit;
-import edu.wpi.first.units.Measure;
-import edu.wpi.first.units.AngleUnit;
-import edu.wpi.first.units.DistanceUnit;
-import edu.wpi.first.units.PerUnit;
-import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearAcceleration;
 import edu.wpi.first.units.measure.LinearVelocity;
-import edu.wpi.first.units.measure.Per;
 import edu.wpi.first.units.measure.Time;
-import edu.wpi.first.units.measure.Velocity;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.utils.ShootingEntry;
 
 /**
@@ -230,6 +214,7 @@ public final class Constants {
                 public static final Angle kFullRotation = Radians.of(2.0 * Math.PI);
                 public static final Angle kNoRotation = Radians.of(0.0);
                 public static final LinearAcceleration kGravity = MetersPerSecondPerSecond.of(9.807);
+                public static final Angle kHalfRotation = Degrees.of(180);
         }
 
         public static final class TurretConstants {

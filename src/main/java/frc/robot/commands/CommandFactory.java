@@ -30,6 +30,8 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
+import frc.robot.Constants;
+import frc.robot.Robot;
 import frc.robot.Constants.Fixtures;
 import frc.robot.Constants.IntakeConstants;
 import frc.robot.Constants.ShooterConstants;
@@ -182,7 +184,7 @@ public class CommandFactory {
     }
 
     public Command ShootCommand() {
-        return new InstantCommand(() -> {
+        return new RunCommand(() -> {
             Shoot();
         });
     }
@@ -286,7 +288,10 @@ public class CommandFactory {
     public void MoveTurretToHeading(Angle heading) {
         Angle robotHeading = UtilityFunctions.WrapAngle(m_drive.getHeading());
 
-        Angle robotRelativeTurretAngle = UtilityFunctions.WrapAngle(heading.minus(robotHeading));
+        // Weird bug with red side position data
+        Angle offset = DriverStation.getAlliance().get() == Alliance.Red && !Robot.isReal() ? Constants.NumericalConstants.kHalfRotation : Constants.NumericalConstants.kNoRotation;
+
+        Angle robotRelativeTurretAngle = UtilityFunctions.WrapAngle(heading.minus(robotHeading).plus(offset));
 
         // Angle[] currentRange = getCurrentTurretRange();
         Angle[] currentRange = TurretConstants.kUnrestrictedAngles;

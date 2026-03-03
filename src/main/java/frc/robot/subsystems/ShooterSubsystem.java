@@ -1,24 +1,27 @@
 package frc.robot.subsystems;
 
-import static edu.wpi.first.units.Units.*;
-
 import com.revrobotics.AbsoluteEncoder;
 import com.revrobotics.PersistMode;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.ResetMode;
 import com.revrobotics.spark.FeedbackSensor;
+import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
-import com.revrobotics.spark.config.SparkMaxConfig;
-import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.SparkMax;
-import com.revrobotics.spark.SparkBase.ControlType;
+import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
+import dev.doglog.DogLog;
+
+import com.revrobotics.spark.config.SparkMaxConfig;
+
+import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.RPM;
+import static edu.wpi.first.units.Units.Rotations;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.ShooterConstants;
-import frc.robot.utils.UtilityFunctions;
 
 public class ShooterSubsystem extends SubsystemBase {
 
@@ -110,6 +113,6 @@ public class ShooterSubsystem extends SubsystemBase {
 
     @Override
     public void periodic() {
-
+        DogLog.log("Motor velocity setpoint", m_shooterClosedLoopController.getSetpoint());
     }
 }

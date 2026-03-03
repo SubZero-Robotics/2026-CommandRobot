@@ -135,10 +135,9 @@ public class RobotContainer {
         m_driverController.rightBumper().whileTrue(m_commandFactory.AimCommand(false))
                 .onFalse(m_commandFactory.StopAimCommand());
 
-        m_driverController.a()
-                .onTrue(m_commandFactory.ShootCommand().alongWith(Commands.waitUntil(m_shooter::AtWheelVelocityTarget))
-                        .andThen(m_commandFactory.RunAllStager()))
-                .onFalse(m_commandFactory.StopShootCommand().andThen(m_commandFactory.StopStaging()));
+        m_driverController.a().whileTrue(m_commandFactory.ShootCommand())
+                .onTrue(Commands.waitUntil(m_shooter::AtWheelVelocityTarget).andThen(m_commandFactory.RunAllStager()))
+                .onFalse(m_commandFactory.StopShootCommand().alongWith(m_commandFactory.StopStaging()));
 
         m_driverController.x().whileTrue(m_commandFactory.PointAtHub(false));
         m_driverController.y().onTrue(m_commandFactory.ReverseStager()).onFalse(m_commandFactory.StopStaging());
