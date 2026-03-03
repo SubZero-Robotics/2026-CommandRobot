@@ -194,7 +194,7 @@ public final class Constants {
 
                 public static final Transform3d kRobotToCamOne = new Transform3d(
                                 new Translation3d(Inches.of(-3.854), Inches.of(-4.358), Inches.of(20.585)),
-                                new Rotation3d(0, 23, 0));
+                                new Rotation3d(0, 180 - 23, 0));
 
                 // These are not final numbers
                 public static final Transform3d kRobotToCamTwo = new Transform3d(
@@ -358,7 +358,7 @@ public final class Constants {
 
                 public static final Angle kHoodStartingAngle = Degrees.of(0.0);
                 public static final AngularVelocity kShooterStartVelocity = RPM.of(0.0);
-                public static final Angle kDefaultHoodPosition = Degrees.of(2.0);
+                public static final Angle kDefaultHoodPosition = Degrees.of(3.0);
 
                 public static final Time kRampTime = Seconds.of(0.4);
 

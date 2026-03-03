@@ -27,7 +27,7 @@ public final class UtilityFunctions {
         double dy = y2 - y1;
         double dx = x - x1;
 
-        return (dx / Math.abs(dsx) > 0.0 ? dx / dsx : NumericalConstants.kEpsilon) * dy + y1;
+        return (Math.abs(dsx) > 0.0 ? dx / dsx : NumericalConstants.kEpsilon) * dy + y1;
     }
 
     public static Angle angleDiff(Angle a1, Angle a2) {
