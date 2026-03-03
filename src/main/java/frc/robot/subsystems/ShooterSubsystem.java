@@ -21,9 +21,12 @@ import static edu.wpi.first.units.Units.Rotations;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj.util.Color;
 import frc.robot.Constants.ShooterConstants;
 
 public class ShooterSubsystem extends SubsystemBase {
+
+    private final LedSubsystem m_leds = new LedSubsystem();
 
     SparkMax m_shooterMotor = new SparkMax(ShooterConstants.kShooterMotorId, MotorType.kBrushless);
     SparkMax m_hoodMotor = new SparkMax(ShooterConstants.kHoodMotorId, MotorType.kBrushless);
@@ -40,7 +43,9 @@ public class ShooterSubsystem extends SubsystemBase {
     Angle m_targetAngle = Degrees.of(0.0);
     AngularVelocity m_targetVelocity = RPM.of(0);
 
-    public ShooterSubsystem() {
+    private boolean m_HoodIsUp = false;
+
+    public ShooterSubsystem(LedSubsystem ledSubsystem) {
 
         m_shooterConfig.closedLoop
                 .p(ShooterConstants.kShooterP)
@@ -87,6 +92,14 @@ public class ShooterSubsystem extends SubsystemBase {
         }
 
         m_hoodClosedLoopController.setSetpoint(targetPosition, ControlType.kPosition);
+
+         m_HoodIsUp = targetPosition > 0.05;
+
+        if (m_HoodIsUp = true) {
+            m_leds.SetSolid (Color.kRed);
+        } else {
+            m_leds.SetSolid (Color.kGreen);
+        }
     }
 
     public void Spin(AngularVelocity shootSpeedVelocity) {

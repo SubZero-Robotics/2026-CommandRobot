@@ -38,6 +38,7 @@ import frc.robot.commands.CommandFactory;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
+import frc.robot.subsystems.LedSubsystem;
 import frc.robot.subsystems.TurretSubsystem;
 import frc.robot.utils.*;
 
@@ -49,8 +50,9 @@ public class RobotContainer {
     private final SendableChooser<String> m_chooser = new SendableChooser<>();
 
     private final TurretSubsystem m_turret = new TurretSubsystem();
-    private final ShooterSubsystem m_shooter = new ShooterSubsystem();
+    private final ShooterSubsystem m_shooter = new ShooterSubsystem(null);
     private final DriveSubsystem m_drive = new DriveSubsystem(m_turret::getRotationAtTime);
+    private final LedSubsystem m_leds = new LedSubsystem();
 
     CommandFactory m_commandFactory = new CommandFactory(m_drive, m_turret, m_shooter);
     Field2d m_field;
