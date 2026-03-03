@@ -9,8 +9,6 @@ import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Transform3d;
@@ -41,6 +39,7 @@ import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearAcceleration;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.Time;
+import frc.robot.utils.ShootingEntry;
 
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide
@@ -82,17 +81,17 @@ public final class Constants {
                 public static final double kBackLeftChassisAngularOffset = Math.PI;
                 public static final double kBackRightChassisAngularOffset = Math.PI / 2;
 
-        // SPARK MAX CAN IDs Drive Motors
-        public static final int kFrontLeftDrivingCanId = 2;
-        public static final int kRearLeftDrivingCanId = 3;
-        public static final int kFrontRightDrivingCanId = 1;
-        public static final int kRearRightDrivingCanId = 4;
+                // SPARK MAX CAN IDs Drive Motors
+                public static final int kFrontLeftDrivingCanId = 10;
+                public static final int kRearLeftDrivingCanId = 14;
+                public static final int kFrontRightDrivingCanId = 1;
+                public static final int kRearRightDrivingCanId = 2;
 
-        // SPARK MAX CAN IDs Turning Motors
-        public static final int kFrontLeftTurningCanId = 6;
-        public static final int kRearLeftTurningCanId = 7;
-        public static final int kFrontRightTurningCanId = 5;
-        public static final int kRearRightTurningCanId = 8;
+                // SPARK MAX CAN IDs Turning Motors
+                public static final int kFrontLeftTurningCanId = 11;
+                public static final int kRearLeftTurningCanId = 15;
+                public static final int kFrontRightTurningCanId = 62;
+                public static final int kRearRightTurningCanId = 3;
 
                 // Auxiliary Device Can IDs
                 public static final int kPidgeyCanId = 13;
@@ -101,10 +100,18 @@ public final class Constants {
 
                 public static final Time kPeriodicInterval = Seconds.of(0.02);
 
-        public static final double kAutoRotationP = Robot.isReal() ? 0.3 : 3.0;
-        public static final double kAutoRotationI = 0.0;
-        public static final double kAutoRotationD = 0.0;
-    }
+                public static final double kAutoRotationP = Robot.isReal() ? 3.6 : 3.0;
+                public static final double kAutoRotationI = 0.0;
+                public static final double kAutoRotationD = 0.0;
+
+                public static enum RangeType {
+                        Within,
+                        CloseMin,
+                        CloseMax
+                }
+
+                public static final Angle kTurnToAngleTolerance = Degrees.of(2);
+        }
 
         public static final class ModuleConstants {
                 // The MAXSwerve module can be configured with one of three pinion gears: 12T,
@@ -170,27 +177,38 @@ public final class Constants {
                 // Confidence of encoder readings for vision; should be tuned
                 public static final double kEncoderConfidence = 0.15;
 
-        public static final Transform3d kRobotToCamOne = new Transform3d(new Translation3d(0.5, 0.0, 0.5),
-                new Rotation3d(0, 0, 0));
-        public static final Transform3d kRobotToCamTwo = new Transform3d(new Translation3d(0.5, 0.0, 0.5),
-                new Rotation3d(0, 0, 0));
+                public static final Transform3d kRobotToCamOne = new Transform3d(
+                                new Translation3d(Inches.of(-3.854), Inches.of(-4.358), Inches.of(20.585)),
+                                new Rotation3d(0, 180 - 23, 0));
+
+                // These are not final numbers
+                public static final Transform3d kRobotToCamTwo = new Transform3d(
+                                new Translation3d(Inches.of(8.375), Inches.of(-2.16), Inches.of(-20.668)),
+                                new Rotation3d(0, 0, 0));
 
                 public static final AprilTagFieldLayout kTagLayout = AprilTagFieldLayout
                                 .loadField(AprilTagFields.kDefaultField);
 
-        // Placeholder numbers
-        public static final Pose3d kTurretAxisOfRotation = new Pose3d(Meters.of(0.2), Meters.of(0.3), Meters.of(0.3),
-                new Rotation3d(0.0, 0.0, 0.0));
-        public static final Distance kTurretCameraDistanceToCenter = Meters.of(0.13);
-        public static final Angle kCameraTwoPitch = Radians.of(0.0);
-        public static final Angle kCameraTwoRoll = Radians.of(0.0);
+                // Placeholder numbers
+                public static final Distance kTurretCameraDistanceToCenter = Meters.of(0.13);
+                public static final Distance kCameraTwoZ = Inches.of(18.0);
+
+                public static final Translation3d kTurretCenterOfRotation = new Translation3d(Inches.of(-6.25),
+                                Inches.of(6.151),
+                                Inches.of(18));
+
+                public static final Angle kCameraTwoPitch = Degrees.of(15.0);
+                public static final Angle kCameraTwoRoll = Degrees.of(0.0);
+                public static final Angle kCameraTwoYaw = Degrees.of(-21.0);
 
                 public static final Matrix<N3, N1> kSingleTagStdDevs = VecBuilder.fill(4, 4, 8);
                 public static final Matrix<N3, N1> kMultiTagStdDevs = VecBuilder.fill(0.5, 0.5, 1);
 
-        public static final Matrix<N3, N1> kStateStdDevs = VecBuilder.fill(0.1, 0.1, 0.1);
-        public static final Matrix<N3, N1> kVisionStdDevs = VecBuilder.fill(1, 1, 1);
-    }
+                public static final Matrix<N3, N1> kStateStdDevs = VecBuilder.fill(0.1, 0.1, 0.1);
+                public static final Matrix<N3, N1> kVisionStdDevs = VecBuilder.fill(1, 1, 1);
+
+                public static final AngularVelocity kMaxTurretVisionSpeed = RPM.of(30);
+        }
 
         public static final class NumericalConstants {
                 public static final double kEpsilon = 1e-6;
