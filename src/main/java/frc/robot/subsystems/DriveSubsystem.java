@@ -32,6 +32,7 @@ import frc.robot.utils.Vision;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.Fixtures;
 import frc.robot.Constants.NumericalConstants;
+import frc.robot.Constants.OIConstants;
 import frc.robot.Constants.DriveConstants.RangeType;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -43,6 +44,8 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
+
+import dev.doglog.DogLog;
 
 import static edu.wpi.first.units.Units.*;
 
@@ -125,7 +128,7 @@ public class DriveSubsystem extends SubsystemBase {
         } catch (Exception e) {
             e.printStackTrace();
 
-            // TODO: Find a better solution to ensure config is initialized when
+            // TO DO: Find a better solution to ensure config is initialized when
             // AutoBuilder.configure() is reached
             return;
         }
@@ -176,10 +179,13 @@ public class DriveSubsystem extends SubsystemBase {
     public void moveToAngle(Angle angle) {
         m_isManualRotate = false;
         m_targetAutoAngle = angle;
+
+        System.out.println("Is Manual Rotate is False in moveToAngle()");
     }
 
     public void moveByAngle(Angle angle) {
         m_isManualRotate = false;
+        System.out.println("Is Manual Rotate is False in moveByAngle()");
         m_targetAutoAngle = getHeading().plus(angle);
     }
 
@@ -192,6 +198,7 @@ public class DriveSubsystem extends SubsystemBase {
             return RangeType.Within;
         } else {
             m_isManualRotate = false;
+            System.out.println("Is Manual Rotate is False in faceCardinalHeadingRange");
             m_targetAutoAngle = getClosestAngle(minAngle, maxAngle, robotAngle);
             return m_targetAutoAngle.isEquivalent(minAngle) ? RangeType.CloseMin : RangeType.CloseMax;
         }
@@ -213,13 +220,12 @@ public class DriveSubsystem extends SubsystemBase {
             m_targetAutoAngle = Radians.of(Math.atan2(yFixtureDist, xFixtureDist));
 
             m_isManualRotate = false;
+            System.out.println("Is Manual Rotate is False in facePose()");
         });
     }
 
-    public Command disableFaceHeading() {
-        return new InstantCommand(() -> {
-            m_isManualRotate = true;
-        });
+    public void disableFaceHeading() {
+        m_isManualRotate = true;
     }
 
     @Override
@@ -257,16 +263,23 @@ public class DriveSubsystem extends SubsystemBase {
         // System.out.println("Current rotation: " +
         // getPose().getRotation().getRadians());
 
-        m_poseEstimator.update(new Rotation2d(getHeading()), getModulePositions());
+        m_poseEstimator.update(new Rotation2d(getGyroHeading()), getModulePositions());
         m_field.setRobotPose(m_poseEstimator.getEstimatedPosition());
 
         // System.out.println(m_poseEstimator.getEstimatedPosition());
 
         m_vision.periodic();
 
+        m_pidController.periodic();
+
         SmartDashboard.putData(m_field);
 
-        m_pidController.periodic();
+        // SmartDashboard.putBoolean("Is manual rotate", m_isManualRotate);
+
+        // DogLog.log("X dist to april tag in meters",
+        // getPose().getTranslation().minus(Fixtures.kRedHubAprilTag).getX());
+        // DogLog.log("Y dist to april tag in meters",
+        // getPose().getTranslation().minus(Fixtures.kRedHubAprilTag).getY());
     }
 
     /**
@@ -321,7 +334,13 @@ public class DriveSubsystem extends SubsystemBase {
         // getHeading()).in(Radians) + ", Current: "
         // + getHeading().in(Radians));
 
-        if (Math.abs(rot) > NumericalConstants.kEpsilon) {
+        final double latestTime = Timer.getFPGATimestamp();
+        final double timeElapsed = latestTime - m_latestTime < 0.20 ? latestTime - m_latestTime
+                : DriveConstants.kPeriodicInterval.in(Seconds);
+
+        m_latestTime = latestTime;
+
+        if (Math.abs(rot) > OIConstants.kDriveDeadband) {
             m_isManualRotate = true;
         }
 
@@ -337,11 +356,12 @@ public class DriveSubsystem extends SubsystemBase {
         // System.out.println("Target " + m_targetAutoAngle + ", Current" +
         // getHeading());
 
-        final var swerveModuleStates = DriveConstants.kDriveKinematics.toSwerveModuleStates(
+        final var swerveModuleStates = DriveConstants.kDriveKinematics.toSwerveModuleStates(ChassisSpeeds.discretize(
                 fieldRelative
                         ? ChassisSpeeds.fromFieldRelativeSpeeds(xSpeedDelivered, ySpeedDelivered, rotDelivered,
                                 new Rotation2d(getHeading()))
-                        : new ChassisSpeeds(xSpeedDelivered, ySpeedDelivered, rotDelivered));
+                        : new ChassisSpeeds(xSpeedDelivered, ySpeedDelivered, rotDelivered),
+                timeElapsed));
         SwerveDriveKinematics.desaturateWheelSpeeds(
                 swerveModuleStates, DriveConstants.kMaxSpeed.magnitude());
 
@@ -349,12 +369,6 @@ public class DriveSubsystem extends SubsystemBase {
         m_frontRight.setDesiredState(swerveModuleStates[1]);
         m_rearLeft.setDesiredState(swerveModuleStates[2]);
         m_rearRight.setDesiredState(swerveModuleStates[3]);
-
-        final double latestTime = Timer.getFPGATimestamp();
-        final double timeElapsed = latestTime - m_latestTime < 0.20 ? latestTime - m_latestTime
-                : DriveConstants.kPeriodicInterval.in(Seconds);
-
-        m_latestTime = latestTime;
     }
 
     public void drive(ChassisSpeeds speeds) {
@@ -409,6 +423,12 @@ public class DriveSubsystem extends SubsystemBase {
      */
     public Angle getHeading() {
         return pidgey.getYaw().getValue();
+        // Don't use this code
+        // return m_poseEstimator.getEstimatedPosition().getRotation().getMeasure();
+    }
+
+    public Angle getGyroHeading() {
+        return pidgey.getYaw().getValue();
     }
 
     public void addVisionMeasurement(VisionEstimation estimation) {
@@ -435,21 +455,20 @@ public class DriveSubsystem extends SubsystemBase {
         Pose2d robotPose = getPose();
 
         double x = robotPose.getX();
-        double y = robotPose.getY();
 
         if (alliance.isPresent()) {
             if (alliance.get() == Alliance.Blue) {
-                if (x < Fixtures.kBlueSideNeutralBorder.in(Meters) && x > Fixtures.kRedSideNeutralBorder.in(Meters)) {
+                if (x > Fixtures.kBlueSideNeutralBorder.in(Meters) && x < Fixtures.kRedSideNeutralBorder.in(Meters)) {
                     return Fixtures.FieldLocations.NeutralSide;
-                } else if (x > Fixtures.kBlueSideNeutralBorder.in(Meters)) {
+                } else if (x < Fixtures.kBlueSideNeutralBorder.in(Meters)) {
                     return Fixtures.FieldLocations.AllianceSide;
                 } else {
                     return Fixtures.FieldLocations.OpponentSide;
                 }
             } else if (alliance.get() == Alliance.Red) {
-                if (x > Fixtures.kRedSideNeutralBorder.in(Meters) && x < Fixtures.kBlueSideNeutralBorder.in(Meters)) {
+                if (x < Fixtures.kRedSideNeutralBorder.in(Meters) && x > Fixtures.kBlueSideNeutralBorder.in(Meters)) {
                     return Fixtures.FieldLocations.NeutralSide;
-                } else if (x < Fixtures.kRedSideNeutralBorder.in(Meters)) {
+                } else if (x > Fixtures.kRedSideNeutralBorder.in(Meters)) {
                     return Fixtures.FieldLocations.AllianceSide;
                 } else {
                     return Fixtures.FieldLocations.OpponentSide;
