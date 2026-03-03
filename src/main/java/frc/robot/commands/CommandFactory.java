@@ -26,6 +26,7 @@ import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
@@ -52,6 +53,7 @@ public class CommandFactory {
 
     private StagingSubsystem m_stager = new StagingSubsystem();
     private IntakeSubsystem m_intake = new IntakeSubsystem();
+    private ClimberSubsystem m_climber = new ClimberSubsystem();
 
     TargetSolution m_solution;
 
@@ -166,7 +168,7 @@ public class CommandFactory {
         }, m_stager);
     }
 
-    public Command stopStaging() {
+    public Command StopStaging() {
         return new InstantCommand(() -> {
             m_stager.StopAgitate();
             m_stager.StopFeed();
@@ -208,7 +210,7 @@ public class CommandFactory {
     public Command RetractIntake() {
         return new InstantCommand(() -> {
             m_intake.retractIntake();
-        });
+        }).andThen(StopIntake());
     }
 
     public Command OutTake() {
@@ -220,8 +222,7 @@ public class CommandFactory {
     public Command DeployIntake() {
         return new InstantCommand(() -> {
             m_intake.deployIntake();
-        });
-
+        }).alongWith(SpinIntake());
     }
 
     public Command SpinIntake() {
@@ -256,7 +257,7 @@ public class CommandFactory {
         }, m_turret);
     }
 
-    public Command moveHoodToAngleCommand(Angle angle) {
+    public Command MoveHoodToAngleCommand(Angle angle) {
         return new InstantCommand(() -> {
             MoveHoodToAngle(angle);
         });
@@ -331,6 +332,44 @@ public class CommandFactory {
             m_stager.reverseRoller();
             m_stager.reverseFeeder();
         });
+    }
+
+    public void ClimbUp() {
+        m_climber.climbUp();
+    }
+
+    public void ClimbDown() {
+        m_climber.climbUp();
+    }
+
+    public void StopClimb() {
+        m_climber.Stop();
+    }
+
+    public Command MoveTurretToRobotRelativeHeadingCommand(Angle angle) {
+        return new InstantCommand(() -> {
+            m_turret.moveToAngle(angle);
+        });
+    }
+
+    public Command ClimbUpCommand() {
+        // return
+        // MoveTurretToRobotRelativeHeadingCommand(TurretConstants.kTurretTorwardsFront)
+        // .alongWith(Commands.waitUntil(m_turret::atTarget))
+
+        return (new RunCommand(this::ClimbUp))
+                .until(m_climber::atMax)
+                .finallyDo(this::StopClimb);
+    }
+
+    public Command ClimbDownCommand() {
+        // return
+        // MoveTurretToRobotRelativeHeadingCommand(TurretConstants.kTurretTorwardsFront)
+        // .alongWith(Commands.waitUntil(m_turret::atTarget))
+
+        return (new RunCommand(this::ClimbDown))
+                .until(m_climber::atMin)
+                .finallyDo(this::StopClimb);
     }
 
     // Aims the camera at april tags within range

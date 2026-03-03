@@ -280,7 +280,7 @@ public final class Constants {
                 // TODO: Change to real numbers
                 public static Angle kNonAimTurretAngle = Degrees.of(0.0);
                 public static int kTurretMotorAmpLimit = 10;
-                public static final Angle kTurretTorwardsFront = Degrees.of(0.0);
+                public static final Angle kTurretTorwardsFront = Degrees.of(350);
 
                 public static final Angle kAngularDistanceToFrontOfRobot = Rotations.of(0.605);
         }
@@ -358,7 +358,7 @@ public final class Constants {
 
                 public static final Angle kHoodStartingAngle = Degrees.of(0.0);
                 public static final AngularVelocity kShooterStartVelocity = RPM.of(0.0);
-                public static final Angle kDefaultHoodPosition = Degrees.of(0.0);
+                public static final Angle kDefaultHoodPosition = Degrees.of(2.0);
 
                 public static final Time kRampTime = Seconds.of(0.4);
 
@@ -451,5 +451,19 @@ public final class Constants {
                 public static final int kIntakeMotorCurrentLimit = 80;
 
                 public static final AngularVelocity kDefaultIntakeSpeed = RPM.of(-2500);
+        }
+
+        public static final class ClimberConstants {
+                public static final int kMotorCanId = 17;
+
+                public static final double kUpVelocity = 0.2;
+                public static final double kDownVelocity = -0.1;
+
+                public static final double klimitMaxExtension = 3.0;
+                public static final double kLimitMinExtension = 0.0;
+                // TODO : Get the Constants for max and minimum distance for the climber
+
+                public static final double kMaxExtension = klimitMaxExtension - 0.1;
+                public static final double kMinExtension = kLimitMinExtension + 0.1;
         }
 }
