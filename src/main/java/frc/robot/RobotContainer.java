@@ -7,8 +7,6 @@ import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.RPM;
 import static edu.wpi.first.units.Units.Radians;
-import static edu.wpi.first.units.Units.RadiansPerSecond;
-
 import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.commands.PathPlannerAuto;
 
@@ -26,18 +24,14 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
-import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants.AutoConstants;
-import frc.robot.Constants.IntakeConstants;
 import frc.robot.Constants.OIConstants;
 import frc.robot.Constants.ShooterConstants;
 import frc.robot.commands.CommandFactory;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
-import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.TurretSubsystem;
 import frc.robot.utils.*;
 
@@ -46,7 +40,6 @@ public class RobotContainer {
             OIConstants.kDriverControllerPort);
 
     private String m_autoSelected;
-    private final SendableChooser<String> m_chooser = new SendableChooser<>();
 
     private final TurretSubsystem m_turret = new TurretSubsystem();
     private final ShooterSubsystem m_shooter = new ShooterSubsystem();
@@ -63,6 +56,8 @@ public class RobotContainer {
     DoubleSubscriber m_shooterVelocityGetter = DogLog.tunable("Motor Velocity (in RPM)",
             ShooterConstants.kShooterStartVelocity);
 
+    SendableChooser<String> m_sendable = new SendableChooser<>();
+
     public RobotContainer() {
         NamedCommands.registerCommand("Deploy Intake", m_commandFactory.DeployIntake());
         NamedCommands.registerCommand("Retract Intake", m_commandFactory.RetractIntake());
@@ -70,12 +65,17 @@ public class RobotContainer {
         NamedCommands.registerCommand("Stop Aim", m_commandFactory.StopAimCommand());
         NamedCommands.registerCommand("Shoot", m_commandFactory.ShootCommand());
         NamedCommands.registerCommand("Stop Shoot", m_commandFactory.StopShootCommand());
-
-        m_chooser.setDefaultOption("Example Auto", AutoConstants.kExampleAutoName);
-        SmartDashboard.putData("Auto Choices", m_chooser);
         // SmartDashboard.putNumber("Wheelspeed in rotations per second", 0.0);
         // SmartDashboard.putNumber("Shooter hood angle in degrees", 0.0);
         // SmartDashboard.putNumber("Turret angle in degrees", 0.0);
+
+        m_sendable.addOption("Right Forward Auto", "Right Forward Auto");
+        m_sendable.addOption("Left Forward Auto", "Left Forward Auto");
+        m_sendable.addOption("Right Backwards Auto", "Right Backwards Auto");
+        m_sendable.addOption("Left Backwards Auto", "Left Backwards Auto");
+        m_sendable.addOption("Left Side Neutral Auto", "Left Side Neutral Auto");
+        m_sendable.setDefaultOption("Left Side Neutral Auto", "Left Side Neutral Auto");
+        SmartDashboard.putData(m_sendable);
 
         // Configure the button bindings
         configureBindings();
@@ -161,7 +161,7 @@ public class RobotContainer {
     }
 
     public Command getAutonomousCommand() {
-        m_autoSelected = m_chooser.getSelected();
+        m_autoSelected = m_sendable.getSelected();
 
         System.out.print(m_autoSelected);
 

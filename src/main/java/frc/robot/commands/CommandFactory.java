@@ -150,18 +150,6 @@ public class CommandFactory {
         }, m_turret).until(m_turret::atTarget);
     }
 
-    public Command ShootWhileAimedCommand() {
-
-        // DogLog.log("Aiming", m_isAiming);
-
-        return new ConditionalCommand(ShootCommand(),
-                AimHoodToPositionCommand(ShooterConstants.kNonAimHoodAngle)
-                        .alongWith(AimTurretRelativeToRobot(TurretConstants.kNonAimTurretAngle))
-                        .andThen(new RunCommand(this::Shoot, m_shooter)),
-                () -> m_isAiming).until(m_shooter::AtWheelVelocityTarget).andThen(RunAllStager())
-                .finallyDo(m_shooter::Stop);
-    }
-
     public Command RunAllStager() {
         return new InstantCommand(() -> {
             m_stager.Agitate();
@@ -286,15 +274,19 @@ public class CommandFactory {
     }
 
     public void MoveTurretToHeading(Angle heading) {
+        // Weird bug with red side position data
+        Angle offset = DriverStation.getAlliance().get() == Alliance.Red && Robot.isReal()
+                ? Constants.NumericalConstants.kHalfRotation
+                : Constants.NumericalConstants.kNoRotation;
+
+        heading = heading.plus(offset);
+
         Angle robotHeading = UtilityFunctions.WrapAngle(m_drive.getHeading());
 
-        // Weird bug with red side position data
-        Angle offset = DriverStation.getAlliance().get() == Alliance.Red && !Robot.isReal() ? Constants.NumericalConstants.kHalfRotation : Constants.NumericalConstants.kNoRotation;
-
-        Angle robotRelativeTurretAngle = UtilityFunctions.WrapAngle(heading.minus(robotHeading).plus(offset));
+        Angle robotRelativeTurretAngle = UtilityFunctions.WrapAngle(heading.minus(robotHeading));
 
         // Angle[] currentRange = getCurrentTurretRange();
-        Angle[] currentRange = TurretConstants.kUnrestrictedAngles;
+        Angle[] currentRange = getCurrentTurretRange();
 
         if (withinAngles(currentRange, robotRelativeTurretAngle)) {
             m_turret.moveToAngle(robotRelativeTurretAngle);
@@ -304,7 +296,7 @@ public class CommandFactory {
 
             // The overshoot is negative if the robot has to move in a negative direction;
             // same for positive
-            Angle overshoot = robotRelativeTurretAngle.minus(closest).in(Degrees) < 0.0
+            Angle overshoot = UtilityFunctions.angleDiff(robotRelativeTurretAngle, closest).in(Degrees) < 0.0
                     ? TurretConstants.kOvershootAmount
                     : TurretConstants.kOvershootAmount.times(-1.0);
 
@@ -437,11 +429,11 @@ public class CommandFactory {
     }
 
     private static boolean withinRange(Angle min, Angle max, Angle a) {
-        a = UtilityFunctions.WrapAngle(a);
-        min = UtilityFunctions.WrapAngle(min);
-        max = UtilityFunctions.WrapAngle(max);
+        Angle a1 = UtilityFunctions.WrapAngle(a);
+        Angle min1 = UtilityFunctions.WrapAngle(min);
+        Angle max1 = UtilityFunctions.WrapAngle(max);
 
-        return a.gt(min) && a.lt(max);
+        return a1.gt(min1) && a1.lt(max1);
     }
 
     private static Angle getClosestAngle(Angle a, Angle... others) {
@@ -614,7 +606,7 @@ public class CommandFactory {
     // hitting the side of the robot or other balls currently being held in the
     // robot
     private Angle[] getCurrentTurretRange() {
-        if (m_shooter.GetHoodAngle().lt(ShooterConstants.kTurretAngleRestrictiveShooterAngle)) {
+        if (m_shooter.GetHoodAngle().gt(ShooterConstants.kTurretAngleRestrictiveShooterAngle)) {
             return TurretConstants.kRestrictedAngles;
         }
 

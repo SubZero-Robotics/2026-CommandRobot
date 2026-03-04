@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.793223965763195,
-        "y": 7.405520684736091
+        "x": 3.7290888888888887,
+        "y": 0.6341888888888878
       },
       "prevControl": null,
       "nextControl": {
-        "x": 6.1351212553495005,
-        "y": 7.7289871611982885
+        "x": 4.729088888888888,
+        "y": 0.6341888888888878
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 7.636611111111112,
-        "y": 5.917574893010523
+        "x": 5.288200000000001,
+        "y": 0.6341888888888878
       },
       "prevControl": {
-        "x": 6.148665319385007,
-        "y": 6.629201141227356
+        "x": 4.288200000000001,
+        "y": 0.6341888888888878
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "Left Center Intake Location"
+      "linkedName": null
     }
   ],
   "rotationTargets": [],
@@ -42,7 +42,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -35.28674897496953
+    "rotation": 0.0
   },
   "reversed": false,
   "folder": null,
