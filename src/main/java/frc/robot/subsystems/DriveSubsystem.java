@@ -299,6 +299,10 @@ public class DriveSubsystem extends SubsystemBase {
         };
     }
 
+    public void ZeroGyro() {
+        pidgey.setYaw(NumericalConstants.kNoRotation);
+    }
+
     /**
      * Resets the odometry to the specified pose.
      *

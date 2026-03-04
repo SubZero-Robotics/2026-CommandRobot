@@ -80,8 +80,7 @@ public class ShooterSubsystem extends SubsystemBase {
 
         var currentPosition = m_absoluteEncoder.getPosition();
 
-        if (currentPosition > ShooterConstants.kHoodMaxAbsolutePosition
-                && currentPosition < ShooterConstants.kWrapBackMin.in(Rotations)) {
+        if (currentPosition > ShooterConstants.kHoodMaxAbsolutePosition) {
             System.out.println("Hood position incorrect for safe movement. Pos: " + currentPosition);
             return;
         }

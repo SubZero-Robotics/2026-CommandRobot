@@ -262,7 +262,6 @@ public final class Constants {
 
                 public static final Angle kTurretAngleTolerance = Degrees.of(2.0);
 
-                // TODO: Change to real numbers
                 public static Angle kNonAimTurretAngle = Degrees.of(0.0);
                 public static int kTurretMotorAmpLimit = 10;
                 public static final Angle kTurretTorwardsFront = Degrees.of(350);
@@ -341,7 +340,7 @@ public final class Constants {
                 public static final Angle kHoodFeedingPosition = Degrees.of(25.0);
                 public static final Measure<AngleUnit> kTurretAngleRestrictiveShooterAngle = Degrees.of(10);
 
-                public static final Angle kHoodStartingAngle = Degrees.of(0.0);
+                public static final Angle kHoodStartingAngle = Degrees.of(3.0);
                 public static final AngularVelocity kShooterStartVelocity = RPM.of(0.0);
                 public static final Angle kDefaultHoodPosition = Degrees.of(3.0);
 

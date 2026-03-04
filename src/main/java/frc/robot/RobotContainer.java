@@ -14,6 +14,7 @@ import dev.doglog.DogLog;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.networktables.BooleanSubscriber;
 import edu.wpi.first.networktables.DoubleSubscriber;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -55,6 +56,8 @@ public class RobotContainer {
     DoubleSubscriber m_hoodAngleGetter = DogLog.tunable("Hood Angle (in degrees)", ShooterConstants.kHoodStartingAngle);
     DoubleSubscriber m_shooterVelocityGetter = DogLog.tunable("Motor Velocity (in RPM)",
             ShooterConstants.kShooterStartVelocity);
+
+    BooleanSubscriber m_zeroGyroGetter = DogLog.tunable("Zero Gyro", false);
 
     SendableChooser<String> m_sendable = new SendableChooser<>();
 
@@ -197,6 +200,10 @@ public class RobotContainer {
         m_field.getObject("targetPose").setPose(targetPose);
 
         m_commandFactory.periodic();
+
+        if (m_zeroGyroGetter.get()) {
+            m_drive.ZeroGyro();
+        }
     }
 
     public void periodic() {
