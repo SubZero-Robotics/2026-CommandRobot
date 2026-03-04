@@ -25,6 +25,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants.AutoConstants;
@@ -151,6 +152,9 @@ public class RobotContainer {
         m_driverController.leftTrigger()
                 .onTrue(m_commandFactory.DeployIntake().alongWith(m_commandFactory.SpinIntake()))
                 .onFalse(m_commandFactory.RetractIntake().alongWith(m_commandFactory.StopIntake()));
+
+        m_driverController.povUp().onTrue(
+                m_commandFactory.AimHoodToPositionCommand(commandedShooterAngle).andThen(new PrintCommand("Hehe")));
 
         // m_driverController.x().onTrue(new InstantCommand(() -> {
         // // double hoodAngle = m_hoodAngleGetter.get();

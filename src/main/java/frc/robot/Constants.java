@@ -282,7 +282,7 @@ public final class Constants {
                 public static final double kShooterD = 0.0;
                 public static final double kShooterFF = 0.0019;
 
-                public static final AngularVelocity kShooterVelocityTolerance = RPM.of(500);
+                public static final AngularVelocity kShooterVelocityTolerance = RPM.of(50);
 
                 // Teeth on encoder gear to teeth on shaft, teeth on shaft to teeth on hood part
                 // NOTE: Need to use 14D so the result is a double, otherwise you end up with
@@ -356,7 +356,7 @@ public final class Constants {
                 public static final int kAgitationAmpLimit = 4;
 
                 public static int kFeedIntoHoodMotor = 16;
-                public static double kFeedIntoHoodSpeed = 0.10;
+                public static double kFeedIntoHoodSpeed = 0.5;
                 public static double kReverseFeedSpeed = -0.1;
 
                 public static final int kAgitationMotorId = 9;

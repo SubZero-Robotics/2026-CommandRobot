@@ -96,6 +96,12 @@ public class CommandFactory {
         return new InstantCommand(this::AimTurretToFrontCommand);
     }
 
+    public Command MoveHoodToDefaultPosition() {
+        return new InstantCommand(() -> {
+            m_shooter.MoveHoodToPosition(ShooterConstants.kDefaultHoodPosition);
+        });
+    }
+
     private void Aim(boolean isFeedingLeftSide) {
         Fixtures.FieldLocations location = m_drive.getRobotLocation();
 
@@ -110,7 +116,7 @@ public class CommandFactory {
                     solution = m_solution;
                 }
 
-                MoveTurretToHeading(solution.hubAngle().minus(solution.phi()));
+                MoveTurretToHeading(solution.hubAngle().plus(solution.phi()));
                 // DogLog.log("Range from hub (meters)", solution.distance().in(Meters));
                 // System.out.println(solution.phi());
                 m_shooter.MoveHoodToPosition(solution.hoodAngle());
