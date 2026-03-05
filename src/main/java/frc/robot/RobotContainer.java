@@ -45,9 +45,9 @@ public class RobotContainer {
 
     private final TurretSubsystem m_turret = new TurretSubsystem();
     private final ShooterSubsystem m_shooter = new ShooterSubsystem();
-    private final DriveSubsystem m_drive = new DriveSubsystem(m_turret::getRotationAtTime);
+    private final DriveSubsystem m_drive;
 
-    CommandFactory m_commandFactory = new CommandFactory(m_drive, m_turret, m_shooter);
+    CommandFactory m_commandFactory;
     Field2d m_field;
 
     // For getting data points for the lookup table
@@ -63,12 +63,15 @@ public class RobotContainer {
     SendableChooser<String> m_sendable = new SendableChooser<>();
 
     public RobotContainer() {
-        NamedCommands.registerCommand("Deploy Intake", m_commandFactory.DeployIntake());
-        NamedCommands.registerCommand("Retract Intake", m_commandFactory.RetractIntake());
-        NamedCommands.registerCommand("Aim", m_commandFactory.AimCommand(false));
-        NamedCommands.registerCommand("Stop Aim", m_commandFactory.StopAimCommand());
-        NamedCommands.registerCommand("Shoot", m_commandFactory.ShootCommand());
-        NamedCommands.registerCommand("Stop Shoot", m_commandFactory.StopShootCommand());
+        // NamedCommands.registerCommand("Deploy Intake",
+        // m_commandFactory.DeployIntake());
+        // NamedCommands.registerCommand("Retract Intake",
+        // m_commandFactory.RetractIntake());
+        // NamedCommands.registerCommand("Aim", m_commandFactory.AimCommand(false));
+        // NamedCommands.registerCommand("Stop Aim", m_commandFactory.StopAimCommand());
+        // NamedCommands.registerCommand("Shoot", m_commandFactory.ShootCommand());
+        // NamedCommands.registerCommand("Stop Shoot",
+        // m_commandFactory.StopShootCommand());
         // SmartDashboard.putNumber("Wheelspeed in rotations per second", 0.0);
         // SmartDashboard.putNumber("Shooter hood angle in degrees", 0.0);
         // SmartDashboard.putNumber("Turret angle in degrees", 0.0);
@@ -80,6 +83,10 @@ public class RobotContainer {
         m_sendable.addOption("Left Side Neutral Auto", "Left Side Neutral Auto");
         m_sendable.setDefaultOption("Left Side Neutral Auto", "Left Side Neutral Auto");
         SmartDashboard.putData(m_sendable);
+
+        m_drive = new DriveSubsystem(m_turret::getRotationAtTime);
+        m_commandFactory = new CommandFactory();
+        m_commandFactory.SetSubsystems(m_drive, m_turret, m_shooter);
 
         // Configure the button bindings
         configureBindings();
@@ -139,11 +146,12 @@ public class RobotContainer {
         m_driverController.rightBumper().whileTrue(m_commandFactory.AimCommand(false))
                 .onFalse(m_commandFactory.StopAimCommand());
 
-        m_driverController.a().whileTrue(m_commandFactory.ShootCommand())
-                .onTrue(Commands.waitUntil(m_shooter::AtWheelVelocityTarget).andThen(m_commandFactory.RunAllStager()))
+        m_driverController.a().whileTrue(m_commandFactory.RunAllStager())
+                .onTrue(Commands.waitUntil(m_shooter::AtWheelVelocityTarget).andThen(
+                        m_commandFactory.ShootCommand().until(() -> m_driverController.a().getAsBoolean() == false)))
                 .onFalse(m_commandFactory.StopShootCommand().alongWith(m_commandFactory.StopStaging()));
 
-        m_driverController.x().whileTrue(m_commandFactory.PointAtHub(false));
+        m_driverController.x().whileTrue(m_commandFactory.MoveTurretToFront());
         m_driverController.y().onTrue(m_commandFactory.ReverseStager()).onFalse(m_commandFactory.StopStaging());
 
         // m_driverController.povUp().whileTrue(m_commandFactory.ClimbUpCommand());
@@ -153,8 +161,10 @@ public class RobotContainer {
                 .onTrue(m_commandFactory.DeployIntake().alongWith(m_commandFactory.SpinIntake()))
                 .onFalse(m_commandFactory.RetractIntake().alongWith(m_commandFactory.StopIntake()));
 
-        m_driverController.povUp().onTrue(
-                m_commandFactory.AimHoodToPositionCommand(commandedShooterAngle).andThen(new PrintCommand("Hehe")));
+        m_driverController.povUp()
+                .whileTrue(m_commandFactory.ClimbDownCommand().finallyDo(m_commandFactory::StopClimb));
+        m_driverController.povDown()
+                .whileTrue(m_commandFactory.ClimbUpCommand().finallyDo(m_commandFactory::StopClimb));
 
         // m_driverController.x().onTrue(new InstantCommand(() -> {
         // // double hoodAngle = m_hoodAngleGetter.get();
@@ -170,7 +180,7 @@ public class RobotContainer {
     public Command getAutonomousCommand() {
         m_autoSelected = m_sendable.getSelected();
 
-        System.out.print(m_autoSelected);
+        DogLog.log("Auto Selected", m_autoSelected);
 
         return new PathPlannerAuto(m_autoSelected);
     }

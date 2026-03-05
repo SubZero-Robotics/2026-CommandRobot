@@ -70,7 +70,8 @@ public class Vision {
             cameraTransform = getTurretCameraTransform(result.getTimestampSeconds());
 
             if (cameraTransform == null) {
-                System.out.println("Turret exceeded max velocity valid for reading april tags.");
+                // System.out.println("Turret exceeded max velocity valid for reading april
+                // tags.");
                 break;
             }
 

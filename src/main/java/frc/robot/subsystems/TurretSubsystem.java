@@ -24,6 +24,8 @@ import static edu.wpi.first.units.Units.Seconds;
 
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.LinearVelocity;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
@@ -31,6 +33,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Robot;
+import frc.robot.Constants.NumericalConstants;
 import frc.robot.Constants.TurretConstants;
 import frc.robot.utils.PositionBuffer;
 import frc.robot.utils.TurretPosition;
@@ -137,6 +140,9 @@ public class TurretSubsystem extends SubsystemBase {
         return m_positionBuffer.getAngleAtTime(timestamp);
         // return new TurretPosition(getRotation(), RotationsPerSecond.of(0.0),
         // timestamp);
+
+        // return new TurretPosition(NumericalConstants.kNoRotation,
+        // NumericalConstants.kNoRotations, timestamp);
     }
 
     @Override

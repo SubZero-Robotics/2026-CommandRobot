@@ -215,6 +215,7 @@ public final class Constants {
                 public static final Angle kNoRotation = Radians.of(0.0);
                 public static final LinearAcceleration kGravity = MetersPerSecondPerSecond.of(9.807);
                 public static final Angle kHalfRotation = Degrees.of(180);
+                public static final AngularVelocity kNoRotations = RPM.of(0.0);
         }
 
         public static final class TurretConstants {
@@ -264,7 +265,7 @@ public final class Constants {
 
                 public static Angle kNonAimTurretAngle = Degrees.of(0.0);
                 public static int kTurretMotorAmpLimit = 10;
-                public static final Angle kTurretTorwardsFront = Degrees.of(350);
+                public static final Angle kTurretTorwardsFront = Degrees.of(180);
 
                 public static final Angle kAngularDistanceToFrontOfRobot = Rotations.of(0.605);
         }
@@ -360,11 +361,11 @@ public final class Constants {
                 public static double kReverseFeedSpeed = -0.1;
 
                 public static final int kAgitationMotorId = 9;
-                public static final double kAgitationSpeed = -0.45;
+                public static final double kAgitationSpeed = -0.60;
                 public static double kReverseAgitationSpeed = 0.1;
 
                 public static final int kRollerMotorId = 12;
-                public static final double kRollerSpeed = 0.4;
+                public static final double kRollerSpeed = 0.75;
                 public static double kReverseRollingSpeed = -0.1;
         }
 

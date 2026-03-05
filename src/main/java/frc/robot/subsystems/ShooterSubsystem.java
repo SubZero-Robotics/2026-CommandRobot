@@ -94,7 +94,7 @@ public class ShooterSubsystem extends SubsystemBase {
     }
 
     public void Stop() {
-        m_shooterMotor.stopMotor();
+        m_shooterClosedLoopController.setSetpoint(0, ControlType.kVelocity);
     }
 
     public Angle GetHoodAngle() {
@@ -108,6 +108,8 @@ public class ShooterSubsystem extends SubsystemBase {
     public boolean AtWheelVelocityTarget() {
         return RPM.of(m_shooterClosedLoopController.getSetpoint()).minus(RPM.of(m_shooterRelativeEncoder.getVelocity()))
                 .abs(RPM) < ShooterConstants.kShooterVelocityTolerance.in(RPM);
+
+        // return true;
     }
 
     @Override

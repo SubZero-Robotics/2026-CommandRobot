@@ -134,9 +134,10 @@ public class DriveSubsystem extends SubsystemBase {
         }
 
         AutoBuilder.configure(
-                this::getPose, // Robot pose supplier
-                this::resetOdometry, // Method to reset odometry (will be called if your auto has a starting pose)
-                this::getRobotRelativeSpeeds, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
+                () -> getPose(), // Robot pose supplier
+                (Pose2d pose) -> resetOdometry(pose), // Method to reset odometry (will be called if your auto has a
+                                                      // starting pose)
+                () -> getRobotRelativeSpeeds(), // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
                 (speeds, feedforwards) -> drive(speeds), // Method that will drive the robot given ROBOT RELATIVE
                 // ChassisSpeeds. Also optionally outputs individual module
                 // feedforwards
@@ -309,7 +310,7 @@ public class DriveSubsystem extends SubsystemBase {
      * @param pose The pose to which to set the odometry.
      */
     public void resetOdometry(Pose2d pose) {
-        m_odometry.resetPosition(
+        m_poseEstimator.resetPosition(
                 new Rotation2d(pidgey.getYaw().getValue()),
                 new SwerveModulePosition[] {
                         m_frontLeft.getPosition(),
@@ -376,7 +377,11 @@ public class DriveSubsystem extends SubsystemBase {
     }
 
     public void drive(ChassisSpeeds speeds) {
-        setModuleStates(DriveConstants.kDriveKinematics.toSwerveModuleStates(speeds));
+        var states = DriveConstants.kDriveKinematics.toSwerveModuleStates(speeds);
+        m_frontLeft.setDesiredState(states[0]);
+        m_frontRight.setDesiredState(states[1]);
+        m_rearLeft.setDesiredState(states[2]);
+        m_rearRight.setDesiredState(states[3]);
     }
 
     /**

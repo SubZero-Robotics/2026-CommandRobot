@@ -34,6 +34,7 @@ import frc.robot.Constants;
 import frc.robot.Robot;
 import frc.robot.Constants.Fixtures;
 import frc.robot.Constants.IntakeConstants;
+import frc.robot.Constants.NumericalConstants;
 import frc.robot.Constants.ShooterConstants;
 import frc.robot.Constants.TurretConstants;
 import frc.robot.subsystems.*;
@@ -59,10 +60,10 @@ public class CommandFactory {
 
     TargetSolution m_solution;
 
-    public CommandFactory(DriveSubsystem drive, TurretSubsystem turret, ShooterSubsystem shooter) {
-        m_drive = drive;
-        m_turret = turret;
-        m_shooter = shooter;
+    public CommandFactory() {
+        // m_drive = drive;
+        // m_turret = turret;
+        // m_shooter = shooter;
     }
 
     public Command AimCommand(boolean isFeedingLeftSide) {
@@ -78,6 +79,12 @@ public class CommandFactory {
         m_wheelVelocity = ShooterConstants.kNonAimShooterVelocity;
     }
 
+    public void SetSubsystems(DriveSubsystem drive, TurretSubsystem turret, ShooterSubsystem shooter) {
+        m_drive = drive;
+        m_turret = turret;
+        m_shooter = shooter;
+    }
+
     public Command StopAimCommand() {
         return new InstantCommand(this::StopAim);
     }
@@ -85,6 +92,7 @@ public class CommandFactory {
     public void periodic() {
         m_solution = GetHubAimSolution();
         m_wheelVelocity = m_solution.wheelSpeed();
+        DogLog.log("Turret Rotation in deg", m_turret.getRotation().in(Degrees));
         DogLog.log("RPM target", m_wheelVelocity.in(RPM));
     }
 
@@ -99,6 +107,12 @@ public class CommandFactory {
     public Command MoveHoodToDefaultPosition() {
         return new InstantCommand(() -> {
             m_shooter.MoveHoodToPosition(ShooterConstants.kDefaultHoodPosition);
+        });
+    }
+
+    public Command MoveTurretToFront() {
+        return new InstantCommand(() -> {
+            m_turret.moveToAngle(TurretConstants.kTurretTorwardsFront);
         });
     }
 
@@ -180,7 +194,7 @@ public class CommandFactory {
     public Command ShootCommand() {
         return new RunCommand(() -> {
             Shoot();
-        });
+        }).finallyDo(this::StopShoot);
     }
 
     public void ShootAtVelocity(AngularVelocity velocity) {
@@ -190,6 +204,7 @@ public class CommandFactory {
     public Command StopShootCommand() {
         return new InstantCommand(() -> {
             StopShoot();
+            m_wheelVelocity = NumericalConstants.kNoRotations;
         });
     }
 
@@ -342,7 +357,7 @@ public class CommandFactory {
     }
 
     public void ClimbDown() {
-        m_climber.climbUp();
+        m_climber.climbDown();
     }
 
     public void StopClimb() {
@@ -361,7 +376,7 @@ public class CommandFactory {
         // .alongWith(Commands.waitUntil(m_turret::atTarget))
 
         return (new RunCommand(this::ClimbUp))
-                .until(m_climber::atMax)
+                // .until(m_climber::atMax) // TODO: put this back
                 .finallyDo(this::StopClimb);
     }
 
@@ -371,7 +386,7 @@ public class CommandFactory {
         // .alongWith(Commands.waitUntil(m_turret::atTarget))
 
         return (new RunCommand(this::ClimbDown))
-                .until(m_climber::atMin)
+                // .until(m_climber::atMin) TODO: put this back
                 .finallyDo(this::StopClimb);
     }
 

@@ -29,7 +29,8 @@ public class ClimberSubsystem extends SubsystemBase {
 
     public void climbUp() {
 
-        if (!atMax()) {
+        // if (!atMax()) {
+        if (true) {
             m_climbMotor.set(ClimberConstants.kUpVelocity);
         } else {
             Stop();
@@ -38,7 +39,8 @@ public class ClimberSubsystem extends SubsystemBase {
 
     public void climbDown() {
 
-        if (!atMin()) {
+        // if (!atMin()) { // TODO: Put this back
+        if (true) {
             m_climbMotor.set(ClimberConstants.kDownVelocity);
         } else {
             Stop();
