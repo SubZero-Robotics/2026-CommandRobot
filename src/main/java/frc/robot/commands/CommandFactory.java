@@ -254,7 +254,17 @@ public class CommandFactory {
         Translation2d hubPosition = DriverStation.getAlliance().get() == Alliance.Blue ? Fixtures.kBlueAllianceHub
                 : Fixtures.kRedAllianceHub;
 
-        Translation2d turretTranslation = m_drive.getPose().getTranslation().plus(TurretConstants.kTurretOffset);
+        Pose2d robotPose = m_drive.getPose();
+
+        Distance turretX = TurretConstants.kTurretCenterDistanceFromRobotCenter
+                .times(Math.cos(robotPose.getRotation().getMeasure()
+                        .plus(TurretConstants.kAngularDistanceToFrontOfRobot).in(Radians)));
+
+        Distance turretY = TurretConstants.kTurretCenterDistanceFromRobotCenter
+                .times(Math.sin(robotPose.getRotation().getMeasure()
+                        .plus(TurretConstants.kAngularDistanceToFrontOfRobot).in(Radians)));
+
+        Translation2d turretTranslation = new Translation2d(turretX, turretY);
 
         Translation2d translationToHub = hubPosition.minus(turretTranslation);
 

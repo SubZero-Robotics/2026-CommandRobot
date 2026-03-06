@@ -261,6 +261,13 @@ public final class Constants {
                 public static final Translation2d kTurretOffset = new Translation2d(Inches.of(-6.25),
                                 Inches.of(6.151));
 
+                public static final Angle kTurretAngularOffset = Radians
+                                .of(Math.atan2(kTurretOffset.getY(), kTurretOffset.getX()));
+
+                public static final Distance kTurretCenterDistanceFromRobotCenter = Meters
+                                .of(Math.sqrt(Math.pow(kTurretOffset.getX(), 2.0)
+                                                + Math.pow(kTurretOffset.getY(), 2.0)));
+
                 public static final Angle kTurretAngleTolerance = Degrees.of(2.0);
 
                 public static Angle kNonAimTurretAngle = Degrees.of(0.0);
@@ -300,7 +307,7 @@ public final class Constants {
 
                 public static final LinearVelocity kMaxMuzzleVelocity = MetersPerSecond.of(10.0);
 
-                public static final Distance kHubRobotTurretOffset = Inches.of(35);
+                public static final Distance kHubRobotTurretOffset = Inches.of(44);
 
                 public static final ShootingEntry[] kShootingEntries = {
                                 new ShootingEntry(Inches.of(30).plus(kHubRobotTurretOffset), RPM.of(3519), null,
