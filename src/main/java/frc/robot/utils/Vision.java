@@ -24,7 +24,7 @@ import static edu.wpi.first.units.Units.*;
 
 public class Vision {
 
-    PhotonCamera m_camera1 = new PhotonCamera(VisionConstants.kCameraName1);
+    // PhotonCamera m_camera1 = new PhotonCamera(VisionConstants.kCameraName1);
     PhotonCamera m_camera2 = new PhotonCamera(VisionConstants.kCameraName2);
 
     Optional<Function<Double, TurretPosition>> m_turretPositionSupplier;
@@ -46,22 +46,28 @@ public class Vision {
     }
 
     public void periodic() {
-        Optional<EstimatedRobotPose> visionEstimationCameraOne = Optional.empty();
+        // Disabled Camera One
 
-        for (var result : m_camera1.getAllUnreadResults()) {
-            visionEstimationCameraOne = m_poseEstimatorOne.estimateLowestAmbiguityPose(result);
+        // Optional<EstimatedRobotPose> visionEstimationCameraOne = Optional.empty();
 
-            if (visionEstimationCameraOne.isEmpty()) {
-                visionEstimationCameraOne = m_poseEstimatorOne.estimateLowestAmbiguityPose(result);
-            }
+        // for (var result : m_camera1.getAllUnreadResults()) {
+        // visionEstimationCameraOne =
+        // m_poseEstimatorOne.estimateLowestAmbiguityPose(result);
 
-            updateEstimationStdDevs(visionEstimationCameraOne, result.getTargets(), m_poseEstimatorOne);
+        // if (visionEstimationCameraOne.isEmpty()) {
+        // visionEstimationCameraOne =
+        // m_poseEstimatorOne.estimateLowestAmbiguityPose(result);
+        // }
 
-            visionEstimationCameraOne.ifPresent(estimation -> {
-                m_visionConsumer.accept(new VisionEstimation(estimation.estimatedPose.toPose2d(),
-                        estimation.timestampSeconds, getCurrentStdDevs()));
-            });
-        }
+        // updateEstimationStdDevs(visionEstimationCameraOne, result.getTargets(),
+        // m_poseEstimatorOne);
+
+        // visionEstimationCameraOne.ifPresent(estimation -> {
+        // m_visionConsumer.accept(new
+        // VisionEstimation(estimation.estimatedPose.toPose2d(),
+        // estimation.timestampSeconds, getCurrentStdDevs()));
+        // });
+        // }
 
         Optional<EstimatedRobotPose> visionEstimationCameraTwo = Optional.empty();
         for (var result : m_camera2.getAllUnreadResults()) {

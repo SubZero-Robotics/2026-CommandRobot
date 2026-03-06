@@ -91,7 +91,11 @@ public class CommandFactory {
 
     public void periodic() {
         m_solution = GetHubAimSolution();
-        m_wheelVelocity = m_solution.wheelSpeed();
+        if (m_isAiming) {
+            m_wheelVelocity = m_solution.wheelSpeed();
+        } else {
+            m_wheelVelocity = ShooterConstants.kDefaultShooterVelocity;
+        }
         DogLog.log("Turret Rotation in deg", m_turret.getRotation().in(Degrees));
         DogLog.log("RPM target", m_wheelVelocity.in(RPM));
     }
@@ -178,12 +182,16 @@ public class CommandFactory {
         }, m_stager);
     }
 
-    public Command StopStaging() {
+    public Command StopStagingCommand() {
         return new InstantCommand(() -> {
-            m_stager.StopAgitate();
-            m_stager.StopFeed();
-            m_stager.StopRoll();
+            StopStaging();
         });
+    }
+
+    public void StopStaging() {
+        m_stager.StopAgitate();
+        m_stager.StopFeed();
+        m_stager.StopRoll();
     }
 
     private void Shoot() {

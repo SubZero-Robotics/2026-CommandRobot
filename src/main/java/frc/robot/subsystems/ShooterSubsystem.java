@@ -21,18 +21,21 @@ import static edu.wpi.first.units.Units.Rotations;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants.NumericalConstants;
 import frc.robot.Constants.ShooterConstants;
 
 public class ShooterSubsystem extends SubsystemBase {
 
     SparkMax m_shooterMotor = new SparkMax(ShooterConstants.kShooterMotorId, MotorType.kBrushless);
-    SparkMax m_hoodMotor = new SparkMax(ShooterConstants.kHoodMotorId, MotorType.kBrushless);
+    // SparkMax m_hoodMotor = new SparkMax(ShooterConstants.kHoodMotorId,
+    // MotorType.kBrushless);
 
-    AbsoluteEncoder m_absoluteEncoder = m_hoodMotor.getAbsoluteEncoder();
+    // AbsoluteEncoder m_absoluteEncoder = m_hoodMotor.getAbsoluteEncoder();
     RelativeEncoder m_shooterRelativeEncoder = m_shooterMotor.getEncoder();
 
     private final SparkClosedLoopController m_shooterClosedLoopController = m_shooterMotor.getClosedLoopController();
-    private final SparkClosedLoopController m_hoodClosedLoopController = m_hoodMotor.getClosedLoopController();
+    // private final SparkClosedLoopController m_hoodClosedLoopController =
+    // m_hoodMotor.getClosedLoopController();
 
     private final SparkMaxConfig m_shooterConfig = new SparkMaxConfig();
     private final SparkMaxConfig m_hoodConfig = new SparkMaxConfig();
@@ -63,10 +66,11 @@ public class ShooterSubsystem extends SubsystemBase {
         m_hoodConfig.encoder.positionConversionFactor(1);
 
         m_shooterMotor.configure(m_shooterConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-        m_hoodMotor.configure(m_hoodConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+        // m_hoodMotor.configure(m_hoodConfig, ResetMode.kResetSafeParameters,
+        // PersistMode.kPersistParameters);
     }
 
-    // Position between 0 and .55
+    // Position between 0 and .55. Disabled hood motor
     public void MoveHoodToPosition(Angle angle) {
         // System.out.println("Move hood to position: " + angle);
 
@@ -78,14 +82,16 @@ public class ShooterSubsystem extends SubsystemBase {
             return;
         }
 
-        var currentPosition = m_absoluteEncoder.getPosition();
+        // var currentPosition = m_absoluteEncoder.getPosition();
 
-        if (currentPosition > ShooterConstants.kHoodMaxAbsolutePosition) {
-            System.out.println("Hood position incorrect for safe movement. Pos: " + currentPosition);
-            return;
-        }
+        // if (currentPosition > ShooterConstants.kHoodMaxAbsolutePosition) {
+        // System.out.println("Hood position incorrect for safe movement. Pos: " +
+        // currentPosition);
+        // return;
+        // }
 
-        m_hoodClosedLoopController.setSetpoint(targetPosition, ControlType.kPosition);
+        // m_hoodClosedLoopController.setSetpoint(targetPosition,
+        // ControlType.kPosition);
     }
 
     public void Spin(AngularVelocity shootSpeedVelocity) {
@@ -98,11 +104,14 @@ public class ShooterSubsystem extends SubsystemBase {
     }
 
     public Angle GetHoodAngle() {
-        return Degrees.of(m_absoluteEncoder.getPosition() / ShooterConstants.kHoodDegreeConversionFactor);
+        // return Degrees.of(m_absoluteEncoder.getPosition() /
+        // ShooterConstants.kHoodDegreeConversionFactor);
+        return NumericalConstants.kNoRotation;
     }
 
     public boolean AtHoodTarget() {
-        return m_hoodClosedLoopController.isAtSetpoint();
+        // return m_hoodClosedLoopController.isAtSetpoint();
+        return true;
     }
 
     public boolean AtWheelVelocityTarget() {

@@ -223,10 +223,10 @@ public final class Constants {
                 public static final Angle kMinAngle = Rotations.of(0.1);
                 public static final Angle kMaxAngle = Rotations.of(0.854);
 
-                public static final int kPositionBufferLength = 4000;
+                public static final int kPositionBufferLength = 1000;
                 public static final Time kEncoderReadingDelay = Seconds.of(0.005);
 
-                public static final Time kEncoderReadInterval = Seconds.of(0.01);
+                public static final Time kEncoderReadInterval = Seconds.of(0.05);
 
                 public static final double kP = 1.5;
                 public static final double kI = 0.0;
@@ -267,7 +267,7 @@ public final class Constants {
                 public static int kTurretMotorAmpLimit = 10;
                 public static final Angle kTurretTorwardsFront = Degrees.of(180);
 
-                public static final Angle kAngularDistanceToFrontOfRobot = Rotations.of(0.605);
+                public static final Angle kAngularDistanceToFrontOfRobot = Rotations.of(0.629);
         }
 
         public static final class ShooterConstants {
@@ -300,7 +300,7 @@ public final class Constants {
 
                 public static final LinearVelocity kMaxMuzzleVelocity = MetersPerSecond.of(10.0);
 
-                public static final Distance kHubRobotTurretOffset = Inches.of(47);
+                public static final Distance kHubRobotTurretOffset = Inches.of(35);
 
                 public static final ShootingEntry[] kShootingEntries = {
                                 new ShootingEntry(Inches.of(30).plus(kHubRobotTurretOffset), RPM.of(3519), null,
@@ -335,7 +335,7 @@ public final class Constants {
                 public static final double kHoodDegreeConversionFactor = kHoodMaxAbsolutePosition / 30;
 
                 // TODO: Change to real numbers
-                public static final AngularVelocity kNonAimShooterVelocity = RPM.of(500);
+                public static final AngularVelocity kNonAimShooterVelocity = RPM.of(2000);
                 public static final Angle kNonAimHoodAngle = Degrees.of(15.0);
                 public static final AngularVelocity kFeedingWheelVelocity = RPM.of(4000);
                 public static final Angle kHoodFeedingPosition = Degrees.of(25.0);
@@ -351,6 +351,8 @@ public final class Constants {
                 // This is the min rotational amount where we can reasonably assume that the
                 // hood has just gone backwards a little too far, beyond the zero of the encoder
                 public static final Angle kWrapBackMin = Rotations.of(0.9);
+                public static final Time kAutoShootTime = Seconds.of(4.0);
+                public static final AngularVelocity kDefaultShooterVelocity = RPM.of(4000);
         }
 
         public static final class StagingConstants {
@@ -361,11 +363,11 @@ public final class Constants {
                 public static double kReverseFeedSpeed = -0.1;
 
                 public static final int kAgitationMotorId = 9;
-                public static final double kAgitationSpeed = -0.60;
+                public static final double kAgitationSpeed = -0.75;
                 public static double kReverseAgitationSpeed = 0.1;
 
                 public static final int kRollerMotorId = 12;
-                public static final double kRollerSpeed = 0.75;
+                public static final double kRollerSpeed = 0.95;
                 public static double kReverseRollingSpeed = -0.1;
         }
 
@@ -403,7 +405,7 @@ public final class Constants {
                 public static final Angle kFeedOffset = Degrees.of(12);
 
                 public static final Translation2d kRedHubAprilTag = AprilTagFieldLayout
-                                .loadField(AprilTagFields.k2026RebuiltAndymark)
+                                .loadField(AprilTagFields.k2026RebuiltWelded) // TODO: Change to normal field
                                 .getTagPose(3).get().toPose2d().getTranslation();
         }
 
@@ -435,7 +437,7 @@ public final class Constants {
                 public static final int kDeployMotorCurrentLimit = 40;
                 public static final int kIntakeMotorCurrentLimit = 80;
 
-                public static final AngularVelocity kDefaultIntakeSpeed = RPM.of(-2500);
+                public static final AngularVelocity kDefaultIntakeSpeed = RPM.of(-2200);
         }
 
         public static final class ClimberConstants {

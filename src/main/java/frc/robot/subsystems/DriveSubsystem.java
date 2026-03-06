@@ -361,23 +361,38 @@ public class DriveSubsystem extends SubsystemBase {
         // System.out.println("Target " + m_targetAutoAngle + ", Current" +
         // getHeading());
 
-        final var swerveModuleStates = DriveConstants.kDriveKinematics.toSwerveModuleStates(ChassisSpeeds.discretize(
+        // final var swerveModuleStates =
+        // DriveConstants.kDriveKinematics.toSwerveModuleStates(ChassisSpeeds.discretize(
+        // fieldRelative
+        // ? ChassisSpeeds.fromFieldRelativeSpeeds(xSpeedDelivered, ySpeedDelivered,
+        // rotDelivered,
+        // new Rotation2d(getHeading()))
+        // : new ChassisSpeeds(xSpeedDelivered, ySpeedDelivered, rotDelivered),
+        // timeElapsed));
+        // SwerveDriveKinematics.desaturateWheelSpeeds(
+        // swerveModuleStates, DriveConstants.kMaxSpeed.magnitude());
+
+        var speeds = ChassisSpeeds.discretize(
                 fieldRelative
-                        ? ChassisSpeeds.fromFieldRelativeSpeeds(xSpeedDelivered, ySpeedDelivered, rotDelivered,
+                        ? ChassisSpeeds.fromFieldRelativeSpeeds(xSpeedDelivered, ySpeedDelivered,
+                                rotDelivered,
                                 new Rotation2d(getHeading()))
                         : new ChassisSpeeds(xSpeedDelivered, ySpeedDelivered, rotDelivered),
-                timeElapsed));
-        SwerveDriveKinematics.desaturateWheelSpeeds(
-                swerveModuleStates, DriveConstants.kMaxSpeed.magnitude());
+                timeElapsed);
 
-        m_frontLeft.setDesiredState(swerveModuleStates[0]);
-        m_frontRight.setDesiredState(swerveModuleStates[1]);
-        m_rearLeft.setDesiredState(swerveModuleStates[2]);
-        m_rearRight.setDesiredState(swerveModuleStates[3]);
+        drive(speeds);
+
+        // m_frontLeft.setDesiredState(swerveModuleStates[0]);
+        // m_frontRight.setDesiredState(swerveModuleStates[1]);
+        // m_rearLeft.setDesiredState(swerveModuleStates[2]);
+        // m_rearRight.setDesiredState(swerveModuleStates[3]);
     }
 
     public void drive(ChassisSpeeds speeds) {
         var states = DriveConstants.kDriveKinematics.toSwerveModuleStates(speeds);
+
+        DogLog.log("First commanded motor speeds", states[0]);
+
         m_frontLeft.setDesiredState(states[0]);
         m_frontRight.setDesiredState(states[1]);
         m_rearLeft.setDesiredState(states[2]);
