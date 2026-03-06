@@ -258,11 +258,13 @@ public class CommandFactory {
 
         Distance turretX = TurretConstants.kTurretCenterDistanceFromRobotCenter
                 .times(Math.cos(robotPose.getRotation().getMeasure()
-                        .plus(TurretConstants.kAngularDistanceToFrontOfRobot).in(Radians)));
+                        .plus(TurretConstants.kAngularDistanceToFrontOfRobot).in(Radians)))
+                .plus(robotPose.getTranslation().getMeasureX());
 
         Distance turretY = TurretConstants.kTurretCenterDistanceFromRobotCenter
                 .times(Math.sin(robotPose.getRotation().getMeasure()
-                        .plus(TurretConstants.kAngularDistanceToFrontOfRobot).in(Radians)));
+                        .plus(TurretConstants.kAngularDistanceToFrontOfRobot).in(Radians)))
+                .plus(robotPose.getTranslation().getMeasureY());
 
         Translation2d turretTranslation = new Translation2d(turretX, turretY);
 
