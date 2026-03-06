@@ -223,7 +223,7 @@ public final class Constants {
                 public static final Angle kMinAngle = Rotations.of(0.1);
                 public static final Angle kMaxAngle = Rotations.of(0.854);
 
-                public static final int kPositionBufferLength = 1000;
+                public static final int kPositionBufferLength = 300;
                 public static final Time kEncoderReadingDelay = Seconds.of(0.005);
 
                 public static final Time kEncoderReadInterval = Seconds.of(0.05);
@@ -441,7 +441,7 @@ public final class Constants {
                 public static final Angle kMaxExtension = Rotations.of(9.6);
                 public static final Angle kMinExtension = Rotations.of(0.0);
 
-                public static final int kDeployMotorCurrentLimit = 40;
+                public static final int kDeployMotorCurrentLimit = 60;
                 public static final int kIntakeMotorCurrentLimit = 80;
 
                 public static final AngularVelocity kDefaultIntakeSpeed = RPM.of(-2200);

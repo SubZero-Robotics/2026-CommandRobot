@@ -81,7 +81,10 @@ public class RobotContainer {
                 NamedCommands.registerCommand("Stop Aim", m_commandFactory.StopAimCommand());
                 NamedCommands.registerCommand("Shoot",
                                 m_commandFactory.ShootCommand().alongWith(m_commandFactory.RunAllStager())
-                                                .finallyDo(m_commandFactory::StopStagingCommand));
+                                                .finallyDo(() -> {
+                                                        m_commandFactory.StopStaging();
+                                                        m_commandFactory.StopShoot();
+                                                }));
                 NamedCommands.registerCommand("Stop Shoot",
                                 m_commandFactory.StopShootCommand());
                 SmartDashboard.putNumber("Wheelspeed in rotations per second", 0.0);

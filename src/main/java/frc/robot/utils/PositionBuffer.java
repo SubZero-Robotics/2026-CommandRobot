@@ -1,5 +1,6 @@
 package frc.robot.utils;
 
+import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.RPM;
 import static edu.wpi.first.units.Units.Radians;
 import edu.wpi.first.units.measure.Angle;
@@ -35,6 +36,8 @@ public class PositionBuffer {
         TurretPosition midpointTurretPosition = null;
         double timeAtMidpoint = 0.0;
 
+        int i = 0;
+
         while (low < high) {
             try {
                 midpointTurretPosition = m_positions.get(midpoint);
@@ -51,6 +54,15 @@ public class PositionBuffer {
             }
 
             midpoint = low + (high - low) / 2;
+
+            i++;
+
+            // System.out.println("Turret position at loop " + i);
+
+            if (i > 20) {
+                System.err.println("Turret position loop has exceeded 20 iterations.");
+                return new TurretPosition(Degrees.of(40), RPM.of(3500), requestedTime);
+            }
         }
 
         // Linearly UtilityFunctions.interpolate velocity if we aren't on the first/last

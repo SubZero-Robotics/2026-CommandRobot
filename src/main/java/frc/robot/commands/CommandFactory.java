@@ -76,7 +76,6 @@ public class CommandFactory {
     public void StopAim() {
         m_isAiming = false;
         m_shooter.MoveHoodToPosition(ShooterConstants.kDefaultHoodPosition);
-        m_wheelVelocity = ShooterConstants.kNonAimShooterVelocity;
     }
 
     public void SetSubsystems(DriveSubsystem drive, TurretSubsystem turret, ShooterSubsystem shooter) {
@@ -92,11 +91,9 @@ public class CommandFactory {
     public void periodic() {
         DogLog.log("In periodic command factor", true);
         m_solution = GetHubAimSolution();
-        if (m_isAiming) {
-            m_wheelVelocity = m_solution.wheelSpeed();
-        } else {
-            m_wheelVelocity = ShooterConstants.kDefaultShooterVelocity;
-        }
+
+        m_wheelVelocity = m_solution.wheelSpeed();
+
         DogLog.log("Turret Rotation in deg", m_turret.getRotation().in(Degrees));
         DogLog.log("RPM target", m_wheelVelocity.in(RPM));
         DogLog.log("In periodic command factor", false);
@@ -534,9 +531,12 @@ public class CommandFactory {
     }
 
     private static int getFirstEntryIndex(Distance distance) {
+        DogLog.log("In shooting entry search function", true);
         int low = 0;
         int high = ShooterConstants.kShootingEntries.length;
         int mid = 0;
+
+        int i = 0;
 
         while (low < high) {
             mid = (low + high) / 2;
@@ -546,6 +546,13 @@ public class CommandFactory {
                 low = mid + 1;
             } else {
                 high = mid;
+            }
+
+            i++;
+
+            if (i > 20) {
+                System.err.println("Shooting entry loop has exceeded 20 iterations.");
+                return 1;
             }
         }
 
@@ -566,6 +573,8 @@ public class CommandFactory {
                 previousEntryIndex = mid;
             }
         }
+
+        DogLog.log("In shooting entry search function", false);
 
         return previousEntryIndex;
     }
