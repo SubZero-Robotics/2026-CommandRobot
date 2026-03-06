@@ -90,6 +90,7 @@ public class CommandFactory {
     }
 
     public void periodic() {
+        DogLog.log("In periodic command factor", true);
         m_solution = GetHubAimSolution();
         if (m_isAiming) {
             m_wheelVelocity = m_solution.wheelSpeed();
@@ -98,6 +99,7 @@ public class CommandFactory {
         }
         DogLog.log("Turret Rotation in deg", m_turret.getRotation().in(Degrees));
         DogLog.log("RPM target", m_wheelVelocity.in(RPM));
+        DogLog.log("In periodic command factor", false);
     }
 
     public void AimTurretToFront() {

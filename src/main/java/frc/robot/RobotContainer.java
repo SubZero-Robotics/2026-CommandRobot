@@ -19,6 +19,7 @@ import edu.wpi.first.networktables.DoubleSubscriber;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -226,28 +227,43 @@ public class RobotContainer {
         }
 
         public void teleopPeriodic() {
+                DogLog.log("In Teleop Periodic Robotcontainer", true);
                 m_turret.addDriveHeading(UtilityFunctions.WrapAngle(m_drive.getHeading()));
 
-                TargetSolution solution = m_commandFactory.GetHubAimSolution();
+                // double solutionStart = Timer.getFPGATimestamp();
+                // TargetSolution solution = m_commandFactory.GetHubAimSolution();
+                // double solutionEnd = Timer.getFPGATimestamp();
 
-                Pose2d robotPose = m_drive.getPose();
+                // Pose2d robotPose = m_drive.getPose();
 
-                Distance xDist = Meters.of(solution.distance().in(Meters)
-                                * Math.cos(solution.hubAngle().minus(solution.phi()).in(Radians)))
-                                .plus(robotPose.getMeasureX());
-                Distance yDist = Meters.of(solution.distance().in(Meters)
-                                * Math.sin(solution.hubAngle().minus(solution.phi()).in(Radians)))
-                                .plus(robotPose.getMeasureY());
+                // Distance xDist = Meters.of(solution.distance().in(Meters)
+                // * Math.cos(solution.hubAngle().minus(solution.phi()).in(Radians)))
+                // .plus(robotPose.getMeasureX());
+                // Distance yDist = Meters.of(solution.distance().in(Meters)
+                // * Math.sin(solution.hubAngle().minus(solution.phi()).in(Radians)))
+                // .plus(robotPose.getMeasureY());
 
-                Pose2d targetPose = new Pose2d(xDist, yDist, new Rotation2d());
+                // Pose2d targetPose = new Pose2d(xDist, yDist, new Rotation2d());
 
-                m_field.getObject("targetPose").setPose(targetPose);
+                // m_field.getObject("targetPose").setPose(targetPose);
 
+                double start = Timer.getFPGATimestamp();
                 m_commandFactory.periodic();
+                double end = Timer.getFPGATimestamp();
 
                 if (m_zeroGyroGetter.get()) {
                         m_drive.ZeroGyro();
                 }
+
+                DogLog.log("Drivetrain command",
+                                m_drive.getCurrentCommand() == null ? "null" : m_drive.getCurrentCommand().toString());
+                DogLog.log("Turret Command",
+                                m_turret.getCurrentCommand() == null ? "null"
+                                                : m_turret.getCurrentCommand().toString());
+                DogLog.log("Shooter command", m_shooter.getCurrentCommand() == null ? "null"
+                                : m_shooter.getCurrentCommand().toString());
+                DogLog.log("Time for command factory periodic in ms", (end - start) * 1000.0);
+                DogLog.log("In Teleop Periodic Robotcontainer", false);
         }
 
         public void periodic() {

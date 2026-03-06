@@ -11,6 +11,7 @@ import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPoseEstimator;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
+import dev.doglog.DogLog;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Rotation3d;
@@ -20,6 +21,8 @@ import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import frc.robot.Constants.VisionConstants;
 import edu.wpi.first.units.measure.*;
+import edu.wpi.first.wpilibj.Timer;
+
 import static edu.wpi.first.units.Units.*;
 
 public class Vision {
@@ -69,6 +72,9 @@ public class Vision {
         // });
         // }
 
+        DogLog.log("In periodic vision subsystem", true);
+        double start = Timer.getFPGATimestamp();
+
         Optional<EstimatedRobotPose> visionEstimationCameraTwo = Optional.empty();
         for (var result : m_camera2.getAllUnreadResults()) {
             Transform3d cameraTransform;
@@ -98,6 +104,11 @@ public class Vision {
                         estimation.timestampSeconds, getCurrentStdDevs()));
             });
         }
+
+        double end = Timer.getFPGATimestamp();
+
+        DogLog.log("Vision periodic loop time (ms)", (end - start) * 1000.0);
+        DogLog.log("In periodic vision subsystem", false);
     }
 
     private void updateEstimationStdDevs(

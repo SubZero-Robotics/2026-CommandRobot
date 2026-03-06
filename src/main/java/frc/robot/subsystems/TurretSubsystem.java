@@ -25,6 +25,7 @@ import static edu.wpi.first.units.Units.Seconds;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
@@ -147,10 +148,18 @@ public class TurretSubsystem extends SubsystemBase {
 
     @Override
     public void periodic() {
+        DogLog.log("In periodic turret subsystem", true);
+        double start = Timer.getFPGATimestamp();
+
         m_positionBuffer.pushElement(
                 UtilityFunctions.WrapAngle(getRotation()),
                 RPM.of(m_absoluteEncoder.getVelocity()),
                 TurretConstants.kEncoderReadingDelay.in(Seconds));
+
+        double end = Timer.getFPGATimestamp();
+
+        DogLog.log("Turret periodic time (ms)", (end - start) * 1000.0);
+        DogLog.log("In periodic turret subsystem", false);
 
         // DogLog.log("Turret rotation relative to front of robot",
         // getRotation().in(Degrees));

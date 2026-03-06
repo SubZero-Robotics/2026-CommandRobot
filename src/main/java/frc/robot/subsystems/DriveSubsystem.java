@@ -231,7 +231,9 @@ public class DriveSubsystem extends SubsystemBase {
 
     @Override
     public void periodic() {
+        DogLog.log("In periodic drive subsystem", true);
         // Update the odometry in the periodic block
+        double start = Timer.getFPGATimestamp();
 
         if (Robot.isSimulation()) {
             ChassisSpeeds chassisSpeed = DriveConstants.kDriveKinematics.toChassisSpeeds(
@@ -274,6 +276,12 @@ public class DriveSubsystem extends SubsystemBase {
         m_pidController.periodic();
 
         SmartDashboard.putData(m_field);
+
+        double end = Timer.getFPGATimestamp();
+
+        DogLog.log("Drivetrain periodic time (ms)", (end - start) * 1000.0);
+
+        DogLog.log("In periodic drive subsystem", false);
 
         // SmartDashboard.putBoolean("Is manual rotate", m_isManualRotate);
 
