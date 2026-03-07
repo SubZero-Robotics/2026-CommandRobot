@@ -310,7 +310,7 @@ public final class Constants {
 
                 public static final LinearVelocity kMaxMuzzleVelocity = MetersPerSecond.of(10.0);
 
-                public static final Distance kHubRobotTurretOffset = Inches.of(44);
+                public static final Distance kHubRobotTurretOffset = Inches.of(47);
 
                 public static final ShootingEntry[] kShootingEntries = {
                                 new ShootingEntry(Inches.of(30).plus(kHubRobotTurretOffset), RPM.of(3519), null,

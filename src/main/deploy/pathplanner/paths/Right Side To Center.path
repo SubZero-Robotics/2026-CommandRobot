@@ -4,12 +4,12 @@
     {
       "anchor": {
         "x": 3.8579172610556345,
-        "y": 0.6386019971469341
+        "y": 0.8197432239657632
       },
       "prevControl": null,
       "nextControl": {
         "x": 7.190517261055635,
-        "y": 0.6386019971469341
+        "y": 0.8197432239657632
       },
       "isLocked": false,
       "linkedName": "Right Auto Start Position"
@@ -57,7 +57,7 @@
   "folder": null,
   "idealStartingState": {
     "velocity": 0,
-    "rotation": -112.83365417791752
+    "rotation": -112.83365417791754
   },
   "useDefaultConstraints": true
 }

@@ -458,8 +458,8 @@ public class DriveSubsystem extends SubsystemBase {
      * @return the robot's heading in degrees, from -180 to 180
      */
     public Angle getHeading() {
-        // return pidgey.getYaw().getValue();
-        return m_poseEstimator.getEstimatedPosition().getRotation().getMeasure();
+        return pidgey.getYaw().getValue();
+        // return m_poseEstimator.getEstimatedPosition().getRotation().getMeasure();
     }
 
     public Angle getGyroHeading() {
