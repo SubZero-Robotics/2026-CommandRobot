@@ -138,7 +138,8 @@ public class DriveSubsystem extends SubsystemBase {
                 (Pose2d pose) -> resetOdometry(pose), // Method to reset odometry (will be called if your auto has a
                                                       // starting pose)
                 () -> getRobotRelativeSpeeds(), // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
-                (speeds, feedforwards) -> drive(speeds), // Method that will drive the robot given ROBOT RELATIVE
+                (speeds, feedforwards) -> drive(speeds, "Path planner"), // Method that will drive the robot given ROBOT
+                                                                         // RELATIVE
                 // ChassisSpeeds. Also optionally outputs individual module
                 // feedforwards
                 new PPHolonomicDriveController( // PPHolonomicController is the built in path following controller for
@@ -388,7 +389,7 @@ public class DriveSubsystem extends SubsystemBase {
                         : new ChassisSpeeds(xSpeedDelivered, ySpeedDelivered, rotDelivered),
                 timeElapsed);
 
-        drive(speeds);
+        drive(speeds, "Joystick runner");
 
         // m_frontLeft.setDesiredState(swerveModuleStates[0]);
         // m_frontRight.setDesiredState(swerveModuleStates[1]);
@@ -396,10 +397,11 @@ public class DriveSubsystem extends SubsystemBase {
         // m_rearRight.setDesiredState(swerveModuleStates[3]);
     }
 
-    public void drive(ChassisSpeeds speeds) {
+    public void drive(ChassisSpeeds speeds, String caller) {
         var states = DriveConstants.kDriveKinematics.toSwerveModuleStates(speeds);
 
         DogLog.log("First commanded motor speeds", states[0]);
+        DogLog.log("Caller", caller);
 
         m_frontLeft.setDesiredState(states[0]);
         m_frontRight.setDesiredState(states[1]);

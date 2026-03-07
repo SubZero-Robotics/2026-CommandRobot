@@ -103,19 +103,19 @@ public class RobotContainer {
                 configureBindings();
 
                 // Configure default commands
-                m_drive.setDefaultCommand(
-                                // The left stick controls translation of the robot.
-                                // Turning is controlled by the X axis of the right stick.
-                                new RunCommand(
-                                                () -> m_drive.drive(
-                                                                -MathUtil.applyDeadband(m_driverController.getLeftY(),
-                                                                                OIConstants.kDriveDeadband),
-                                                                -MathUtil.applyDeadband(m_driverController.getLeftX(),
-                                                                                OIConstants.kDriveDeadband),
-                                                                -MathUtil.applyDeadband(m_driverController.getRightX(),
-                                                                                OIConstants.kDriveDeadband),
-                                                                true),
-                                                m_drive));
+                // m_drive.setDefaultCommand(
+                // // The left stick controls translation of the robot.
+                // // Turning is controlled by the X axis of the right stick.
+                // new RunCommand(
+                // () -> m_drive.drive(
+                // -MathUtil.applyDeadband(m_driverController.getLeftY(),
+                // OIConstants.kDriveDeadband),
+                // -MathUtil.applyDeadband(m_driverController.getLeftX(),
+                // OIConstants.kDriveDeadband),
+                // -MathUtil.applyDeadband(m_driverController.getRightX(),
+                // OIConstants.kDriveDeadband),
+                // true),
+                // m_drive));
 
                 m_field = m_drive.getField();
                 SmartDashboard.putData(m_sendable);
@@ -193,10 +193,10 @@ public class RobotContainer {
                                                         return m_intakeOut;
                                                 }));
 
-                m_driverController.povUp()
-                                .whileTrue(m_commandFactory.ClimbDownCommand().finallyDo(m_commandFactory::StopClimb));
-                m_driverController.povDown()
-                                .whileTrue(m_commandFactory.ClimbUpCommand().finallyDo(m_commandFactory::StopClimb));
+                // m_driverController.povUp()
+                // .whileTrue(m_commandFactory.ClimbDownCommand().finallyDo(m_commandFactory::StopClimb));
+                // m_driverController.povDown()
+                // .whileTrue(m_commandFactory.ClimbUpCommand().finallyDo(m_commandFactory::StopClimb));
 
                 // m_driverController.x().onTrue(new InstantCommand(() -> {
                 // // double hoodAngle = m_hoodAngleGetter.get();
@@ -290,5 +290,22 @@ public class RobotContainer {
 
         private Angle getSmartdashBoardRequestedTurretAngle() {
                 return Degrees.of(SmartDashboard.getNumber("Turret angle in degrees", 0.0));
+        }
+
+        public void teleopInit() {
+                // Configure default commands
+                m_drive.setDefaultCommand(
+                                // The left stick controls translation of the robot.
+                                // Turning is controlled by the X axis of the right stick.
+                                new RunCommand(
+                                                () -> m_drive.drive(
+                                                                -MathUtil.applyDeadband(m_driverController.getLeftY(),
+                                                                                OIConstants.kDriveDeadband),
+                                                                -MathUtil.applyDeadband(m_driverController.getLeftX(),
+                                                                                OIConstants.kDriveDeadband),
+                                                                -MathUtil.applyDeadband(m_driverController.getRightX(),
+                                                                                OIConstants.kDriveDeadband),
+                                                                true),
+                                                m_drive));
         }
 }
