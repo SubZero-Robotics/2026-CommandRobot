@@ -94,6 +94,7 @@ public class RobotContainer {
                 m_sendable.addOption("Right Backwards Auto", "Right Backwards Auto");
                 m_sendable.addOption("Left Backwards Auto", "Left Backwards Auto");
                 m_sendable.addOption("Left Side Neutral Auto", "Left Side Neutral Auto");
+                m_sendable.addOption("Right Side Neutral Auto", "Right Side Neutral Auto");
                 m_sendable.setDefaultOption("Right Forward Auto", "Right Forward Auto");
                 m_sendable.addOption("Simple Shoot Auto", "Simple Shoot Auto");
 

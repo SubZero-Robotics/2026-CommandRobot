@@ -56,7 +56,7 @@ public final class Constants {
                 // Driving Parameters - Note that these are not the maximum capable speeds of
                 // the robot, rather the allowed maximum speeds
 
-                public static final LinearVelocity kMaxSpeed = MetersPerSecond.of(2.4);
+                public static final LinearVelocity kMaxSpeed = MetersPerSecond.of(4.0);
                 public static final LinearAcceleration kMaxAcceleration = MetersPerSecondPerSecond.of(10.0);
 
                 public static final AngularVelocity kMaxAngularSpeed = RadiansPerSecond.of(2 * Math.PI);
@@ -64,9 +64,9 @@ public final class Constants {
                                 .of(4 * Math.PI);
 
                 // Chassis configuration
-                public static final double kTrackWidth = Units.inchesToMeters(26.5);
+                public static final double kTrackWidth = Units.inchesToMeters(23.149606);
                 // Distance between centers of right and left wheels on robot
-                public static final double kWheelBase = Units.inchesToMeters(26.5);
+                public static final double kWheelBase = Units.inchesToMeters(23.149606);
                 // Distance between front and back wheels on robot
                 public static final SwerveDriveKinematics kDriveKinematics = new SwerveDriveKinematics(
                                 new Translation2d(kWheelBase / 2, kTrackWidth / 2),
@@ -144,8 +144,8 @@ public final class Constants {
 
                 public static final double kMaxSpeedMetersPerSecond = 3;
                 public static final double kMaxAccelerationMetersPerSecondSquared = 3;
-                public static final double kMaxAngularSpeedRadiansPerSecond = Math.PI;
-                public static final double kMaxAngularSpeedRadiansPerSecondSquared = Math.PI;
+                public static final double kMaxAngularSpeedRadiansPerSecond = 2 * Math.PI;
+                public static final double kMaxAngularSpeedRadiansPerSecondSquared = 2 * Math.PI;
 
                 public static final double kPXController = 1;
                 public static final double kPYController = 1;
