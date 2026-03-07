@@ -119,6 +119,23 @@ public class CommandFactory {
         });
     }
 
+    public void AutoAimAtHub() {
+        TargetSolution solution;
+
+        if (m_solution == null) {
+            solution = GetHubAimSolution();
+        } else {
+            solution = m_solution;
+        }
+
+        m_wheelVelocity = solution.wheelSpeed();
+        MoveTurretToHeading(solution.hubAngle(), false);
+    }
+
+    public Command AutoAimAtHubCommand() {
+        return new InstantCommand(this::AutoAimAtHub);
+    }
+
     private void Aim(boolean isFeedingLeftSide) {
         Fixtures.FieldLocations location = m_drive.getRobotLocation();
 
@@ -133,7 +150,7 @@ public class CommandFactory {
                     solution = m_solution;
                 }
 
-                MoveTurretToHeading(solution.hubAngle().plus(solution.phi()));
+                MoveTurretToHeading(solution.hubAngle().plus(solution.phi()), true);
                 // DogLog.log("Range from hub (meters)", solution.distance().in(Meters));
                 // System.out.println(solution.phi());
                 m_shooter.MoveHoodToPosition(solution.hoodAngle());
@@ -150,7 +167,7 @@ public class CommandFactory {
 
                 m_shooter.MoveHoodToPosition(ShooterConstants.kHoodFeedingPosition);
                 m_wheelVelocity = ShooterConstants.kFeedingWheelVelocity;
-                MoveTurretToHeading(absHeading);
+                MoveTurretToHeading(absHeading, true);
                 break;
             }
             case OpponentSide: {
@@ -283,7 +300,7 @@ public class CommandFactory {
 
     public Command MoveTurretToHeadingCommand(Angle heading) {
         return new RunCommand(() -> {
-            MoveTurretToHeading(heading);
+            MoveTurretToHeading(heading, true);
         }, m_turret);
     }
 
@@ -308,12 +325,12 @@ public class CommandFactory {
 
             Angle angle = Radians.of(Math.atan2(dy, dx));
 
-            MoveTurretToHeading(angle);
+            MoveTurretToHeading(angle, true);
             System.out.println(angle);
         }).finallyDo(m_drive::disableFaceHeading);
     }
 
-    public void MoveTurretToHeading(Angle heading) {
+    public void MoveTurretToHeading(Angle heading, boolean moveDrivetrain) {
         // Weird bug with red side position data
         Angle offset = DriverStation.getAlliance().get() == Alliance.Red && Robot.isReal()
                 ? Constants.NumericalConstants.kHalfRotation
@@ -336,17 +353,22 @@ public class CommandFactory {
 
             // The overshoot is negative if the robot has to move in a negative direction;
             // same for positive
-            Angle overshoot = UtilityFunctions.angleDiff(robotRelativeTurretAngle, closest).in(Degrees) < 0.0
-                    ? TurretConstants.kOvershootAmount
-                    : TurretConstants.kOvershootAmount.times(-1.0);
 
-            closest = closest.plus(overshoot);
+            if (moveDrivetrain) {
+                Angle overshoot = UtilityFunctions.angleDiff(robotRelativeTurretAngle, closest).in(Degrees) < 0.0
+                        ? TurretConstants.kOvershootAmount
+                        : TurretConstants.kOvershootAmount.times(-1.0);
 
-            Angle driveTarget = heading.minus(closest);
+                closest = closest.plus(overshoot);
 
-            // System.out.println();
-            m_drive.moveToAngle(driveTarget);
-            m_turret.moveToAngle(closest);
+                Angle driveTarget = heading.minus(closest);
+
+                // System.out.println();
+                m_drive.moveToAngle(driveTarget);
+                m_turret.moveToAngle(closest);
+            } else {
+                m_turret.moveToAngle(closest);
+            }
         }
     }
 
@@ -359,7 +381,7 @@ public class CommandFactory {
 
             Angle angle = Radians.of(Math.atan2(dy, dx)).minus(Radians.of(robotPose.getRotation().getRadians()));
 
-            MoveTurretToHeading(angle);
+            MoveTurretToHeading(angle, true);
         }, m_turret);
     }
 

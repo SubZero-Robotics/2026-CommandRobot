@@ -27,7 +27,7 @@ import static edu.wpi.first.units.Units.*;
 
 public class Vision {
 
-    // PhotonCamera m_camera1 = new PhotonCamera(VisionConstants.kCameraName1);
+    PhotonCamera m_camera1 = new PhotonCamera(VisionConstants.kCameraName1);
     PhotonCamera m_camera2 = new PhotonCamera(VisionConstants.kCameraName2);
 
     Optional<Function<Double, TurretPosition>> m_turretPositionSupplier;
@@ -49,28 +49,25 @@ public class Vision {
     }
 
     public void periodic() {
-        // Disabled Camera One
+        // Enabled Camera One
 
-        // Optional<EstimatedRobotPose> visionEstimationCameraOne = Optional.empty();
+        Optional<EstimatedRobotPose> visionEstimationCameraOne = Optional.empty();
 
-        // for (var result : m_camera1.getAllUnreadResults()) {
-        // visionEstimationCameraOne =
-        // m_poseEstimatorOne.estimateLowestAmbiguityPose(result);
+        for (var result : m_camera1.getAllUnreadResults()) {
+            visionEstimationCameraOne = m_poseEstimatorOne.estimateLowestAmbiguityPose(result);
 
-        // if (visionEstimationCameraOne.isEmpty()) {
-        // visionEstimationCameraOne =
-        // m_poseEstimatorOne.estimateLowestAmbiguityPose(result);
-        // }
+            if (visionEstimationCameraOne.isEmpty()) {
+                visionEstimationCameraOne = m_poseEstimatorOne.estimateLowestAmbiguityPose(result);
+            }
 
-        // updateEstimationStdDevs(visionEstimationCameraOne, result.getTargets(),
-        // m_poseEstimatorOne);
+            updateEstimationStdDevs(visionEstimationCameraOne, result.getTargets(),
+                    m_poseEstimatorOne);
 
-        // visionEstimationCameraOne.ifPresent(estimation -> {
-        // m_visionConsumer.accept(new
-        // VisionEstimation(estimation.estimatedPose.toPose2d(),
-        // estimation.timestampSeconds, getCurrentStdDevs()));
-        // });
-        // }
+            visionEstimationCameraOne.ifPresent(estimation -> {
+                m_visionConsumer.accept(new VisionEstimation(estimation.estimatedPose.toPose2d(),
+                        estimation.timestampSeconds, getCurrentStdDevs()));
+            });
+        }
 
         DogLog.log("In periodic vision subsystem", true);
         double start = Timer.getFPGATimestamp();
@@ -152,6 +149,53 @@ public class Vision {
                     estStdDevs = VecBuilder.fill(Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE);
                 else
                     estStdDevs = estStdDevs.times(1 + (avgDist * avgDist / 30));
+                curStdDevs = estStdDevs;
+            }
+        }
+    }
+
+    private void updateEstimationStdDevsLessStable(
+            Optional<EstimatedRobotPose> estimatedPose, List<PhotonTrackedTarget> targets,
+            PhotonPoseEstimator poseEstimator) {
+        if (estimatedPose.isEmpty()) {
+            // No pose input. Default to single-tag std devs
+            curStdDevs = VisionConstants.kSingleTagStdDevs;
+
+        } else {
+            // Pose present. Start running Heuristic
+            var estStdDevs = VisionConstants.kSingleTagStdDevs;
+            int numTags = 0;
+            double avgDist = 0;
+
+            // Precalculation - see how many tags we found, and calculate an
+            // average-distance metric
+            for (var tgt : targets) {
+                var tagPose = poseEstimator.getFieldTags().getTagPose(tgt.getFiducialId());
+                if (tagPose.isEmpty())
+                    continue;
+                numTags++;
+                avgDist += tagPose
+                        .get()
+                        .toPose2d()
+                        .getTranslation()
+                        .getDistance(estimatedPose.get().estimatedPose.toPose2d().getTranslation());
+            }
+
+            if (numTags == 0) {
+                // No tags visible. Default to single-tag std devs
+                curStdDevs = VisionConstants.kSingleTagStdDevs;
+            } else {
+                // One or more tags visible, run the full heuristic.
+                avgDist /= numTags;
+                // Decrease std devs if multiple targets are visible
+                if (numTags > 1)
+                    estStdDevs = VisionConstants.kMultiTagStdDevs;
+                // Increase std devs based on (average) distance
+                if (numTags == 1 && avgDist > 4)
+                    estStdDevs = VecBuilder.fill(Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE);
+                else
+                    // Less stable, so simply doubles the standard deviation to trust camera less
+                    estStdDevs = estStdDevs.times(1 + (avgDist * avgDist / 30)).times(2.0);
                 curStdDevs = estStdDevs;
             }
         }

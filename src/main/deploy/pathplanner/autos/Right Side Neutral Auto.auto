@@ -23,7 +23,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "Left Side To Center Path"
+                  "pathName": "Right Side To Center"
                 }
               },
               {
@@ -49,19 +49,13 @@
           }
         },
         {
-          "type": "wait",
-          "data": {
-            "waitTime": 1.0
-          }
-        },
-        {
           "type": "parallel",
           "data": {
             "commands": [
               {
                 "type": "path",
                 "data": {
-                  "pathName": "Left Side Center Return"
+                  "pathName": "Right Side Center Return"
                 }
               },
               {

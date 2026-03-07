@@ -245,11 +245,11 @@ public class DriveSubsystem extends SubsystemBase {
 
             m_simPidgey.setSupplyVoltage(RobotController.getBatteryVoltage());
             m_simPidgey.setRawYaw(
-                    getHeading().in(Degrees) + Radians.of(chassisSpeed.omegaRadiansPerSecond).in(Degrees)
+                    getGyroHeading().in(Degrees) + Radians.of(chassisSpeed.omegaRadiansPerSecond).in(Degrees)
                             * DriveConstants.kPeriodicInterval.in(Seconds));
 
             m_odometry.update(
-                    new Rotation2d(getHeading()),
+                    new Rotation2d(getGyroHeading()),
                     new SwerveModulePosition[] {
                             m_frontLeft.getPosition(),
                             m_frontRight.getPosition(),
@@ -403,6 +403,8 @@ public class DriveSubsystem extends SubsystemBase {
         DogLog.log("First commanded motor speeds", states[0]);
         DogLog.log("Caller", caller);
 
+        SwerveDriveKinematics.desaturateWheelSpeeds(states, DriveConstants.kMaxSpeed.magnitude());
+
         m_frontLeft.setDesiredState(states[0]);
         m_frontRight.setDesiredState(states[1]);
         m_rearLeft.setDesiredState(states[2]);
@@ -456,9 +458,8 @@ public class DriveSubsystem extends SubsystemBase {
      * @return the robot's heading in degrees, from -180 to 180
      */
     public Angle getHeading() {
-        return pidgey.getYaw().getValue();
-        // Don't use this code
-        // return m_poseEstimator.getEstimatedPosition().getRotation().getMeasure();
+        // return pidgey.getYaw().getValue();
+        return m_poseEstimator.getEstimatedPosition().getRotation().getMeasure();
     }
 
     public Angle getGyroHeading() {

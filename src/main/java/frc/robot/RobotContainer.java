@@ -77,16 +77,14 @@ public class RobotContainer {
                                 m_commandFactory.DeployIntake());
                 NamedCommands.registerCommand("Retract Intake",
                                 m_commandFactory.RetractIntake());
-                NamedCommands.registerCommand("Aim", m_commandFactory.AimCommand(false));
-                NamedCommands.registerCommand("Stop Aim", m_commandFactory.StopAimCommand());
+                NamedCommands.registerCommand("Aim", m_commandFactory.AutoAimAtHubCommand());
                 NamedCommands.registerCommand("Shoot",
                                 m_commandFactory.ShootCommand().alongWith(m_commandFactory.RunAllStager())
                                                 .finallyDo(() -> {
                                                         m_commandFactory.StopStaging();
                                                         m_commandFactory.StopShoot();
-                                                }));
-                NamedCommands.registerCommand("Stop Shoot",
-                                m_commandFactory.StopShootCommand());
+                                                }).raceWith(new WaitCommand(AutoConstants.kShootTime)));
+
                 SmartDashboard.putNumber("Wheelspeed in rotations per second", 0.0);
                 SmartDashboard.putNumber("Shooter hood angle in degrees", 0.0);
                 SmartDashboard.putNumber("Turret angle in degrees", 0.0);

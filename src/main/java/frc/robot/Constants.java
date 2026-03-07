@@ -160,6 +160,7 @@ public final class Constants {
 
                 // Auto Names
                 public static final String kExampleAutoName = "Example Auto";
+                public static final Time kShootTime = Seconds.of(3.5);
         }
 
         public static final class NeoMotorConstants {
