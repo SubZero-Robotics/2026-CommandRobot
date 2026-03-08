@@ -70,7 +70,6 @@ public class TurretSubsystem extends SubsystemBase {
     public TurretSubsystem() {
         m_config.closedLoop.p(TurretConstants.kP).i(TurretConstants.kI).d(TurretConstants.kD);
         m_config.closedLoop.feedbackSensor(FeedbackSensor.kAbsoluteEncoder);
-        m_config.smartCurrentLimit(TurretConstants.kSmartCurrentLimit);
         m_config.idleMode(IdleMode.kBrake);
         m_config.absoluteEncoder.inverted(true);
         m_config.inverted(true);

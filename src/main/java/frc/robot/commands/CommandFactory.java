@@ -150,7 +150,7 @@ public class CommandFactory {
                     solution = m_solution;
                 }
 
-                MoveTurretToHeading(solution.hubAngle().plus(solution.phi()), true);
+                MoveTurretToHeading(solution.hubAngle().minus (solution.phi()), true);
                 // DogLog.log("Range from hub (meters)", solution.distance().in(Meters));
                 // System.out.println(solution.phi());
                 m_shooter.MoveHoodToPosition(solution.hoodAngle());
