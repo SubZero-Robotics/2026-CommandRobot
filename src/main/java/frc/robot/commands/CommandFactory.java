@@ -97,6 +97,8 @@ public class CommandFactory {
         DogLog.log("Turret Rotation in deg", m_turret.getRotation().in(Degrees));
         DogLog.log("RPM target", m_wheelVelocity.in(RPM));
         DogLog.log("In periodic command factor", false);
+
+        DogLog.log("Turret Distance To Hub (in meters)", GetTurretDistanceToHub());
     }
 
     public void AimTurretToFront() {
@@ -150,7 +152,7 @@ public class CommandFactory {
                     solution = m_solution;
                 }
 
-                MoveTurretToHeading(solution.hubAngle().minus (solution.phi()), true);
+                MoveTurretToHeading(solution.hubAngle().minus(solution.phi()), true);
                 // DogLog.log("Range from hub (meters)", solution.distance().in(Meters));
                 // System.out.println(solution.phi());
                 m_shooter.MoveHoodToPosition(solution.hoodAngle());
@@ -266,7 +268,7 @@ public class CommandFactory {
         });
     }
 
-    public TargetSolution GetHubAimSolution() {
+    public Translation2d GetTurretDistanceToHub() {
         Translation2d hubPosition = DriverStation.getAlliance().get() == Alliance.Blue ? Fixtures.kBlueAllianceHub
                 : Fixtures.kRedAllianceHub;
 
@@ -284,7 +286,11 @@ public class CommandFactory {
 
         Translation2d turretTranslation = new Translation2d(turretX, turretY);
 
-        Translation2d translationToHub = hubPosition.minus(turretTranslation);
+        return hubPosition.minus(turretTranslation);
+    }
+
+    public TargetSolution GetHubAimSolution() {
+        Translation2d translationToHub = GetTurretDistanceToHub();
 
         Distance turretToHubDistance = Meters
                 .of(Math.hypot(translationToHub.getMeasureY().in(Meters), translationToHub.getMeasureX().in(Meters)));

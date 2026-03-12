@@ -21,6 +21,20 @@ public class RingBuffer<T> {
         m_length = maxLength;
     }
 
+    public RingBuffer(int maxLength, Object[] elements) {
+
+        if (maxLength < 1) {
+            System.out.println("Cannot create ring buffer with a max length of < 1.");
+            return;
+        }
+
+        m_elements = elements;
+
+        m_head = 0;
+        m_tail = 0;
+        m_length = maxLength;
+    }
+
     public void push(T element) throws Exception {
         if (m_head - m_tail == m_length) {
             try {
@@ -55,6 +69,12 @@ public class RingBuffer<T> {
 
     public int getLength() {
         return m_head - m_tail;
+    }
+
+    public RingBuffer<T> copy() {
+        Object[] newObjects = this.m_elements.clone();
+
+        return new RingBuffer<T>(m_length, newObjects);
     }
 
     @Override
