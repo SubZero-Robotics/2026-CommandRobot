@@ -1,16 +1,12 @@
 package frc.robot.commands;
 
-import java.lang.annotation.Target;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.function.Supplier;
 
+import dev.doglog.DogLog;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 
@@ -30,24 +26,23 @@ import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
-import frc.robot.Constants.DriveConstants;
+import frc.robot.Constants;
+import frc.robot.Robot;
 import frc.robot.Constants.Fixtures;
+import frc.robot.Constants.IntakeConstants;
 import frc.robot.Constants.NumericalConstants;
 import frc.robot.Constants.ShooterConstants;
 import frc.robot.Constants.TurretConstants;
-import frc.robot.subsystems.DriveSubsystem;
-import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.*;
-import frc.robot.subsystems.TurretSubsystem;
 import frc.robot.utils.ShootingEntry;
 import frc.robot.utils.TargetSolution;
 import frc.robot.utils.UtilityFunctions;
 
-public class AimCommandFactory {
+public class CommandFactory {
 
     private DriveSubsystem m_drive;
     private TurretSubsystem m_turret;
@@ -55,52 +50,124 @@ public class AimCommandFactory {
 
     private boolean m_isAiming = false;
 
-    private AngularVelocity m_wheelVelocity = RPM.of(60);
+    private AngularVelocity m_wheelVelocity = RPM.of(4000);
 
     private Translation2d m_lockedTag;
 
     private StagingSubsystem m_stager = new StagingSubsystem();
+    private IntakeSubsystem m_intake = new IntakeSubsystem();
+    private ClimberSubsystem m_climber = new ClimberSubsystem();
 
-    public AimCommandFactory(DriveSubsystem drive, TurretSubsystem turret, ShooterSubsystem shooter) {
+    TargetSolution m_solution;
+
+    public CommandFactory() {
+        // m_drive = drive;
+        // m_turret = turret;
+        // m_shooter = shooter;
+    }
+
+    public Command AimCommand(boolean isFeedingLeftSide) {
+        return new RunCommand(() -> {
+            Aim(isFeedingLeftSide);
+            m_isAiming = true;
+        }, m_turret, m_shooter);
+    }
+
+    public void StopAim() {
+        m_isAiming = false;
+        m_shooter.MoveHoodToPosition(ShooterConstants.kDefaultHoodPosition);
+    }
+
+    public void SetSubsystems(DriveSubsystem drive, TurretSubsystem turret, ShooterSubsystem shooter) {
         m_drive = drive;
         m_turret = turret;
         m_shooter = shooter;
     }
 
-    public Command AimCommand(Supplier<Boolean> isFeedingLeftSide) {
-        return new RunCommand(() -> {
-            Aim(isFeedingLeftSide);
-            m_isAiming = true;
-        }, m_drive, m_turret).finallyDo(() -> {
-            m_isAiming = false;
-            m_wheelVelocity = ShooterConstants.kNonAimShooterVelocity;
+    public Command StopAimCommand() {
+        return new InstantCommand(this::StopAim);
+    }
+
+    public void periodic() {
+        DogLog.log("In periodic command factor", true);
+        m_solution = GetHubAimSolution();
+
+        m_wheelVelocity = m_solution.wheelSpeed();
+
+        DogLog.log("Turret Rotation in deg", m_turret.getRotation().in(Degrees));
+        DogLog.log("RPM target", m_wheelVelocity.in(RPM));
+        DogLog.log("In periodic command factor", false);
+    }
+
+    public void AimTurretToFront() {
+        m_turret.moveToAngle(TurretConstants.kTurretTorwardsFront);
+    }
+
+    public Command AimTurretToFrontCommand() {
+        return new InstantCommand(this::AimTurretToFrontCommand);
+    }
+
+    public Command MoveHoodToDefaultPosition() {
+        return new InstantCommand(() -> {
+            m_shooter.MoveHoodToPosition(ShooterConstants.kDefaultHoodPosition);
         });
     }
 
-    private void Aim(Supplier<Boolean> isFeedingLeftSide) {
+    public Command MoveTurretToFront() {
+        return new InstantCommand(() -> {
+            m_turret.moveToAngle(TurretConstants.kTurretTorwardsFront);
+        });
+    }
+
+    public void AutoAimAtHub() {
+        TargetSolution solution;
+
+        if (m_solution == null) {
+            solution = GetHubAimSolution();
+        } else {
+            solution = m_solution;
+        }
+
+        m_wheelVelocity = solution.wheelSpeed();
+        MoveTurretToHeading(solution.hubAngle(), false);
+    }
+
+    public Command AutoAimAtHubCommand() {
+        return new InstantCommand(this::AutoAimAtHub);
+    }
+
+    private void Aim(boolean isFeedingLeftSide) {
         Fixtures.FieldLocations location = m_drive.getRobotLocation();
 
         switch (location) {
             case AllianceSide: {
-                TargetSolution solution = GetHubAimSolution();
 
-                MoveTurretToHeading(solution.hubAngle());
+                TargetSolution solution;
+
+                if (m_solution == null) {
+                    solution = GetHubAimSolution();
+                } else {
+                    solution = m_solution;
+                }
+
+                MoveTurretToHeading(solution.hubAngle().minus (solution.phi()), true);
+                // DogLog.log("Range from hub (meters)", solution.distance().in(Meters));
+                // System.out.println(solution.phi());
                 m_shooter.MoveHoodToPosition(solution.hoodAngle());
-
-                m_drive.moveByAngle(solution.phi());
-
                 m_wheelVelocity = solution.wheelSpeed();
                 break;
             }
             case NeutralSide: {
                 // Heading changes 180 degrees depending on which alliance you are on
-                Angle offset = DriverStation.getAlliance().get() == Alliance.Blue ? Degrees.of(0) : Degrees.of(180);
-                Angle absHeading = isFeedingLeftSide.get() ? offset.minus(Degrees.of(50))
-                        : offset.plus(Degrees.of(50));
+                Angle offset = DriverStation.getAlliance().get() == Alliance.Red ? Degrees.of(0) : Degrees.of(180);
+                Angle absHeading = isFeedingLeftSide ? offset.minus(Fixtures.kFeedOffset)
+                        : offset.plus(Fixtures.kFeedOffset);
+
+                absHeading = UtilityFunctions.WrapAngle(absHeading);
 
                 m_shooter.MoveHoodToPosition(ShooterConstants.kHoodFeedingPosition);
                 m_wheelVelocity = ShooterConstants.kFeedingWheelVelocity;
-                MoveTurretToHeading(absHeading);
+                MoveTurretToHeading(absHeading, true);
                 break;
             }
             case OpponentSide: {
@@ -114,7 +181,7 @@ public class AimCommandFactory {
     public Command AimHoodToPositionCommand(Angle angle) {
         return new RunCommand(() -> {
             m_shooter.MoveHoodToPosition(angle);
-        }).until(m_shooter::AtTarget);
+        }).until(m_shooter::AtHoodTarget);
     }
 
     public Command AimTurretRelativeToRobot(Angle angle) {
@@ -123,39 +190,99 @@ public class AimCommandFactory {
         }, m_turret).until(m_turret::atTarget);
     }
 
-    public Command ShootCommand() {
-        return new ConditionalCommand(new RunCommand(this::Shoot, m_shooter),
-                AimHoodToPositionCommand(ShooterConstants.kNonAimHoodAngle)
-                        .alongWith(AimTurretRelativeToRobot(TurretConstants.kNonAimTurretAngle))
-                        .andThen(new RunCommand(this::Shoot, m_shooter)),
-                () -> m_isAiming).alongWith(new RunCommand(() -> {
-                    m_stager.Agitate();
-                    m_stager.Feed();
-                    m_stager.Roll();
-                }, m_stager)).finallyDo(m_shooter::Stop);
-    }
-
     public Command RunAllStager() {
-        return new RunCommand(() -> {
+        return new InstantCommand(() -> {
             m_stager.Agitate();
             m_stager.Feed();
             m_stager.Roll();
-        }, m_stager).finallyDo(() -> {
-            m_stager.StopAgitate();
-            m_stager.StopFeed();
-            m_stager.StopRoll();
+        }, m_stager);
+    }
+
+    public Command StopStagingCommand() {
+        return new InstantCommand(() -> {
+            StopStaging();
         });
     }
 
+    public void StopStaging() {
+        m_stager.StopAgitate();
+        m_stager.StopFeed();
+        m_stager.StopRoll();
+    }
+
     private void Shoot() {
+        // System.out.println(m_wheelVelocity + " is wheel velocity");
         m_shooter.Spin(m_wheelVelocity);
+    }
+
+    public Command ShootCommand() {
+        return new RunCommand(() -> {
+            Shoot();
+        }).finallyDo(this::StopShoot);
+    }
+
+    public void ShootAtVelocity(AngularVelocity velocity) {
+        m_shooter.Spin(velocity);
+    }
+
+    public Command StopShootCommand() {
+        return new InstantCommand(() -> {
+            StopShoot();
+            m_wheelVelocity = NumericalConstants.kNoRotations;
+        });
+    }
+
+    public void StopShoot() {
+        m_shooter.Stop();
+    }
+
+    public Command StopIntake() {
+        return new InstantCommand(() -> {
+            m_intake.stopIntake();
+        });
+    }
+
+    public Command RetractIntake() {
+        return new InstantCommand(() -> {
+            m_intake.retractIntake();
+        }).andThen(StopIntake());
+    }
+
+    public Command OutTake() {
+        return new InstantCommand(() -> {
+            m_intake.spinIntake(IntakeConstants.kDefaultIntakeSpeed.times(-1));
+        });
+    }
+
+    public Command DeployIntake() {
+        return new InstantCommand(() -> {
+            m_intake.deployIntake();
+        }).alongWith(SpinIntake());
+    }
+
+    public Command SpinIntake() {
+        return new InstantCommand(() -> {
+            m_intake.spinIntake(IntakeConstants.kDefaultIntakeSpeed);
+        });
     }
 
     public TargetSolution GetHubAimSolution() {
         Translation2d hubPosition = DriverStation.getAlliance().get() == Alliance.Blue ? Fixtures.kBlueAllianceHub
                 : Fixtures.kRedAllianceHub;
 
-        Translation2d turretTranslation = m_drive.getPose().getTranslation().plus(TurretConstants.kTurretOffset);
+        Pose2d robotPose = m_drive.getPose();
+
+        Distance turretX = TurretConstants.kTurretCenterDistanceFromRobotCenter
+                .times(Math.cos(robotPose.getRotation().getMeasure()
+                        .plus(TurretConstants.kAngularDistanceToFrontOfRobot).in(Radians)))
+                .plus(robotPose.getTranslation().getMeasureX());
+
+        Distance turretY = TurretConstants.kTurretCenterDistanceFromRobotCenter
+                .times(Math.sin(robotPose.getRotation().getMeasure()
+                        .plus(TurretConstants.kAngularDistanceToFrontOfRobot).in(Radians)))
+                .plus(robotPose.getTranslation().getMeasureY());
+
+        Translation2d turretTranslation = new Translation2d(turretX, turretY);
 
         Translation2d translationToHub = hubPosition.minus(turretTranslation);
 
@@ -173,15 +300,19 @@ public class AimCommandFactory {
 
     public Command MoveTurretToHeadingCommand(Angle heading) {
         return new RunCommand(() -> {
-            MoveTurretToHeading(heading);
+            MoveTurretToHeading(heading, true);
         }, m_turret);
     }
 
-    public Command MoveHoodToAbsoluteCommand(Angle angle) {
+    public Command MoveHoodToAngleCommand(Angle angle) {
         return new InstantCommand(() -> {
-            System.out.println("Move Hood to position " + angle);
-            m_shooter.MoveHoodToPosition(angle);
+            MoveHoodToAngle(angle);
         });
+    }
+
+    public void MoveHoodToAngle(Angle angle) {
+        // System.out.println("Move Hood to angle " + angle.in(Degrees) + " degrees.");
+        m_shooter.MoveHoodToPosition(angle);
     }
 
     public Command PointAtHub(boolean isRed) {
@@ -194,18 +325,25 @@ public class AimCommandFactory {
 
             Angle angle = Radians.of(Math.atan2(dy, dx));
 
-            MoveTurretToHeading(angle);
+            MoveTurretToHeading(angle, true);
             System.out.println(angle);
         }).finallyDo(m_drive::disableFaceHeading);
     }
 
-    public void MoveTurretToHeading(Angle heading) {
+    public void MoveTurretToHeading(Angle heading, boolean moveDrivetrain) {
+        // Weird bug with red side position data
+        Angle offset = DriverStation.getAlliance().get() == Alliance.Red && Robot.isReal()
+                ? Constants.NumericalConstants.kHalfRotation
+                : Constants.NumericalConstants.kNoRotation;
+
+        heading = heading.plus(offset);
+
         Angle robotHeading = UtilityFunctions.WrapAngle(m_drive.getHeading());
 
         Angle robotRelativeTurretAngle = UtilityFunctions.WrapAngle(heading.minus(robotHeading));
 
         // Angle[] currentRange = getCurrentTurretRange();
-        Angle[] currentRange = TurretConstants.kUnrestrictedAngles;
+        Angle[] currentRange = getCurrentTurretRange();
 
         if (withinAngles(currentRange, robotRelativeTurretAngle)) {
             m_turret.moveToAngle(robotRelativeTurretAngle);
@@ -215,17 +353,22 @@ public class AimCommandFactory {
 
             // The overshoot is negative if the robot has to move in a negative direction;
             // same for positive
-            Angle overshoot = robotRelativeTurretAngle.minus(closest).in(Degrees) < 0.0
-                    ? TurretConstants.kOvershootAmount
-                    : TurretConstants.kOvershootAmount.times(-1.0);
 
-            closest = closest.plus(overshoot);
+            if (moveDrivetrain) {
+                Angle overshoot = UtilityFunctions.angleDiff(robotRelativeTurretAngle, closest).in(Degrees) < 0.0
+                        ? TurretConstants.kOvershootAmount
+                        : TurretConstants.kOvershootAmount.times(-1.0);
 
-            Angle driveTarget = heading.minus(closest);
+                closest = closest.plus(overshoot);
 
-            // System.out.println();
-            m_drive.moveToAngle(driveTarget);
-            m_turret.moveToAngle(closest);
+                Angle driveTarget = heading.minus(closest);
+
+                // System.out.println();
+                m_drive.moveToAngle(driveTarget);
+                m_turret.moveToAngle(closest);
+            } else {
+                m_turret.moveToAngle(closest);
+            }
         }
     }
 
@@ -238,8 +381,54 @@ public class AimCommandFactory {
 
             Angle angle = Radians.of(Math.atan2(dy, dx)).minus(Radians.of(robotPose.getRotation().getRadians()));
 
-            MoveTurretToHeading(angle);
+            MoveTurretToHeading(angle, true);
         }, m_turret);
+    }
+
+    public Command ReverseStager() {
+        return new InstantCommand(() -> {
+            m_stager.reverseAgitater();
+            m_stager.reverseRoller();
+            m_stager.reverseFeeder();
+        });
+    }
+
+    public void ClimbUp() {
+        m_climber.climbUp();
+    }
+
+    public void ClimbDown() {
+        m_climber.climbDown();
+    }
+
+    public void StopClimb() {
+        m_climber.Stop();
+    }
+
+    public Command MoveTurretToRobotRelativeHeadingCommand(Angle angle) {
+        return new InstantCommand(() -> {
+            m_turret.moveToAngle(angle);
+        });
+    }
+
+    public Command ClimbUpCommand() {
+        // return
+        // MoveTurretToRobotRelativeHeadingCommand(TurretConstants.kTurretTorwardsFront)
+        // .alongWith(Commands.waitUntil(m_turret::atTarget))
+
+        return (new RunCommand(this::ClimbUp))
+                // .until(m_climber::atMax) // TODO: put this back
+                .finallyDo(this::StopClimb);
+    }
+
+    public Command ClimbDownCommand() {
+        // return
+        // MoveTurretToRobotRelativeHeadingCommand(TurretConstants.kTurretTorwardsFront)
+        // .alongWith(Commands.waitUntil(m_turret::atTarget))
+
+        return (new RunCommand(this::ClimbDown))
+                // .until(m_climber::atMin) TODO: put this back
+                .finallyDo(this::StopClimb);
     }
 
     // Aims the camera at april tags within range
@@ -302,11 +491,11 @@ public class AimCommandFactory {
     }
 
     private static boolean withinRange(Angle min, Angle max, Angle a) {
-        a = UtilityFunctions.WrapAngle(a);
-        min = UtilityFunctions.WrapAngle(min);
-        max = UtilityFunctions.WrapAngle(max);
+        Angle a1 = UtilityFunctions.WrapAngle(a);
+        Angle min1 = UtilityFunctions.WrapAngle(min);
+        Angle max1 = UtilityFunctions.WrapAngle(max);
 
-        return a.gt(min) && a.lt(max);
+        return a1.gt(min1) && a1.lt(max1);
     }
 
     private static Angle getClosestAngle(Angle a, Angle... others) {
@@ -364,9 +553,12 @@ public class AimCommandFactory {
     }
 
     private static int getFirstEntryIndex(Distance distance) {
+        DogLog.log("In shooting entry search function", true);
         int low = 0;
         int high = ShooterConstants.kShootingEntries.length;
         int mid = 0;
+
+        int i = 0;
 
         while (low < high) {
             mid = (low + high) / 2;
@@ -376,6 +568,13 @@ public class AimCommandFactory {
                 low = mid + 1;
             } else {
                 high = mid;
+            }
+
+            i++;
+
+            if (i > 20) {
+                System.err.println("Shooting entry loop has exceeded 20 iterations.");
+                return 1;
             }
         }
 
@@ -396,6 +595,8 @@ public class AimCommandFactory {
                 previousEntryIndex = mid;
             }
         }
+
+        DogLog.log("In shooting entry search function", false);
 
         return previousEntryIndex;
     }
@@ -444,7 +645,19 @@ public class AimCommandFactory {
                 secondEntry.distance().in(Meters), firstEntry.shooterAngle().in(Radians),
                 secondEntry.shooterAngle().in(Radians), distance.in(Meters)));
 
+        DogLog.log("First Entry", firstEntry.toString());
+        DogLog.log("Second Entry", secondEntry.toString());
+
+        // DogLog.log("Last entry", firstEntry.toString());
+        // DogLog.log("Next entry ", secondEntry.toString());
+
         return new TargetSolution(hoodAngle, wheelSpeed, phi, distance, turretAngle);
+    }
+
+    public Command AutoIntakeOut() {
+        return new InstantCommand(() -> {
+
+        });
     }
 
     public Command Aim(Angle turretAngle, Angle hoodAngle) {
@@ -455,9 +668,9 @@ public class AimCommandFactory {
     }
 
     public Command Shoot(AngularVelocity shooterWheelVelocity) {
-        return new InstantCommand(() -> {
+        return new RunCommand(() -> {
             m_shooter.Spin(shooterWheelVelocity);
-        });
+        }).finallyDo(m_shooter::Stop);
     }
 
     // TODO: Make this better
@@ -467,7 +680,7 @@ public class AimCommandFactory {
     // hitting the side of the robot or other balls currently being held in the
     // robot
     private Angle[] getCurrentTurretRange() {
-        if (m_shooter.GetHoodAngle().lt(ShooterConstants.kTurretAngleRestrictiveShooterAngle)) {
+        if (m_shooter.GetHoodAngle().gt(ShooterConstants.kTurretAngleRestrictiveShooterAngle)) {
             return TurretConstants.kRestrictedAngles;
         }
 

@@ -1,45 +1,56 @@
 package frc.robot.subsystems;
 
-import static edu.wpi.first.units.Units.*;
-
 import com.revrobotics.AbsoluteEncoder;
 import com.revrobotics.PersistMode;
+import com.revrobotics.RelativeEncoder;
 import com.revrobotics.ResetMode;
 import com.revrobotics.spark.FeedbackSensor;
+import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
-import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.spark.SparkMax;
-import com.revrobotics.spark.SparkBase.ControlType;
+import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
+import dev.doglog.DogLog;
+
+import com.revrobotics.spark.config.SparkMaxConfig;
+
+import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.RPM;
+import static edu.wpi.first.units.Units.Rotations;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants.NumericalConstants;
 import frc.robot.Constants.ShooterConstants;
-import frc.robot.utils.UtilityFunctions;
 
 public class ShooterSubsystem extends SubsystemBase {
 
     SparkMax m_shooterMotor = new SparkMax(ShooterConstants.kShooterMotorId, MotorType.kBrushless);
-    SparkMax m_hoodMotor = new SparkMax(ShooterConstants.kHoodMotorId, MotorType.kBrushless);
+    // SparkMax m_hoodMotor = new SparkMax(ShooterConstants.kHoodMotorId,
+    // MotorType.kBrushless);
 
-    AbsoluteEncoder m_absoluteEncoder = m_hoodMotor.getAbsoluteEncoder();
+    // AbsoluteEncoder m_absoluteEncoder = m_hoodMotor.getAbsoluteEncoder();
+    RelativeEncoder m_shooterRelativeEncoder = m_shooterMotor.getEncoder();
 
     private final SparkClosedLoopController m_shooterClosedLoopController = m_shooterMotor.getClosedLoopController();
-    private final SparkClosedLoopController m_hoodClosedLoopController = m_hoodMotor.getClosedLoopController();
+    // private final SparkClosedLoopController m_hoodClosedLoopController =
+    // m_hoodMotor.getClosedLoopController();
 
     private final SparkMaxConfig m_shooterConfig = new SparkMaxConfig();
     private final SparkMaxConfig m_hoodConfig = new SparkMaxConfig();
 
     Angle m_targetAngle = Degrees.of(0.0);
+    AngularVelocity m_targetVelocity = RPM.of(0);
 
     public ShooterSubsystem() {
 
         m_shooterConfig.closedLoop
                 .p(ShooterConstants.kShooterP)
                 .i(ShooterConstants.kShooterI)
-                .d(ShooterConstants.kShooterD);
+                .d(ShooterConstants.kShooterD).feedForward.kV(ShooterConstants.kShooterFF);
 
+        m_shooterConfig.idleMode(IdleMode.kCoast);
         m_hoodConfig.closedLoop
                 .p(ShooterConstants.kHoodP)
                 .i(ShooterConstants.kHoodI)
@@ -55,12 +66,13 @@ public class ShooterSubsystem extends SubsystemBase {
         m_hoodConfig.encoder.positionConversionFactor(1);
 
         m_shooterMotor.configure(m_shooterConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-        m_hoodMotor.configure(m_hoodConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+        // m_hoodMotor.configure(m_hoodConfig, ResetMode.kResetSafeParameters,
+        // PersistMode.kPersistParameters);
     }
 
-    // Position between 0 and .55
+    // Position between 0 and .55. Disabled hood motor
     public void MoveHoodToPosition(Angle angle) {
-        System.out.println("Move hood to position: " + angle);
+        // System.out.println("Move hood to position: " + angle);
 
         // get target absolute encoder position. 0 starts in hood min, hood max is .55
         // (30 degrees of movement)
@@ -69,35 +81,48 @@ public class ShooterSubsystem extends SubsystemBase {
             System.out.println("Hood target position out of bounds. Target: " + targetPosition);
             return;
         }
-        var curentPosition = m_absoluteEncoder.getPosition();
-        System.out.println("current hood: " + curentPosition);
-        if (curentPosition > ShooterConstants.kHoodMaxAbsolutePosition) {
-            System.out.println("Hood position icorrect for safe movement. Pos: " + curentPosition);
-            return;
-        }
 
-        m_hoodClosedLoopController.setSetpoint(targetPosition, ControlType.kPosition);
+        // var currentPosition = m_absoluteEncoder.getPosition();
+
+        // if (currentPosition > ShooterConstants.kHoodMaxAbsolutePosition) {
+        // System.out.println("Hood position incorrect for safe movement. Pos: " +
+        // currentPosition);
+        // return;
+        // }
+
+        // m_hoodClosedLoopController.setSetpoint(targetPosition,
+        // ControlType.kPosition);
     }
 
     public void Spin(AngularVelocity shootSpeedVelocity) {
+        m_targetVelocity = shootSpeedVelocity;
         m_shooterClosedLoopController.setSetpoint(shootSpeedVelocity.in(RPM), ControlType.kVelocity);
     }
 
     public void Stop() {
-        Spin(RPM.of(0));
+        m_shooterClosedLoopController.setSetpoint(0, ControlType.kVelocity);
     }
 
     public Angle GetHoodAngle() {
-        return Degrees.of(m_absoluteEncoder.getPosition() / ShooterConstants.kHoodDegreeConversionFactor);
+        // return Degrees.of(m_absoluteEncoder.getPosition() /
+        // ShooterConstants.kHoodDegreeConversionFactor);
+        return NumericalConstants.kNoRotation;
     }
 
-    public boolean AtTarget() {
-        return UtilityFunctions.angleDiff(GetHoodAngle(), m_targetAngle).abs(Degrees) < ShooterConstants.kHoodTolerence
-                .in(Degrees);
+    public boolean AtHoodTarget() {
+        // return m_hoodClosedLoopController.isAtSetpoint();
+        return true;
+    }
+
+    public boolean AtWheelVelocityTarget() {
+        return RPM.of(m_shooterClosedLoopController.getSetpoint()).minus(RPM.of(m_shooterRelativeEncoder.getVelocity()))
+                .abs(RPM) < ShooterConstants.kShooterVelocityTolerance.in(RPM);
+
+        // return true;
     }
 
     @Override
     public void periodic() {
-
+        DogLog.log("Motor velocity setpoint", m_shooterClosedLoopController.getSetpoint());
     }
 }

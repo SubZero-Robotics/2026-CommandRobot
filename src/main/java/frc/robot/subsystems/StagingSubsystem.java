@@ -1,6 +1,7 @@
 package frc.robot.subsystems;
 
 import com.revrobotics.spark.SparkLowLevel.MotorType;
+import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.spark.SparkMax;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -10,6 +11,9 @@ public class StagingSubsystem extends SubsystemBase {
     SparkMax m_feedIntoHoodMotor = new SparkMax(StagingConstants.kFeedIntoHoodMotor, MotorType.kBrushless);
     SparkMax m_agitationMotor = new SparkMax(StagingConstants.kAgitationMotorId, MotorType.kBrushless);
     SparkMax m_rollerMotor = new SparkMax(StagingConstants.kRollerMotorId, MotorType.kBrushless);
+
+    public StagingSubsystem() {
+    }
 
     public void Agitate() {
         m_agitationMotor.set(StagingConstants.kAgitationSpeed);
@@ -36,5 +40,17 @@ public class StagingSubsystem extends SubsystemBase {
 
     public void StopRoll() {
         m_rollerMotor.stopMotor();
+    }
+
+    public void reverseAgitater() {
+        m_agitationMotor.set(StagingConstants.kReverseAgitationSpeed);
+    }
+
+    public void reverseRoller() {
+        m_rollerMotor.set(StagingConstants.kReverseRollingSpeed);
+    }
+
+    public void reverseFeeder() {
+        m_feedIntoHoodMotor.set(StagingConstants.kReverseFeedSpeed);
     }
 }

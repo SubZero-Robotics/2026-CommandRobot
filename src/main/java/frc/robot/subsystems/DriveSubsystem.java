@@ -15,9 +15,6 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.networktables.NetworkTable;
-import edu.wpi.first.networktables.NetworkTableEntry;
-import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -47,6 +44,8 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
+
+import dev.doglog.DogLog;
 
 import static edu.wpi.first.units.Units.*;
 
@@ -135,10 +134,12 @@ public class DriveSubsystem extends SubsystemBase {
         }
 
         AutoBuilder.configure(
-                this::getPose, // Robot pose supplier
-                this::resetOdometry, // Method to reset odometry (will be called if your auto has a starting pose)
-                this::getRobotRelativeSpeeds, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
-                (speeds, feedforwards) -> drive(speeds), // Method that will drive the robot given ROBOT RELATIVE
+                () -> getPose(), // Robot pose supplier
+                (Pose2d pose) -> resetOdometry(pose), // Method to reset odometry (will be called if your auto has a
+                                                      // starting pose)
+                () -> getRobotRelativeSpeeds(), // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
+                (speeds, feedforwards) -> drive(speeds, "Path planner"), // Method that will drive the robot given ROBOT
+                                                                         // RELATIVE
                 // ChassisSpeeds. Also optionally outputs individual module
                 // feedforwards
                 new PPHolonomicDriveController( // PPHolonomicController is the built in path following controller for
@@ -231,7 +232,9 @@ public class DriveSubsystem extends SubsystemBase {
 
     @Override
     public void periodic() {
+        DogLog.log("In periodic drive subsystem", true);
         // Update the odometry in the periodic block
+        double start = Timer.getFPGATimestamp();
 
         if (Robot.isSimulation()) {
             ChassisSpeeds chassisSpeed = DriveConstants.kDriveKinematics.toChassisSpeeds(
@@ -242,11 +245,11 @@ public class DriveSubsystem extends SubsystemBase {
 
             m_simPidgey.setSupplyVoltage(RobotController.getBatteryVoltage());
             m_simPidgey.setRawYaw(
-                    getHeading().in(Degrees) + Radians.of(chassisSpeed.omegaRadiansPerSecond).in(Degrees)
+                    getGyroHeading().in(Degrees) + Radians.of(chassisSpeed.omegaRadiansPerSecond).in(Degrees)
                             * DriveConstants.kPeriodicInterval.in(Seconds));
 
             m_odometry.update(
-                    new Rotation2d(getHeading()),
+                    new Rotation2d(getGyroHeading()),
                     new SwerveModulePosition[] {
                             m_frontLeft.getPosition(),
                             m_frontRight.getPosition(),
@@ -275,7 +278,18 @@ public class DriveSubsystem extends SubsystemBase {
 
         SmartDashboard.putData(m_field);
 
-        SmartDashboard.putBoolean("Is manual rotate", m_isManualRotate);
+        double end = Timer.getFPGATimestamp();
+
+        DogLog.log("Drivetrain periodic time (ms)", (end - start) * 1000.0);
+
+        DogLog.log("In periodic drive subsystem", false);
+
+        // SmartDashboard.putBoolean("Is manual rotate", m_isManualRotate);
+
+        // DogLog.log("X dist to april tag in meters",
+        // getPose().getTranslation().minus(Fixtures.kRedHubAprilTag).getX());
+        // DogLog.log("Y dist to april tag in meters",
+        // getPose().getTranslation().minus(Fixtures.kRedHubAprilTag).getY());
     }
 
     /**
@@ -295,13 +309,17 @@ public class DriveSubsystem extends SubsystemBase {
         };
     }
 
+    public void ZeroGyro() {
+        pidgey.setYaw(NumericalConstants.kNoRotation);
+    }
+
     /**
      * Resets the odometry to the specified pose.
      *
      * @param pose The pose to which to set the odometry.
      */
     public void resetOdometry(Pose2d pose) {
-        m_odometry.resetPosition(
+        m_poseEstimator.resetPosition(
                 new Rotation2d(pidgey.getYaw().getValue()),
                 new SwerveModulePosition[] {
                         m_frontLeft.getPosition(),
@@ -352,23 +370,45 @@ public class DriveSubsystem extends SubsystemBase {
         // System.out.println("Target " + m_targetAutoAngle + ", Current" +
         // getHeading());
 
-        final var swerveModuleStates = DriveConstants.kDriveKinematics.toSwerveModuleStates(ChassisSpeeds.discretize(
+        // final var swerveModuleStates =
+        // DriveConstants.kDriveKinematics.toSwerveModuleStates(ChassisSpeeds.discretize(
+        // fieldRelative
+        // ? ChassisSpeeds.fromFieldRelativeSpeeds(xSpeedDelivered, ySpeedDelivered,
+        // rotDelivered,
+        // new Rotation2d(getHeading()))
+        // : new ChassisSpeeds(xSpeedDelivered, ySpeedDelivered, rotDelivered),
+        // timeElapsed));
+        // SwerveDriveKinematics.desaturateWheelSpeeds(
+        // swerveModuleStates, DriveConstants.kMaxSpeed.magnitude());
+
+        var speeds = ChassisSpeeds.discretize(
                 fieldRelative
-                        ? ChassisSpeeds.fromFieldRelativeSpeeds(xSpeedDelivered, ySpeedDelivered, rotDelivered,
+                        ? ChassisSpeeds.fromFieldRelativeSpeeds(xSpeedDelivered, ySpeedDelivered,
+                                rotDelivered,
                                 new Rotation2d(getHeading()))
                         : new ChassisSpeeds(xSpeedDelivered, ySpeedDelivered, rotDelivered),
-                timeElapsed));
-        SwerveDriveKinematics.desaturateWheelSpeeds(
-                swerveModuleStates, DriveConstants.kMaxSpeed.magnitude());
+                timeElapsed);
 
-        m_frontLeft.setDesiredState(swerveModuleStates[0]);
-        m_frontRight.setDesiredState(swerveModuleStates[1]);
-        m_rearLeft.setDesiredState(swerveModuleStates[2]);
-        m_rearRight.setDesiredState(swerveModuleStates[3]);
+        drive(speeds, "Joystick runner");
+
+        // m_frontLeft.setDesiredState(swerveModuleStates[0]);
+        // m_frontRight.setDesiredState(swerveModuleStates[1]);
+        // m_rearLeft.setDesiredState(swerveModuleStates[2]);
+        // m_rearRight.setDesiredState(swerveModuleStates[3]);
     }
 
-    public void drive(ChassisSpeeds speeds) {
-        setModuleStates(DriveConstants.kDriveKinematics.toSwerveModuleStates(speeds));
+    public void drive(ChassisSpeeds speeds, String caller) {
+        var states = DriveConstants.kDriveKinematics.toSwerveModuleStates(speeds);
+
+        DogLog.log("First commanded motor speeds", states[0]);
+        DogLog.log("Caller", caller);
+
+        SwerveDriveKinematics.desaturateWheelSpeeds(states, DriveConstants.kMaxSpeed.magnitude());
+
+        m_frontLeft.setDesiredState(states[0]);
+        m_frontRight.setDesiredState(states[1]);
+        m_rearLeft.setDesiredState(states[2]);
+        m_rearRight.setDesiredState(states[3]);
     }
 
     /**
@@ -419,7 +459,6 @@ public class DriveSubsystem extends SubsystemBase {
      */
     public Angle getHeading() {
         return pidgey.getYaw().getValue();
-        // TODO: Don't use this code
         // return m_poseEstimator.getEstimatedPosition().getRotation().getMeasure();
     }
 

@@ -24,6 +24,9 @@ import static edu.wpi.first.units.Units.Seconds;
 
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.LinearVelocity;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
@@ -31,6 +34,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Robot;
+import frc.robot.Constants.NumericalConstants;
 import frc.robot.Constants.TurretConstants;
 import frc.robot.utils.PositionBuffer;
 import frc.robot.utils.TurretPosition;
@@ -66,7 +70,6 @@ public class TurretSubsystem extends SubsystemBase {
     public TurretSubsystem() {
         m_config.closedLoop.p(TurretConstants.kP).i(TurretConstants.kI).d(TurretConstants.kD);
         m_config.closedLoop.feedbackSensor(FeedbackSensor.kAbsoluteEncoder);
-        m_config.smartCurrentLimit(TurretConstants.kSmartCurrentLimit);
         m_config.idleMode(IdleMode.kBrake);
         m_config.absoluteEncoder.inverted(true);
         m_config.inverted(true);
@@ -101,7 +104,7 @@ public class TurretSubsystem extends SubsystemBase {
         angle = angle.plus(TurretConstants.kAngularDistanceToFrontOfRobot);
         angle = UtilityFunctions.WrapAngle(angle);
 
-        System.out.println(angle + "is commanded angle for turret");
+        // System.out.println(angle + "is commanded angle for turret");
 
         if (angle.gt(TurretConstants.kMaxAngle)) {
             System.out
@@ -137,18 +140,30 @@ public class TurretSubsystem extends SubsystemBase {
         return m_positionBuffer.getAngleAtTime(timestamp);
         // return new TurretPosition(getRotation(), RotationsPerSecond.of(0.0),
         // timestamp);
+
+        // return new TurretPosition(NumericalConstants.kNoRotation,
+        // NumericalConstants.kNoRotations, timestamp);
     }
 
     @Override
     public void periodic() {
+        DogLog.log("In periodic turret subsystem", true);
+        double start = Timer.getFPGATimestamp();
+
         m_positionBuffer.pushElement(
                 UtilityFunctions.WrapAngle(getRotation()),
                 RPM.of(m_absoluteEncoder.getVelocity()),
                 TurretConstants.kEncoderReadingDelay.in(Seconds));
 
-        DogLog.log("Turret rotation relative to front of robot", getRotation().in(Degrees));
-        DogLog.log("Turret rotation relative to turret zero", UtilityFunctions
-                .WrapAngle(getRotation().minus(TurretConstants.kAngularDistanceToFrontOfRobot)).in(Degrees));
+        double end = Timer.getFPGATimestamp();
+
+        DogLog.log("Turret periodic time (ms)", (end - start) * 1000.0);
+        DogLog.log("In periodic turret subsystem", false);
+
+        // DogLog.log("Turret rotation relative to front of robot",
+        // getRotation().in(Degrees));
+        // DogLog.log("Turret rotation relative to turret zero", UtilityFunctions
+        // .WrapAngle(getRotation().minus(TurretConstants.kAngularDistanceToFrontOfRobot)).in(Degrees));
     }
 
     // Connected to another periodic loop that runs quicker than 0.02 seconds
@@ -175,7 +190,6 @@ public class TurretSubsystem extends SubsystemBase {
     }
 
     public boolean atTarget() {
-        return UtilityFunctions.angleDiff(m_targetAngle, getRotation())
-                .abs(Degrees) < TurretConstants.kTurretAngleTolerance.in(Degrees);
+        return m_turretClosedLoopController.isAtSetpoint();
     }
 }

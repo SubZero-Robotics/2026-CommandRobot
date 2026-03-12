@@ -27,26 +27,35 @@ This is a guide to using and updating 5690's season code for our 2026 Command Ro
 
 All devices connected to the CAN bus along with their corresponding CAN IDs
 
-| Device                  | CAN ID |
-| ----------------------- | ------ |
-| Front Right Drive Motor | 1      |
-| Front Left Drive Motor  | 2      |
-| Rear Left Drive Motor   | 3      |
-| Rear Right Drive Motor  | 4      |
-| Front Right Turn Motor  | 5      |
-| Front Left Turn Motor   | 6      |
-| Rear Left Turn Motor    | 7      |
-| Rear Right Turn Motor   | 8      |
-| Pigeon Gyro             | 13     |
+| Device                     | CAN ID |
+| -------------------------- | ------ |
+| Front Right Drive Motor    | 1      |
+| Front Left Drive Motor     | 10     |
+| Rear Left Drive Motor      | 14     |
+| Rear Right Drive Motor     | 2      |
+| Front Right Turn Motor     | 62     |
+| Front Left Turn Motor      | 11     |
+| Rear Left Turn Motor       | 15     |
+| Rear Right Turn Motor      | 3      |
+| Pigeon Gyro                | 13     |
+| Turret Turning Motor       | 18     |
+| Turret Shooter Motor       | 5      |
+| Shooter Hood Motor         | 4      |
+| Agitator Motor             | 9      |
+| Roller Motor               | 12     |
+| First Intake Deploy Motor  | 13     |
+| Second Intake Deploy Motor | 8      |
+| Intake Motor               | 7      |
+| Climber Motor              | 17     |
 
 ## Network Map
 
 All devices connected to the robot's local network along with each device's assigned IP address
 
-| Device  | IP         |
-| ------- | ---------- |
-| Gateway | 10.56.90.1 |
-| RoboRio | 10.56.90.2 |
+| Device             | IP          |
+| ------------------ | ----------- |
+| Gateway            | 10.56.90.1  |
+| RoboRio            | 10.56.90.2  |
 | Vision Coprocessor | 10.56.90.10 |
 
 ## Button Bindings

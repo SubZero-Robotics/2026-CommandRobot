@@ -16,8 +16,8 @@ public class Robot extends TimedRobot {
 
   public Robot() {
     m_robotContainer = new RobotContainer();
-    addPeriodic(m_robotContainer.pushTurretEncoderReading(),
-        Constants.TurretConstants.kEncoderReadInterval.in(Seconds));
+    // addPeriodic(m_robotContainer.pushTurretEncoderReading(),
+    // Constants.TurretConstants.kEncoderReadInterval.in(Seconds));
   }
 
   @Override
@@ -43,12 +43,13 @@ public class Robot extends TimedRobot {
     m_autonomousCommand = m_robotContainer.getAutonomousCommand();
 
     if (m_autonomousCommand != null) {
-      CommandScheduler.getInstance().schedule(m_autonomousCommand);
+      m_autonomousCommand.schedule();
     }
   }
 
   @Override
   public void autonomousPeriodic() {
+    m_robotContainer.teleopPeriodic();
   }
 
   @Override
@@ -60,6 +61,8 @@ public class Robot extends TimedRobot {
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
     }
+
+    m_robotContainer.teleopInit();
   }
 
   @Override
