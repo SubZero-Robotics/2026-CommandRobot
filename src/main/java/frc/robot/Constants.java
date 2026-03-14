@@ -366,7 +366,7 @@ public final class Constants {
         }
 
         public static final class StagingConstants {
-                public static final int kAgitationAmpLimit = 4;
+                public static final int kAgitationAmpLimit = 60;
 
                 public static int kFeedIntoHoodMotor = 16;
                 public static double kFeedIntoHoodSpeed = 0.5;

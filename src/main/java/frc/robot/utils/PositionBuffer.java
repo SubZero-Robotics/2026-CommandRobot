@@ -27,7 +27,7 @@ public class PositionBuffer {
 
     public TurretPosition getAngleAtTime(double requestedTime) {
 
-        RingBuffer positionsCopy = m_positions.
+        RingBuffer positionsCopy = m_positions;
         // A fun little binary search algo
         int high = m_positions.getLength();
         int low = 0;
