@@ -25,6 +25,7 @@ import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
@@ -47,6 +48,7 @@ public class CommandFactory {
     private DriveSubsystem m_drive;
     private TurretSubsystem m_turret;
     private ShooterSubsystem m_shooter;
+    private LedSubsystem m_ledSubsystem;
 
     private boolean m_isAiming = false;
 
@@ -408,6 +410,12 @@ public class CommandFactory {
     public Command MoveTurretToRobotRelativeHeadingCommand(Angle angle) {
         return new InstantCommand(() -> {
             m_turret.moveToAngle(angle);
+        });
+    }
+
+    public Command LedAlertClimber() {
+               return new InstantCommand(() -> {
+            m_ledSubsystem.SetSolid(Color.kAliceBlue);
         });
     }
 
