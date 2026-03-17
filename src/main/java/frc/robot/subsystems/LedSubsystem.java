@@ -45,12 +45,29 @@ public class LedSubsystem extends SubsystemBase{
 
     public void SetSolid(Color color) {
 
-        cX.leds
-      .SetAnimation(Animation.Fill)
-      .ForZone(m_LedStrip)
-      .WithColor(color)
-      .WithDelay(Units.Milliseconds.of(0))
-      .RunOnce(false);
+      cX.leds
+        .SetAnimation(Animation.Fill)
+        .ForZone(m_LedStrip)
+        .WithColor(color)
+        .WithDelay(Units.Milliseconds.of(0))
+        .RunOnce(false);
+    }
+
+    public void SetBlink() {
+
+      cX.leds
+        .SetAnimation(Animation.Blink)
+        .ForZone(m_LedStrip)
+        .WithDelay(Units.Milliseconds.of(500))
+        .RunOnce(false);
+    }
+
+    // SetColor only works if you first set an animation
+
+    public void SetColor(Color color) {
+
+      cX.leds
+        .SetColor(m_LedStrip, color);
     }
 
     public void disableLeds() {

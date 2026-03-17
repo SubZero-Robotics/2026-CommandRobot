@@ -414,7 +414,19 @@ public class CommandFactory {
     }
 
     public Command LedAlertClimber() {
-               return new InstantCommand(() -> {
+        return new InstantCommand(() -> {
+            m_ledSubsystem.SetSolid(Color.kRed);
+        });
+    }
+
+    public Command LedAlertIntake() {
+        return new InstantCommand(() -> {
+            m_ledSubsystem.SetBlink();
+        });
+    }
+
+    public Command LedDefault() {
+        return new InstantCommand(() -> {
             m_ledSubsystem.SetSolid(Color.kAliceBlue);
         });
     }
@@ -426,6 +438,7 @@ public class CommandFactory {
 
         return (new RunCommand(this::ClimbUp))
                 // .until(m_climber::atMax) // TODO: put this back
+                .alongWith(LedAlertClimber())
                 .finallyDo(this::StopClimb);
     }
 

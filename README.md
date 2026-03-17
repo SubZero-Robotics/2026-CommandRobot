@@ -74,6 +74,16 @@ Button bindings for the devices used to control the robot
 
 Auto names along with their actions will be listed here.
 
+## LEDs
+
+LED signals when specific commands/events take place.
+
+| Event         | LED Signal   |
+|-------------- | ------------ |
+| Default       | LED Blue     |
+| Intake Active | LED Blinks   |
+| Climber Active| LED Red      |
+
 ## Making Changes
 
 This is a guide to the development cycle of this repository. This should apply to anyone interested in making changes to this season's robot code.
