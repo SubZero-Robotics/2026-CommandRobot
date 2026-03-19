@@ -3,6 +3,8 @@ package frc.robot.commands;
 import java.util.ArrayList;
 import java.util.function.Supplier;
 
+import com.lumynlabs.domain.led.Animation;
+
 import dev.doglog.DogLog;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
@@ -33,6 +35,7 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import frc.robot.Constants;
 import frc.robot.Robot;
+import frc.robot.Constants.ClimberConstants;
 import frc.robot.Constants.Fixtures;
 import frc.robot.Constants.IntakeConstants;
 import frc.robot.Constants.NumericalConstants;
@@ -247,7 +250,9 @@ public class CommandFactory {
     public Command RetractIntake() {
         return new InstantCommand(() -> {
             m_intake.retractIntake();
-        }).andThen(StopIntake());
+        })
+        .alongWith(LedSolid())
+        .andThen(StopIntake());
     }
 
     public Command OutTake() {
@@ -259,7 +264,9 @@ public class CommandFactory {
     public Command DeployIntake() {
         return new InstantCommand(() -> {
             m_intake.deployIntake();
-        }).alongWith(SpinIntake());
+        })
+        .alongWith(SpinIntake())
+        .alongWith(LedAlertIntake());
     }
 
     public Command SpinIntake() {
@@ -415,7 +422,7 @@ public class CommandFactory {
 
     public Command LedAlertClimber() {
         return new InstantCommand(() -> {
-            m_ledSubsystem.SetSolid(Color.kRed);
+                m_ledSubsystem.SetSolid(Color.kRed);
         });
     }
 
@@ -430,6 +437,13 @@ public class CommandFactory {
             m_ledSubsystem.SetSolid(Color.kAliceBlue);
         });
     }
+
+    public Command LedSolid() {
+        return new InstantCommand(() -> {
+            m_ledSubsystem.SetAnimation(Animation.Fill, 0);
+        });
+    }
+    
 
     public Command ClimbUpCommand() {
         // return

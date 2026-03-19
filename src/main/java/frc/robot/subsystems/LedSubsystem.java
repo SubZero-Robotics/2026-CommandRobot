@@ -1,5 +1,7 @@
 package frc.robot.subsystems;
 
+import static edu.wpi.first.units.Units.Milliseconds;
+
 import com.lumynlabs.connection.usb.USBPort;
 import com.lumynlabs.devices.ConnectorX;
 import com.lumynlabs.domain.event.Event;
@@ -74,6 +76,13 @@ public class LedSubsystem extends SubsystemBase{
         cX.leds.SetColor(m_LedStrip, Color.kBlack);
     }
 
-    
+    public void SetAnimation(Animation animation, double milliseconds) {
+
+      cX.leds
+      .SetAnimation(animation)
+      .ForZone(m_LedStrip)
+      .WithDelay(Units.Milliseconds.of(milliseconds))
+      .RunOnce(false);
+    }
 
 }
