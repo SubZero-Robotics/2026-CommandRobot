@@ -5,6 +5,9 @@ import static edu.wpi.first.units.Units.Rotations;
 
 import com.revrobotics.spark.SparkLimitSwitch;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
+
+import dev.doglog.DogLog;
+
 import com.revrobotics.spark.SparkMax;
 
 import edu.wpi.first.networktables.BooleanSubscriber;

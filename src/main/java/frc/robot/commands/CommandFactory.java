@@ -136,6 +136,7 @@ public class CommandFactory {
         }
 
         m_wheelVelocity = solution.wheelSpeed();
+        m_shooter.MoveHoodToPosition(solution.hoodAngle());
         MoveTurretToHeading(solution.hubAngle(), false);
     }
 
@@ -265,7 +266,7 @@ public class CommandFactory {
 
     public Command RetractIntake() {
         return new InstantCommand(() -> {
-            m_intake.retractIntake();
+            // m_intake.retractIntake();
         }).andThen(StopIntakeCommand());
     }
 
@@ -277,7 +278,7 @@ public class CommandFactory {
 
     public Command DeployIntake() {
         return new InstantCommand(() -> {
-            m_intake.deployIntake();
+            // m_intake.deployIntake();
         }).alongWith(SpinIntake());
     }
 

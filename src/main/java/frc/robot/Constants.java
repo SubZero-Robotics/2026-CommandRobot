@@ -240,7 +240,7 @@ public final class Constants {
                 public static final Angle kHubMinAngle1 = Degrees.of(311);
                 public static final Angle kHubMaxAngle1 = Degrees.of(351);
 
-                public static final Angle kHubMinAngle2 = Degrees.of(150);
+                public static final Angle kHubMinAngle2 = Degrees.of(120);
                 public static final Angle kHubMaxAngle2 = Degrees.of(224);
 
                 public static final Angle kFeedMinAngle = Degrees.of(180);
@@ -456,7 +456,7 @@ public final class Constants {
                 public static final Angle kMinExtension = Rotations.of(0.0);
 
                 public static final int kDeployMotorCurrentLimit = 60 / 9;
-                public static final int kIntakeMotorCurrentLimit = 80 / 9;
+                public static final int kIntakeMotorCurrentLimit = 80;
 
                 public static final AngularVelocity kDefaultIntakeSpeed = RPM.of(-2200);
         }
