@@ -6,7 +6,11 @@ import static edu.wpi.first.units.Units.Rotations;
 import com.revrobotics.spark.SparkLimitSwitch;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
+
+import edu.wpi.first.networktables.BooleanSubscriber;
+import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -23,13 +27,15 @@ public class ClimberSubsystem extends SubsystemBase {
     private final SparkLimitSwitch m_minLimitSwitch = m_climbMotor.getReverseLimitSwitch();
     private final SparkLimitSwitch m_maxLimitSwitch = m_climbMotor.getForwardLimitSwitch();
 
+    BooleanSubscriber m_ignoreSoftLimits = DogLog.tunable("Ignore climber soft limits", false);
+
     public double GetPosition() {
         return m_relativeEncoder.getPosition();
     }
 
     public void climbUp() {
 
-        if (!atMax()) {
+        if (m_ignoreSoftLimits.get() || (!atMax() && !m_ignoreSoftLimits.get())) {
             m_climbMotor.set(ClimberConstants.kUpVelocity);
         } else {
             Stop();
@@ -38,7 +44,7 @@ public class ClimberSubsystem extends SubsystemBase {
 
     public void climbDown() {
 
-        if (!atMin()) {
+        if (m_ignoreSoftLimits.get() || (!atMin() && !m_ignoreSoftLimits.get())) {
             m_climbMotor.set(ClimberConstants.kDownVelocity);
         } else {
             Stop();
