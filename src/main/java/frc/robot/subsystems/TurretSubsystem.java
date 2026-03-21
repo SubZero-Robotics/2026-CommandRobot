@@ -74,6 +74,7 @@ public class TurretSubsystem extends SubsystemBase {
         m_config.absoluteEncoder.inverted(true);
         m_config.inverted(true);
         m_config.smartCurrentLimit(TurretConstants.kTurretMotorAmpLimit);
+        m_config.closedLoop.maxOutput(0.2);
         m_turretMotor.configure(m_config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
         m_positionBuffer.pushElement(UtilityFunctions.WrapAngle(Rotations.of(m_absoluteEncoder.getPosition())),

@@ -92,7 +92,7 @@ public class IntakeSubsystem extends SubsystemBase {
             // m_deploy1ClosedLoopController.setSetpoint(IntakeConstants.kDeployRotations.in(Rotations),
             // ControlType.kPosition);
 
-            m_deploy1ClosedLoopController.setSetpoint(IntakeConstants.kDeployRotations.in(Rotations),
+            m_deploy1ClosedLoopController.setSetpoint(IntakeConstants.kDeployRotationsMotorOne.in(Rotations),
                     ControlType.kPosition);
         } else {
             System.out.println("Attempting to extend when beyond limit hitting limit on deploy motor 1.");
@@ -101,7 +101,7 @@ public class IntakeSubsystem extends SubsystemBase {
         if (deploy2Position.lt(IntakeConstants.kMaxExtension)) {
             // m_deploy2ClosedLoopController.setSetpoint(IntakeConstants.kDeployRotations.in(Rotations),
             // ControlType.kPosition);
-            m_deploy2ClosedLoopController.setSetpoint(IntakeConstants.kDeployRotations.in(Rotations),
+            m_deploy2ClosedLoopController.setSetpoint(IntakeConstants.kDeployRotationsMotorTwo.in(Rotations),
                     ControlType.kPosition);
         } else {
             System.out.println("Attempting to extend beyond limit when hitting limit on deploy motor 2.");

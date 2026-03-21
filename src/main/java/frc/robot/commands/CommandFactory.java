@@ -1,6 +1,8 @@
 package frc.robot.commands;
 
+import java.time.Instant;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.function.Supplier;
 
 import dev.doglog.DogLog;
@@ -23,11 +25,13 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.Time;
+import edu.wpi.first.units.measure.Velocity;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
+import edu.wpi.first.wpilibj2.command.DeferredCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import frc.robot.Constants;
@@ -98,7 +102,8 @@ public class CommandFactory {
         DogLog.log("RPM target", m_wheelVelocity.in(RPM));
         DogLog.log("In periodic command factor", false);
 
-        DogLog.log("Turret Distance To Hub (in meters)", GetTurretDistanceToHub());
+        DogLog.log("Turret Distance To Hub (in meters)",
+                Math.hypot(GetTurretDistanceToHub().getX(), GetTurretDistanceToHub().getY()));
     }
 
     public void AimTurretToFront() {
@@ -140,6 +145,8 @@ public class CommandFactory {
 
     private void Aim(boolean isFeedingLeftSide) {
         Fixtures.FieldLocations location = m_drive.getRobotLocation();
+
+        DogLog.log("Field location", location);
 
         switch (location) {
             case AllianceSide: {
@@ -223,6 +230,14 @@ public class CommandFactory {
         }).finallyDo(this::StopShoot);
     }
 
+    public Command ShootCommand(Supplier<AngularVelocity> velocitySupplier) {
+        return new DeferredCommand(() -> {
+            return new RunCommand(() -> {
+                ShootCommand(velocitySupplier.get());
+            }).finallyDo(this::StopShoot);
+        }, new HashSet<>());
+    }
+
     public void ShootAtVelocity(AngularVelocity velocity) {
         m_shooter.Spin(velocity);
     }
@@ -238,16 +253,20 @@ public class CommandFactory {
         m_shooter.Stop();
     }
 
-    public Command StopIntake() {
+    public Command StopIntakeCommand() {
         return new InstantCommand(() -> {
             m_intake.stopIntake();
         });
     }
 
+    public void StopIntake() {
+        m_intake.stopIntake();
+    }
+
     public Command RetractIntake() {
         return new InstantCommand(() -> {
             m_intake.retractIntake();
-        }).andThen(StopIntake());
+        }).andThen(StopIntakeCommand());
     }
 
     public Command OutTake() {
@@ -274,15 +293,15 @@ public class CommandFactory {
 
         Pose2d robotPose = m_drive.getPose();
 
-        Distance turretX = TurretConstants.kTurretCenterDistanceFromRobotCenter
-                .times(Math.cos(robotPose.getRotation().getMeasure()
-                        .plus(TurretConstants.kAngularDistanceToFrontOfRobot).in(Radians)))
-                .plus(robotPose.getTranslation().getMeasureX());
+        Distance turretX = robotPose.getTranslation().getMeasureX()
+                .plus(TurretConstants.kTurretCenterDistanceFromRobotCenter
+                        .times(Math.cos(robotPose.getRotation().getMeasure()
+                                .plus(TurretConstants.kTurretAngularOffset).in(Radians))));
 
-        Distance turretY = TurretConstants.kTurretCenterDistanceFromRobotCenter
-                .times(Math.sin(robotPose.getRotation().getMeasure()
-                        .plus(TurretConstants.kAngularDistanceToFrontOfRobot).in(Radians)))
-                .plus(robotPose.getTranslation().getMeasureY());
+        Distance turretY = robotPose.getTranslation().getMeasureY()
+                .plus(TurretConstants.kTurretCenterDistanceFromRobotCenter
+                        .times(Math.sin(robotPose.getRotation().getMeasure()
+                                .plus(TurretConstants.kTurretAngularOffset).in(Radians))));
 
         Translation2d turretTranslation = new Translation2d(turretX, turretY);
 
@@ -310,10 +329,12 @@ public class CommandFactory {
         }, m_turret);
     }
 
-    public Command MoveHoodToAngleCommand(Angle angle) {
-        return new InstantCommand(() -> {
-            MoveHoodToAngle(angle);
-        });
+    public Command MoveHoodToAngleCommand(Supplier<Angle> angleSupplier) {
+        return new DeferredCommand(() -> {
+            return new InstantCommand(() -> {
+                MoveHoodToAngle(angleSupplier.get());
+            });
+        }, new HashSet<>());
     }
 
     public void MoveHoodToAngle(Angle angle) {
@@ -619,29 +640,31 @@ public class CommandFactory {
 
         Angle phi = Radians.of(0.0);
 
-        if (robotVelocity.gt(ShooterConstants.kMaxStationaryVelocity)) {
-            Time timeOfFlight = Seconds.of(UtilityFunctions.interpolate(firstEntry.distance().in(Meters),
-                    secondEntry.distance().in(Meters), firstEntry.timeOfFlight().in(Seconds),
-                    secondEntry.timeOfFlight().in(Seconds), distance.in(Meters)));
+        // if (robotVelocity.gt(ShooterConstants.kMaxStationaryVelocity)) {
+        // Time timeOfFlight =
+        // Seconds.of(UtilityFunctions.interpolate(firstEntry.distance().in(Meters),
+        // secondEntry.distance().in(Meters), firstEntry.timeOfFlight().in(Seconds),
+        // secondEntry.timeOfFlight().in(Seconds), distance.in(Meters)));
 
-            LinearVelocity radialVelocityTorwardsHub = MetersPerSecond
-                    .of(vy.in(MetersPerSecond) * Math.sin(turretAngle.in(Radians))
-                            + vx.in(MetersPerSecond) * Math.cos(turretAngle.in(Radians)));
+        // LinearVelocity radialVelocityTorwardsHub = MetersPerSecond
+        // .of(vy.in(MetersPerSecond) * Math.sin(turretAngle.in(Radians))
+        // + vx.in(MetersPerSecond) * Math.cos(turretAngle.in(Radians)));
 
-            LinearVelocity tangentialVelocityFromHub = MetersPerSecond
-                    .of(vx.in(MetersPerSecond) * Math.sin(turretAngle.in(Radians))
-                            + vy.in(MetersPerSecond) * Math.cos(turretAngle.in(Radians)));
+        // LinearVelocity tangentialVelocityFromHub = MetersPerSecond
+        // .of(vx.in(MetersPerSecond) * Math.sin(turretAngle.in(Radians))
+        // + vy.in(MetersPerSecond) * Math.cos(turretAngle.in(Radians)));
 
-            Distance sideDistance = tangentialVelocityFromHub.times(timeOfFlight);
-            distance = distance.minus(radialVelocityTorwardsHub.times(timeOfFlight));
+        // Distance sideDistance = tangentialVelocityFromHub.times(timeOfFlight);
+        // distance = distance.minus(radialVelocityTorwardsHub.times(timeOfFlight));
 
-            phi = Radians.of(Math.atan(sideDistance.in(Meters) / distance.in(Meters)));
+        // phi = Radians.of(Math.atan(sideDistance.in(Meters) / distance.in(Meters)));
 
-            int transformedFirstEntryIndex = getFirstEntryIndex(distance);
+        // int transformedFirstEntryIndex = getFirstEntryIndex(distance);
 
-            firstEntry = ShooterConstants.kShootingEntries[transformedFirstEntryIndex];
-            secondEntry = ShooterConstants.kShootingEntries[transformedFirstEntryIndex + 1];
-        }
+        // firstEntry = ShooterConstants.kShootingEntries[transformedFirstEntryIndex];
+        // secondEntry = ShooterConstants.kShootingEntries[transformedFirstEntryIndex +
+        // 1];
+        // }
 
         AngularVelocity wheelSpeed = RadiansPerSecond.of(UtilityFunctions.interpolate(firstEntry.distance().in(Meters),
                 secondEntry.distance().in(Meters), firstEntry.wheelVelocity().in(RadiansPerSecond),
@@ -673,10 +696,14 @@ public class CommandFactory {
         });
     }
 
-    public Command Shoot(AngularVelocity shooterWheelVelocity) {
+    public Command ShootCommand(AngularVelocity shooterWheelVelocity) {
         return new RunCommand(() -> {
             m_shooter.Spin(shooterWheelVelocity);
         }).finallyDo(m_shooter::Stop);
+    }
+
+    public void Shoot(AngularVelocity shooterWheelVelocity) {
+        m_shooter.Spin(shooterWheelVelocity);
     }
 
     // TODO: Make this better

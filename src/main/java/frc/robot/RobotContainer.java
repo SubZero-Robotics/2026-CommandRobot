@@ -27,6 +27,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
+import edu.wpi.first.wpilibj2.command.DeferredCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
@@ -54,6 +55,8 @@ public class RobotContainer {
 
         CommandFactory m_commandFactory;
         Field2d m_field;
+
+        private boolean m_isAimingLeftSide = false;
 
         // For getting data points for the lookup table
         Angle commandedShooterAngle;
@@ -158,10 +161,7 @@ public class RobotContainer {
                 // WaitCommand(ShooterConstants.kRampTime)).andThen(m_commandFactory.RunAllStager())
                 // .finallyDo(m_commandFactory::StopShoot));
 
-                m_driverController.leftBumper().whileTrue(m_commandFactory.AimCommand(true))
-                                .onFalse(m_commandFactory.StopAimCommand());
-                m_driverController.rightBumper().whileTrue(m_commandFactory.AimCommand(false))
-                                .onFalse(m_commandFactory.StopAimCommand());
+                m_driverController.rightBumper().whileTrue(m_commandFactory.AimCommand(false));
 
                 m_driverController.rightTrigger().whileTrue(m_commandFactory.RunAllStager())
                                 .onTrue(Commands.waitUntil(m_shooter::AtWheelVelocityTarget).andThen(
@@ -184,18 +184,29 @@ public class RobotContainer {
                 // .onTrue(m_commandFactory.DeployIntake().alongWith(m_commandFactory.SpinIntake()))
                 // .onFalse(m_commandFactory.RetractIntake().alongWith(m_commandFactory.StopIntake()));
 
-        
+                // TODO: intake brokey, uncomment when fixed
+
+                // m_driverController.leftBumper()
+                // .onTrue(new ConditionalCommand(
+                // m_commandFactory.DeployIntake(),
+                // m_commandFactory.RetractIntake(),
+                // () -> {
+                // m_intakeOut = !m_intakeOut;
+                // return m_intakeOut;
+                // }));
 
                 m_driverController.leftTrigger()
-                                .onTrue(new ConditionalCommand(
-                                                m_commandFactory.DeployIntake()
-                                                                .alongWith(m_commandFactory.SpinIntake()),
-                                                m_commandFactory.RetractIntake()
-                                                                .alongWith(m_commandFactory.StopIntake()),
-                                                () -> {
-                                                        m_intakeOut = !m_intakeOut;
-                                                        return m_intakeOut;
-                                                }));
+                                .onTrue(m_commandFactory.SpinIntake()).onFalse(m_commandFactory.StopIntakeCommand());
+
+                m_driverController.b().whileTrue(m_commandFactory.RunAllStager())
+                                .onTrue(new InstantCommand(() -> {
+                                        m_commandFactory.Shoot(RPM.of(m_shooterVelocityGetter.get()));
+                                }))
+                                .onFalse(m_commandFactory.StopShootCommand()
+                                                .alongWith(m_commandFactory.StopStagingCommand()))
+                                .onTrue(m_commandFactory.MoveHoodToAngleCommand(() -> {
+                                        return Degrees.of(m_hoodAngleGetter.get());
+                                }));
 
                 // m_driverController.povUp()
                 // .whileTrue(m_commandFactory.ClimbDownCommand().finallyDo(m_commandFactory::StopClimb));

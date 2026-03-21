@@ -180,7 +180,7 @@ public final class Constants {
                 public static final double kEncoderConfidence = 0.15;
 
                 public static final Transform3d kRobotToCamOne = new Transform3d(
-                                new Translation3d(Inches.of(3.673), Inches.of(-3.664), Inches.of(20.331)),
+                                new Translation3d(Inches.of(-3.664), Inches.of(-3.673), Inches.of(20.331)),
                                 new Rotation3d(0, 180 - 23, 0));
 
                 // Camera 2 is Turret camera
@@ -240,7 +240,7 @@ public final class Constants {
                 public static final Angle kHubMinAngle1 = Degrees.of(311);
                 public static final Angle kHubMaxAngle1 = Degrees.of(351);
 
-                public static final Angle kHubMinAngle2 = Degrees.of(180);
+                public static final Angle kHubMinAngle2 = Degrees.of(150);
                 public static final Angle kHubMaxAngle2 = Degrees.of(224);
 
                 public static final Angle kFeedMinAngle = Degrees.of(180);
@@ -274,7 +274,7 @@ public final class Constants {
                 public static final Angle kTurretAngleTolerance = Degrees.of(2.0);
 
                 public static Angle kNonAimTurretAngle = Degrees.of(0.0);
-                public static int kTurretMotorAmpLimit = 10;
+                public static int kTurretMotorAmpLimit = 5;
                 public static final Angle kTurretTorwardsFront = Degrees.of(180);
 
                 public static final Angle kAngularDistanceToFrontOfRobot = Rotations.of(0.629);
@@ -290,7 +290,7 @@ public final class Constants {
 
                 public static final double kShooterP = 0.0001;
                 public static final double kShooterI = 0.0;
-                public static final double kShooterD = 0.0;
+                public static final double kShooterD = 0.001;
                 public static final double kShooterFF = 0.0019;
 
                 public static final AngularVelocity kShooterVelocityTolerance = RPM.of(50);
@@ -310,29 +310,37 @@ public final class Constants {
 
                 public static final LinearVelocity kMaxMuzzleVelocity = MetersPerSecond.of(10.0);
 
-                public static final Distance kHubRobotTurretOffset = Inches.of(47);
+                public static final Distance kHubRobotTurretOffset = Inches.of(10.5);
 
                 public static final ShootingEntry[] kShootingEntries = {
-                                new ShootingEntry(Inches.of(30).plus(kHubRobotTurretOffset), RPM.of(3519), null,
+                                new ShootingEntry(Inches.of(10.5).plus(kHubRobotTurretOffset), RPM.of(3100), null,
                                                 Inches.of(101.9),
                                                 Seconds.of(0.812),
-                                                Degrees.of(0)),
-                                new ShootingEntry(Inches.of(59).plus(kHubRobotTurretOffset), RPM.of(3565), null,
+                                                Degrees.of(8)),
+                                new ShootingEntry(Inches.of(32.5).plus(kHubRobotTurretOffset), RPM.of(3200), null,
                                                 Inches.of(102.335),
                                                 Seconds.of(0.822),
-                                                Degrees.of(0)),
-                                new ShootingEntry(Inches.of(89).plus(kHubRobotTurretOffset), RPM.of(3975), null,
+                                                Degrees.of(10)),
+                                new ShootingEntry(Inches.of(57.5).plus(kHubRobotTurretOffset), RPM.of(3500), null,
                                                 Inches.of(120.62),
                                                 Seconds.of(1.0),
-                                                Degrees.of(0)),
-                                new ShootingEntry(Inches.of(122).plus(kHubRobotTurretOffset), RPM.of(4375), null,
+                                                Degrees.of(14)),
+                                new ShootingEntry(Inches.of(79.25).plus(kHubRobotTurretOffset), RPM.of(3700), null,
                                                 Inches.of(134.055333),
                                                 Seconds.of(1.217),
-                                                Degrees.of(0)),
-                                new ShootingEntry(Inches.of(148).plus(kHubRobotTurretOffset), RPM.of(4600), null,
+                                                Degrees.of(16)),
+                                new ShootingEntry(Inches.of(102.25).plus(kHubRobotTurretOffset), RPM.of(3800), null,
                                                 Inches.of(147.348333),
                                                 Seconds.of(1.322),
-                                                kFeedAngle)
+                                                Degrees.of(16)),
+                                new ShootingEntry(Inches.of(132.75).plus(kHubRobotTurretOffset), RPM.of(4200), null,
+                                                Inches.of(147.348333),
+                                                Seconds.of(1.322),
+                                                Degrees.of(16)),
+                                new ShootingEntry(Inches.of(176).plus(kHubRobotTurretOffset), RPM.of(4700), null,
+                                                Inches.of(147.348333),
+                                                Seconds.of(1.322),
+                                                Degrees.of(16))
                 };
 
                 public static final Angle kHoodTolerence = Degrees.of(2.0);
@@ -342,7 +350,7 @@ public final class Constants {
                 // hood zero position set agaisnt side of robot frame
 
                 public static final double kHoodMinAbsolutePosition = 0.38;
-                public static final double kHoodMaxAbsolutePosition = 0.42;
+                public static final double kHoodMaxAbsolutePosition = 0.43;
 
                 public static final double kHoodDegreeConversionFactor = 1 / 360D;
 
@@ -350,7 +358,7 @@ public final class Constants {
                 public static final Angle kNonAimHoodAngle = Degrees.of(15.0);
                 public static final AngularVelocity kFeedingWheelVelocity = RPM.of(4000);
                 public static final Angle kHoodFeedingPosition = Degrees.of(25.0);
-                public static final Measure<AngleUnit> kTurretAngleRestrictiveShooterAngle = Degrees.of(10);
+                public static final Measure<AngleUnit> kTurretAngleRestrictiveShooterAngle = Degrees.of(30);
 
                 public static final Angle kHoodStartingAngle = Degrees.of(1.0);
                 public static final AngularVelocity kShooterStartVelocity = RPM.of(0.0);
@@ -416,7 +424,7 @@ public final class Constants {
                 public static final Angle kFeedOffset = Degrees.of(12);
 
                 public static final Translation2d kRedHubAprilTag = AprilTagFieldLayout
-                                .loadField(AprilTagFields.k2026RebuiltWelded) // TODO: Change to normal field
+                                .loadField(AprilTagFields.k2026RebuiltAndymark) // TODO: Change to normal field
                                 .getTagPose(3).get().toPose2d().getTranslation();
         }
 
@@ -438,15 +446,17 @@ public final class Constants {
                 public static final int kDeployMotor2Id = 8;
                 public static final int kIntakeMotorId = 7;
 
-                // 10 teeth on pinion, 20 teeth on rack
-                public static final Angle kDeployRotations = Rotations.of(9.6);
+                // 10 teeth on pinion, 20 teeth on rack. Gear is 9:1
+                public static final Angle kDeployRotationsMotorOne = Rotations.of((20 / 10) * 9);
+                public static final Angle kDeployRotationsMotorTwo = Rotations.of((20 / 10) * 9);
+
                 public static final Angle kRetractRotations = Rotations.of(0.0);
 
-                public static final Angle kMaxExtension = Rotations.of(9.6);
+                public static final Angle kMaxExtension = Rotations.of((20 / 10) * 9);
                 public static final Angle kMinExtension = Rotations.of(0.0);
 
-                public static final int kDeployMotorCurrentLimit = 60;
-                public static final int kIntakeMotorCurrentLimit = 80;
+                public static final int kDeployMotorCurrentLimit = 60 / 9;
+                public static final int kIntakeMotorCurrentLimit = 80 / 9;
 
                 public static final AngularVelocity kDefaultIntakeSpeed = RPM.of(-2200);
         }
