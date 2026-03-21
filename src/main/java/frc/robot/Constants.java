@@ -180,10 +180,10 @@ public final class Constants {
                 public static final double kEncoderConfidence = 0.15;
 
                 public static final Transform3d kRobotToCamOne = new Transform3d(
-                                new Translation3d(Inches.of(-3.854), Inches.of(-4.358), Inches.of(20.585)),
+                                new Translation3d(Inches.of(3.673), Inches.of(-3.664), Inches.of(20.331)),
                                 new Rotation3d(0, 180 - 23, 0));
 
-                // These are not final numbers
+                // Camera 2 is Turret camera
                 public static final Transform3d kRobotToCamTwo = new Transform3d(
                                 new Translation3d(Inches.of(8.375), Inches.of(-2.16), Inches.of(-20.668)),
                                 new Rotation3d(0, 0, 0));
@@ -352,7 +352,7 @@ public final class Constants {
                 public static final Angle kHoodFeedingPosition = Degrees.of(25.0);
                 public static final Measure<AngleUnit> kTurretAngleRestrictiveShooterAngle = Degrees.of(10);
 
-                public static final Angle kHoodStartingAngle = Degrees.of(3.0);
+                public static final Angle kHoodStartingAngle = Degrees.of(1.0);
                 public static final AngularVelocity kShooterStartVelocity = RPM.of(0.0);
                 public static final Angle kDefaultHoodPosition = Degrees.of(3.0);
 

@@ -147,13 +147,16 @@ public class RobotContainer {
 
                 // m_driverController.a().whileTrue(m_aimFactory.RunAllStager());
 
-                // m_driverController.y().onTrue(new InstantCommand(() -> {
+                // m_driverController.b().onTrue(new InstantCommand(() -> {
                 // double shooterVelocity = m_shooterVelocityGetter.get();
-                // m_aimFactory.ShootAtVelocity(RPM.of(shooterVelocity));
+                // double hoodAngle = m_hoodAngleGetter.get();
+                // m_commandFactory.MoveHoodToAngle(Degrees.of(hoodAngle));
+                // m_commandFactory.ShootAtVelocity(RPM.of(shooterVelocity));
                 // System.out.println("Shooting at velocity of " + shooterVelocity + " RPM.");
+                // System.out.println("Turret at angle " + hoodAngle + " Degrees");
                 // }).andThen(new
-                // WaitCommand(ShooterConstants.kRampTime)).andThen(m_aimFactory.RunAllStager())
-                // .finallyDo(m_aimFactory::StopShoot));
+                // WaitCommand(ShooterConstants.kRampTime)).andThen(m_commandFactory.RunAllStager())
+                // .finallyDo(m_commandFactory::StopShoot));
 
                 m_driverController.leftBumper().whileTrue(m_commandFactory.AimCommand(true))
                                 .onFalse(m_commandFactory.StopAimCommand());
@@ -181,7 +184,7 @@ public class RobotContainer {
                 // .onTrue(m_commandFactory.DeployIntake().alongWith(m_commandFactory.SpinIntake()))
                 // .onFalse(m_commandFactory.RetractIntake().alongWith(m_commandFactory.StopIntake()));
 
-                m_driverController.b().onTrue(m_commandFactory.MoveHoodToAngleCommand(Degrees.of(10)));
+        
 
                 m_driverController.leftTrigger()
                                 .onTrue(new ConditionalCommand(
