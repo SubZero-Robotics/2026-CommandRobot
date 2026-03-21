@@ -49,7 +49,7 @@ public class PositionBuffer {
                 return null;
             }
 
-            if (requestedTime > timeAtMidpoint) {
+            if (requestedTime >= timeAtMidpoint) {
                 low = midpoint + 1;
             } else if (requestedTime < timeAtMidpoint) {
                 high = midpoint;
