@@ -339,12 +339,13 @@ public final class Constants {
 
                 public static final LinearVelocity kMaxStationaryVelocity = MetersPerSecond.of(1e-1);
 
-                public static final double kHoodMinAbsolutePosition = 0.0;
-                public static final double kHoodMaxAbsolutePosition = 0.55;
+                // hood zero position set agaisnt side of robot frame
 
-                public static final double kHoodDegreeConversionFactor = kHoodMaxAbsolutePosition / 30;
+                public static final double kHoodMinAbsolutePosition = 0.38;
+                public static final double kHoodMaxAbsolutePosition = 0.42;
 
-                // TODO: Change to real numbers
+                public static final double kHoodDegreeConversionFactor = 1 / 360D;
+
                 public static final AngularVelocity kNonAimShooterVelocity = RPM.of(2000);
                 public static final Angle kNonAimHoodAngle = Degrees.of(15.0);
                 public static final AngularVelocity kFeedingWheelVelocity = RPM.of(4000);

@@ -174,12 +174,14 @@ public class RobotContainer {
                 m_driverController.y().onTrue(m_commandFactory.ReverseStager())
                                 .onFalse(m_commandFactory.StopStagingCommand());
 
-                // m_driverController.povUp().whileTrue(m_commandFactory.ClimbUpCommand());
-                // m_driverController.povDown().whileTrue(m_commandFactory.ClimbDownCommand());
+                m_driverController.povUp().whileTrue(m_commandFactory.ClimbUpCommand());
+                m_driverController.povDown().whileTrue(m_commandFactory.ClimbDownCommand());
 
                 // m_driverController.leftTrigger()
                 // .onTrue(m_commandFactory.DeployIntake().alongWith(m_commandFactory.SpinIntake()))
                 // .onFalse(m_commandFactory.RetractIntake().alongWith(m_commandFactory.StopIntake()));
+
+                m_driverController.b().onTrue(m_commandFactory.MoveHoodToAngleCommand(Degrees.of(10)));
 
                 m_driverController.leftTrigger()
                                 .onTrue(new ConditionalCommand(
