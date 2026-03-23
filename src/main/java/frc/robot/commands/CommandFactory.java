@@ -519,11 +519,19 @@ public class CommandFactory {
     }
 
     private static boolean withinRange(Angle min, Angle max, Angle a) {
-        Angle a1 = UtilityFunctions.WrapAngle(a);
-        Angle min1 = UtilityFunctions.WrapAngle(min);
-        Angle max1 = UtilityFunctions.WrapAngle(max);
+        Angle wrappedInput = UtilityFunctions.WrapAngle(a);
+        Angle wrappedMin = UtilityFunctions.WrapAngle(min);
+        Angle wrappedMax = UtilityFunctions.WrapAngle(max);
 
-        return a1.gt(min1) && a1.lt(max1);
+        // If the min is greater than the max (i.e. if the min is 330 deg and the max is
+        // 30 deg since it wraps and 390 is not going to survive the wrap above), then
+        // an input like 20 degrees is less than the min (30 degrees), but should still
+        // be considered greater than the max (330 degrees)
+        if (wrappedMin.gt(wrappedMax)) {
+            return wrappedInput.gt(wrappedMin) || wrappedInput.lt(wrappedMax);
+        }
+
+        return wrappedInput.gt(wrappedMin) && wrappedInput.lt(wrappedMax);
     }
 
     private static Angle getClosestAngle(Angle a, Angle... others) {
