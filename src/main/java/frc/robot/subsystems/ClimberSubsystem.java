@@ -5,6 +5,7 @@ import static edu.wpi.first.units.Units.Rotations;
 
 import com.revrobotics.spark.SparkLimitSwitch;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
+import com.revrobotics.spark.config.SparkMaxConfig;
 
 import dev.doglog.DogLog;
 
@@ -26,11 +27,17 @@ public class ClimberSubsystem extends SubsystemBase {
     SparkMax m_climbMotor = new SparkMax(ClimberConstants.kMotorCanId, MotorType.kBrushless);
 
     RelativeEncoder m_relativeEncoder = m_climbMotor.getEncoder();
+    
+    private SparkMaxConfig m_climberConig = new SparkMaxConfig();
 
     private final SparkLimitSwitch m_minLimitSwitch = m_climbMotor.getReverseLimitSwitch();
     private final SparkLimitSwitch m_maxLimitSwitch = m_climbMotor.getForwardLimitSwitch();
 
     BooleanSubscriber m_ignoreSoftLimits = DogLog.tunable("Ignore climber soft limits", false);
+
+    public ClimberSubsystem() {
+        m_climberConig.encoder.inverted(true);
+    }
 
     public double GetPosition() {
         return m_relativeEncoder.getPosition();

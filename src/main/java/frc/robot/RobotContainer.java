@@ -186,14 +186,14 @@ public class RobotContainer {
 
                 // TODO: intake brokey, uncomment when fixed
 
-                // m_driverController.leftBumper()
-                // .onTrue(new ConditionalCommand(
-                // m_commandFactory.DeployIntake(),
-                // m_commandFactory.RetractIntake(),
-                // () -> {
-                // m_intakeOut = !m_intakeOut;
-                // return m_intakeOut;
-                // }));
+                m_driverController.leftBumper()
+                                .onTrue(new ConditionalCommand(
+                                                m_commandFactory.DeployIntake(),
+                                                m_commandFactory.RetractIntake(),
+                                                () -> {
+                                                        m_intakeOut = !m_intakeOut;
+                                                        return m_intakeOut;
+                                                }));
 
                 m_driverController.leftTrigger()
                                 .onTrue(m_commandFactory.SpinIntake()).onFalse(m_commandFactory.StopIntakeCommand());

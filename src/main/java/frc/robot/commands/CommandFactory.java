@@ -266,8 +266,8 @@ public class CommandFactory {
 
     public Command RetractIntake() {
         return new InstantCommand(() -> {
-            // m_intake.retractIntake();
-        }).andThen(StopIntakeCommand());
+            m_intake.retractIntake();
+        });
     }
 
     public Command OutTake() {
@@ -278,8 +278,8 @@ public class CommandFactory {
 
     public Command DeployIntake() {
         return new InstantCommand(() -> {
-            // m_intake.deployIntake();
-        }).alongWith(SpinIntake());
+            m_intake.deployIntake();
+        });
     }
 
     public Command SpinIntake() {

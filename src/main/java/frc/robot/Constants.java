@@ -240,11 +240,11 @@ public final class Constants {
                 public static final Angle kHubMinAngle1 = Degrees.of(311);
                 public static final Angle kHubMaxAngle1 = Degrees.of(351);
 
-                public static final Angle kHubMinAngle2 = Degrees.of(120);
-                public static final Angle kHubMaxAngle2 = Degrees.of(224);
+                public static final Angle kHubMinAngle2 = Degrees.of(180);
+                public static final Angle kHubMaxAngle2 = Degrees.of(280);
 
                 public static final Angle kFeedMinAngle = Degrees.of(180);
-                public static final Angle kFeedMaxAngle = Degrees.of(224);
+                public static final Angle kFeedMaxAngle = Degrees.of(280);
 
                 public static final Angle kTurretCameraIdleViewMinAngle = Rotations.of(0.375);
                 public static final Angle kTurretCameraIdleViewMaxAngle = Rotations.of(0.582);
@@ -424,7 +424,7 @@ public final class Constants {
                 public static final Angle kFeedOffset = Degrees.of(12);
 
                 public static final Translation2d kRedHubAprilTag = AprilTagFieldLayout
-                                .loadField(AprilTagFields.k2026RebuiltAndymark) // TODO: Change to normal field
+                                .loadField(AprilTagFields.k2026RebuiltWelded) // TODO: Change to normal field
                                 .getTagPose(3).get().toPose2d().getTranslation();
         }
 
@@ -447,15 +447,15 @@ public final class Constants {
                 public static final int kIntakeMotorId = 7;
 
                 // 10 teeth on pinion, 20 teeth on rack. Gear is 9:1
-                public static final Angle kDeployRotationsMotorOne = Rotations.of((20 / 10) * 9);
-                public static final Angle kDeployRotationsMotorTwo = Rotations.of((20 / 10) * 9);
+                public static final Angle kDeployRotationsMotorOne = Rotations.of(17.0);
+                public static final Angle kDeployRotationsMotorTwo = Rotations.of(17.0);
 
                 public static final Angle kRetractRotations = Rotations.of(0.0);
 
-                public static final Angle kMaxExtension = Rotations.of((20 / 10) * 9);
+                public static final Angle kMaxExtension = Rotations.of((20.0 / 10.0) * 9.0);
                 public static final Angle kMinExtension = Rotations.of(0.0);
 
-                public static final int kDeployMotorCurrentLimit = 60 / 9;
+                public static final int kDeployMotorCurrentLimit = (int) (60.0 * (5.0 / 9.0));
                 public static final int kIntakeMotorCurrentLimit = 80;
 
                 public static final AngularVelocity kDefaultIntakeSpeed = RPM.of(-2200);

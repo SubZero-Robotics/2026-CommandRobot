@@ -68,12 +68,16 @@ public class IntakeSubsystem extends SubsystemBase {
         m_intakeConfig.smartCurrentLimit(IntakeConstants.kIntakeMotorCurrentLimit);
 
         m_deploy1Config.inverted(true);
+        m_deploy2Config.inverted(false);
         m_deployMotor1.configure(m_deploy1Config, ResetMode.kResetSafeParameters,
                 PersistMode.kPersistParameters);
         m_deployMotor2.configure(m_deploy2Config, ResetMode.kResetSafeParameters,
                 PersistMode.kPersistParameters);
         m_intakeMotor.configure(m_intakeConfig, ResetMode.kResetSafeParameters,
                 PersistMode.kPersistParameters);
+
+        m_deploy1RelativeEncoder.setPosition(0);
+        m_deploy2RelativeEncoder.setPosition(0);
     }
 
     public void spinIntake(AngularVelocity velocity) {
@@ -129,21 +133,29 @@ public class IntakeSubsystem extends SubsystemBase {
 
     @Override
     public void periodic() {
-        if (m_minLimitSwitch1.isPressed()) {
-            m_deploy1RelativeEncoder.setPosition(IntakeConstants.kMinExtension.in(Rotations));
-        }
+        // if (m_minLimitSwitch1.isPressed()) {
+        // m_deploy1RelativeEncoder.setPosition(IntakeConstants.kMinExtension.in(Rotations));
+        // }
 
-        if (m_minLimitSwitch2.isPressed()) {
-            m_deploy2RelativeEncoder.setPosition(IntakeConstants.kMinExtension.in(Rotations));
-        }
+        // if (m_minLimitSwitch2.isPressed()) {
+        // m_deploy2RelativeEncoder.setPosition(IntakeConstants.kMinExtension.in(Rotations));
+        // }
 
-        if (m_maxLimitSwitch1.isPressed()) {
-            m_deploy1RelativeEncoder.setPosition(IntakeConstants.kMaxExtension.in(Rotations));
-        }
+        // if (m_maxLimitSwitch1.isPressed()) {
+        // m_deploy1RelativeEncoder.setPosition(IntakeConstants.kMaxExtension.in(Rotations));
+        // }
 
-        if (m_maxLimitSwitch2.isPressed()) {
-            m_deploy2RelativeEncoder.setPosition(IntakeConstants.kMaxExtension.in(Rotations));
-        }
+        // if (m_maxLimitSwitch2.isPressed()) {
+        // m_deploy2RelativeEncoder.setPosition(IntakeConstants.kMaxExtension.in(Rotations));
+        // }
+
+        DogLog.log("Intake Subsystem/Deploy Setpoint Motor One", m_deploy1ClosedLoopController.getSetpoint());
+        DogLog.log("Intake Subsystem/Deploy Commanded Speed Motor One", m_deployMotor1.getAppliedOutput());
+        DogLog.log("Intake Subsystem/Deploy True Position Motor One", m_deploy1RelativeEncoder.getPosition());
+
+        DogLog.log("Intake Subsystem/Deploy Setpoint Motor Two", m_deploy2ClosedLoopController.getSetpoint());
+        DogLog.log("Intake Subsystem/Deploy Commanded Speed Motor Two", m_deployMotor2.getAppliedOutput());
+        DogLog.log("Intake Subsystem/Deploy True Position Motor Two", m_deploy2RelativeEncoder.getPosition());
 
         // if (m_minLimitSwitch1.isPressed())
         // System.out.println("Min One");
