@@ -182,10 +182,10 @@ public class TurretSubsystem extends SubsystemBase {
     public void simulationPeriodic() {
         m_simLigament.setAngle(
                 m_targetAngle.plus(robotRotation).minus(TurretConstants.kAngularDistanceToFrontOfRobot).in(Degrees));
-        m_min1.setAngle(TurretConstants.kHubMinAngle1.plus(robotRotation).in(Degrees));
-        m_max1.setAngle(TurretConstants.kHubMaxAngle1.plus(robotRotation).in(Degrees));
-        m_min2.setAngle(TurretConstants.kHubMinAngle2.plus(robotRotation).in(Degrees));
-        m_max2.setAngle(TurretConstants.kHubMaxAngle2.plus(robotRotation).in(Degrees));
+        m_min1.setAngle(TurretConstants.kHubFrontFacingRangeMinAngle1.plus(robotRotation).in(Degrees));
+        m_max1.setAngle(TurretConstants.kHubFrontFacingRangeMaxAngle1.plus(robotRotation).in(Degrees));
+        m_min2.setAngle(TurretConstants.kHubRearFacingRangeMinAngle2.plus(robotRotation).in(Degrees));
+        m_max2.setAngle(TurretConstants.kHubRearFacingRangeMaxAngle2.plus(robotRotation).in(Degrees));
         m_robotHeading.setAngle(robotRotation.in(Degrees));
         SmartDashboard.putData("Turret Rotation", m_simMech);
     }

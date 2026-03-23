@@ -714,10 +714,6 @@ public class CommandFactory {
     // hitting the side of the robot or other balls currently being held in the
     // robot
     private Angle[] getCurrentTurretRange() {
-        if (m_shooter.GetHoodAngle().gt(ShooterConstants.kTurretAngleRestrictiveShooterAngle)) {
-            return TurretConstants.kRestrictedAngles;
-        }
-
         return TurretConstants.kUnrestrictedAngles;
     }
 

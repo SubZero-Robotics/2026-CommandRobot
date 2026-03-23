@@ -237,11 +237,11 @@ public final class Constants {
 
                 public static final int kSmartCurrentLimit = 40;
 
-                public static final Angle kHubMinAngle1 = Degrees.of(311);
-                public static final Angle kHubMaxAngle1 = Degrees.of(351);
+                public static final Angle kHubFrontFacingRangeMinAngle1 = Degrees.of(311);
+                public static final Angle kHubFrontFacingRangeMaxAngle1 = Degrees.of(351);
 
-                public static final Angle kHubMinAngle2 = Degrees.of(180);
-                public static final Angle kHubMaxAngle2 = Degrees.of(280);
+                public static final Angle kHubRearFacingRangeMinAngle2 = Degrees.of(180);
+                public static final Angle kHubRearFacingRangeMaxAngle2 = Degrees.of(280);
 
                 public static final Angle kFeedMinAngle = Degrees.of(180);
                 public static final Angle kFeedMaxAngle = Degrees.of(280);
@@ -256,7 +256,7 @@ public final class Constants {
                 };
 
                 public static final Angle[] kUnrestrictedAngles = new Angle[] {
-                                kHubMinAngle1, kHubMaxAngle1, kHubMinAngle2, kHubMaxAngle2
+                                kHubFrontFacingRangeMinAngle1, kHubRearFacingRangeMaxAngle2
                 };
 
                 public static final Angle kOvershootAmount = Degrees.of(10.0);
