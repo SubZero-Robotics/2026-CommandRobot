@@ -94,7 +94,7 @@ public class ShooterSubsystem extends SubsystemBase {
         m_hoodClosedLoopController.setSetpoint(targetPosition,
                 ControlType.kPosition);
 
-        System.out.println("hood taget position " + targetPosition);
+        // System.out.println("hood taget position " + targetPosition);
 
     }
 

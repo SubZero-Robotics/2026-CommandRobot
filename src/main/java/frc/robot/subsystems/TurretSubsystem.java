@@ -3,7 +3,6 @@ package frc.robot.subsystems;
 import com.revrobotics.AbsoluteEncoder;
 import com.revrobotics.PersistMode;
 import com.revrobotics.ResetMode;
-import com.revrobotics.sim.SparkMaxSim;
 import com.revrobotics.spark.FeedbackSensor;
 import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkClosedLoopController;
@@ -15,7 +14,6 @@ import dev.doglog.DogLog;
 
 import com.revrobotics.spark.config.SparkMaxConfig;
 
-import edu.wpi.first.math.system.plant.DCMotor;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.RPM;
@@ -24,9 +22,7 @@ import static edu.wpi.first.units.Units.Seconds;
 
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.LinearVelocity;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
@@ -34,7 +30,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Robot;
-import frc.robot.Constants.NumericalConstants;
 import frc.robot.Constants.TurretConstants;
 import frc.robot.utils.PositionBuffer;
 import frc.robot.utils.TurretPosition;
@@ -57,8 +52,8 @@ public class TurretSubsystem extends SubsystemBase {
     private MechanismLigament2d m_simLigament = new MechanismLigament2d("Turret", 2, 0);
 
     private MechanismLigament2d m_min1 = new MechanismLigament2d("min1", 2, 0);
-    private MechanismLigament2d m_max1 = new MechanismLigament2d("max1", 2, 0);
-    private MechanismLigament2d m_min2 = new MechanismLigament2d("min2", 2, 0);
+    // private MechanismLigament2d m_max1 = new MechanismLigament2d("max1", 2, 0);
+    // private MechanismLigament2d m_min2 = new MechanismLigament2d("min2", 2, 0);
     private MechanismLigament2d m_max2 = new MechanismLigament2d("max2", 2, 0);
     private MechanismLigament2d m_robotHeading = new MechanismLigament2d("robotHeading", 2, 0);
 
@@ -86,11 +81,11 @@ public class TurretSubsystem extends SubsystemBase {
         m_min1 = m_mechRoot.append(m_min1);
         m_min1.setColor(new Color8Bit("#FF00FF"));
 
-        m_max1 = m_mechRoot.append(m_max1);
-        m_max1.setColor(new Color8Bit("#FF00FF"));
+        // m_max1 = m_mechRoot.append(m_max1);
+        // m_max1.setColor(new Color8Bit("#FF00FF"));
 
-        m_min2 = m_mechRoot.append(m_min2);
-        m_min2.setColor(new Color8Bit("#FF0000"));
+        // m_min2 = m_mechRoot.append(m_min2);
+        // m_min2.setColor(new Color8Bit("#FF0000"));
 
         m_max2 = m_mechRoot.append(m_max2);
         m_max2.setColor(new Color8Bit("#FF0000"));
@@ -109,13 +104,17 @@ public class TurretSubsystem extends SubsystemBase {
 
         if (angle.gt(TurretConstants.kMaxAngle)) {
             System.out
-                    .println("Angle " + angle.in(Degrees) + "is bigger than maximum angle " +
-                            TurretConstants.kMaxAngle.in(Degrees) + ".");
+                    .println("Angle " + angle.minus(TurretConstants.kAngularDistanceToFrontOfRobot).in(Degrees)
+                            + "is bigger than maximum angle " +
+                            TurretConstants.kMaxAngle.minus(TurretConstants.kAngularDistanceToFrontOfRobot).in(Degrees)
+                            + ".");
             return;
         } else if (angle.lt(TurretConstants.kMinAngle)) {
             System.out.println(
-                    "Angle " + angle.in(Degrees) + "is to smaller than minimum angle " +
-                            TurretConstants.kMinAngle.in(Degrees) + ".");
+                    "Angle " + angle.minus(TurretConstants.kAngularDistanceToFrontOfRobot).in(Degrees)
+                            + "is to smaller than minimum angle " +
+                            TurretConstants.kMinAngle.minus(TurretConstants.kAngularDistanceToFrontOfRobot).in(Degrees)
+                            + ".");
             return;
         }
 
@@ -182,10 +181,10 @@ public class TurretSubsystem extends SubsystemBase {
     public void simulationPeriodic() {
         m_simLigament.setAngle(
                 m_targetAngle.plus(robotRotation).minus(TurretConstants.kAngularDistanceToFrontOfRobot).in(Degrees));
-        m_min1.setAngle(TurretConstants.kHubFrontFacingRangeMinAngle1.plus(robotRotation).in(Degrees));
-        m_max1.setAngle(TurretConstants.kHubFrontFacingRangeMaxAngle1.plus(robotRotation).in(Degrees));
-        m_min2.setAngle(TurretConstants.kHubRearFacingRangeMinAngle2.plus(robotRotation).in(Degrees));
-        m_max2.setAngle(TurretConstants.kHubRearFacingRangeMaxAngle2.plus(robotRotation).in(Degrees));
+        m_min1.setAngle(TurretConstants.kShootingMinAngle.plus(robotRotation).in(Degrees));
+        // m_max1.setAngle(TurretConstants.kHubFrontFacingRangeMaxAngle1.plus(robotRotation).in(Degrees));
+        // m_min2.setAngle(TurretConstants.kHubRearFacingRangeMinAngle2.plus(robotRotation).in(Degrees));
+        m_max2.setAngle(TurretConstants.kShootingMaxAngle.plus(robotRotation).in(Degrees));
         m_robotHeading.setAngle(robotRotation.in(Degrees));
         SmartDashboard.putData("Turret Rotation", m_simMech);
     }

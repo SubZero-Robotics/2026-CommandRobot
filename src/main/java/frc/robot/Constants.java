@@ -237,11 +237,8 @@ public final class Constants {
 
                 public static final int kSmartCurrentLimit = 40;
 
-                public static final Angle kHubFrontFacingRangeMinAngle1 = Degrees.of(311);
-                public static final Angle kHubFrontFacingRangeMaxAngle1 = Degrees.of(351);
-
-                public static final Angle kHubRearFacingRangeMinAngle2 = Degrees.of(180);
-                public static final Angle kHubRearFacingRangeMaxAngle2 = Degrees.of(280);
+                public static final Angle kShootingMinAngle = Degrees.of(170);
+                public static final Angle kShootingMaxAngle = Degrees.of(82);
 
                 public static final Angle kFeedMinAngle = Degrees.of(180);
                 public static final Angle kFeedMaxAngle = Degrees.of(280);
@@ -256,7 +253,7 @@ public final class Constants {
                 };
 
                 public static final Angle[] kUnrestrictedAngles = new Angle[] {
-                                kHubFrontFacingRangeMinAngle1, kHubRearFacingRangeMaxAngle2
+                                kShootingMinAngle, kShootingMaxAngle
                 };
 
                 public static final Angle kOvershootAmount = Degrees.of(10.0);
@@ -315,31 +312,31 @@ public final class Constants {
                 public static final ShootingEntry[] kShootingEntries = {
                                 new ShootingEntry(Inches.of(10.5).plus(kHubRobotTurretOffset), RPM.of(3100), null,
                                                 Inches.of(101.9),
-                                                Seconds.of(0.812),
+                                                Seconds.of(57.2 / 60.0),
                                                 Degrees.of(8)),
                                 new ShootingEntry(Inches.of(32.5).plus(kHubRobotTurretOffset), RPM.of(3200), null,
                                                 Inches.of(102.335),
-                                                Seconds.of(0.822),
+                                                Seconds.of(59.6 / 60.0),
                                                 Degrees.of(10)),
                                 new ShootingEntry(Inches.of(57.5).plus(kHubRobotTurretOffset), RPM.of(3500), null,
                                                 Inches.of(120.62),
-                                                Seconds.of(1.0),
+                                                Seconds.of(65.5 / 60.0),
                                                 Degrees.of(14)),
                                 new ShootingEntry(Inches.of(79.25).plus(kHubRobotTurretOffset), RPM.of(3700), null,
                                                 Inches.of(134.055333),
-                                                Seconds.of(1.217),
+                                                Seconds.of(72.4 / 60.0),
                                                 Degrees.of(16)),
                                 new ShootingEntry(Inches.of(102.25).plus(kHubRobotTurretOffset), RPM.of(3800), null,
                                                 Inches.of(147.348333),
-                                                Seconds.of(1.322),
+                                                Seconds.of(72.4 / 60.0),
                                                 Degrees.of(16)),
                                 new ShootingEntry(Inches.of(132.75).plus(kHubRobotTurretOffset), RPM.of(4200), null,
                                                 Inches.of(147.348333),
-                                                Seconds.of(1.322),
+                                                Seconds.of(81.0 / 60.0),
                                                 Degrees.of(16)),
                                 new ShootingEntry(Inches.of(176).plus(kHubRobotTurretOffset), RPM.of(4700), null,
                                                 Inches.of(147.348333),
-                                                Seconds.of(1.322),
+                                                Seconds.of(88.8 / 60.0),
                                                 Degrees.of(16))
                 };
 
@@ -447,8 +444,8 @@ public final class Constants {
                 public static final int kIntakeMotorId = 7;
 
                 // 10 teeth on pinion, 20 teeth on rack. Gear is 9:1
-                public static final Angle kDeployRotationsMotorOne = Rotations.of(17.0);
-                public static final Angle kDeployRotationsMotorTwo = Rotations.of(17.0);
+                public static final Angle kDeployRotationsMotorOne = Rotations.of(18.0);
+                public static final Angle kDeployRotationsMotorTwo = Rotations.of(18.0);
 
                 public static final Angle kRetractRotations = Rotations.of(0.0);
 
