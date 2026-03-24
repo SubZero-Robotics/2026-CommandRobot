@@ -364,6 +364,8 @@ public class CommandFactory {
     }
 
     private Translation2d GetHubAimPoint(Alliance alliance) {
+
+        // Weird bias on blue side during testing
         Translation2d hubPosition = GetHubPosition(alliance);
         Distance aimOffsetX = alliance == Alliance.Blue ? ShooterConstants.kHubAimPointOffset
                 : ShooterConstants.kHubAimPointOffset.times(-1.0);
