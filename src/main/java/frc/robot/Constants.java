@@ -307,7 +307,8 @@ public final class Constants {
 
                 public static final LinearVelocity kMaxMuzzleVelocity = MetersPerSecond.of(10.0);
 
-                public static final Distance kHubRobotTurretOffset = Inches.of(10.5);
+                public static final Distance kHubRobotTurretOffset = Inches.of(0.0);
+                public static final Distance kHubAimPointOffset = Inches.of(10.5);
 
                 public static final ShootingEntry[] kShootingEntries = {
                                 new ShootingEntry(Inches.of(10.5).plus(kHubRobotTurretOffset), RPM.of(3100), null,
@@ -420,8 +421,7 @@ public final class Constants {
                 // Placeholders
                 public static final Angle kFeedOffset = Degrees.of(12);
 
-                public static final Translatio
-                n2d kRedHubAprilTag = AprilTagFieldLayout
+                public static final Translation2d kRedHubAprilTag = AprilTagFieldLayout
                                 .loadField(AprilTagFields.k2026RebuiltWelded) // TODO: Change to normal field
                                 .getTagPose(3).get().toPose2d().getTranslation();
         }
