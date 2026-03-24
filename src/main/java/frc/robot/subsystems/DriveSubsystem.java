@@ -210,6 +210,8 @@ public class DriveSubsystem extends SubsystemBase {
         return new RunCommand(() -> {
             Pose2d robotPose = getPose();
 
+            DogLog.log("fixture pose", fixture);
+
             double xFixtureDist = fixture.getX() - robotPose.getX();
             double yFixtureDist = fixture.getY() - robotPose.getY();
 

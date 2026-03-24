@@ -389,7 +389,7 @@ public final class Constants {
 
         public static final class Fixtures {
                 public static final Translation2d kBlueAllianceHub = new Translation2d(Inches.of(182.11),
-                                Inches.of(154.84));
+                                Inches.of(158.84));
                 public static final Translation2d kRedAllianceHub = new Translation2d(Inches.of(651.22 - 182.11),
                                 Inches.of(158.84));
 
@@ -420,7 +420,8 @@ public final class Constants {
                 // Placeholders
                 public static final Angle kFeedOffset = Degrees.of(12);
 
-                public static final Translation2d kRedHubAprilTag = AprilTagFieldLayout
+                public static final Translatio
+                n2d kRedHubAprilTag = AprilTagFieldLayout
                                 .loadField(AprilTagFields.k2026RebuiltWelded) // TODO: Change to normal field
                                 .getTagPose(3).get().toPose2d().getTranslation();
         }

@@ -304,7 +304,10 @@ public class CommandFactory {
                         .times(Math.sin(robotPose.getRotation().getMeasure()
                                 .plus(TurretConstants.kTurretAngularOffset).in(Radians))));
 
+
         Translation2d turretTranslation = new Translation2d(turretX, turretY);
+
+        DogLog.log("turret dist to hub", hubPosition.minus(turretTranslation));
 
         return hubPosition.minus(turretTranslation);
     }
