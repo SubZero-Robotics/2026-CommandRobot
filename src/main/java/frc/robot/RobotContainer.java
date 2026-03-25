@@ -46,6 +46,9 @@ public class RobotContainer {
         private final CommandXboxController m_driverController = new CommandXboxController(
                         OIConstants.kDriverControllerPort);
 
+        public final CommandXboxController m_operatorController = new CommandXboxController(
+                        OIConstants.kOperatorControllerPort);
+
         private String m_autoSelected;
 
         private final TurretSubsystem m_turret = new TurretSubsystem();
