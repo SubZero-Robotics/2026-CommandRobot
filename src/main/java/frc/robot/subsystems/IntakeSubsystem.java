@@ -157,6 +157,8 @@ public class IntakeSubsystem extends SubsystemBase {
         DogLog.log("Intake Subsystem/Deploy Commanded Speed Motor Two", m_deployMotor2.getAppliedOutput());
         DogLog.log("Intake Subsystem/Deploy True Position Motor Two", m_deploy2RelativeEncoder.getPosition());
 
+        DogLog.log("Intake Subsystem/Intake Motor Setpoint", m_intakeClosedLoopController.getSetpoint());
+
         // if (m_minLimitSwitch1.isPressed())
         // System.out.println("Min One");
 

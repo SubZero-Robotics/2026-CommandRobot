@@ -14,6 +14,8 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 
 import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.Feet;
+import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.RPM;
@@ -299,7 +301,7 @@ public class CommandFactory {
                                 .plus(TurretConstants.kTurretAngularOffset).in(Radians))));
 
         Distance turretY = robotPose.getTranslation().getMeasureY()
-                .plus(TurretConstants.kTurretCenterDistanceFromRobotCenter
+                .minus(TurretConstants.kTurretCenterDistanceFromRobotCenter
                         .times(Math.sin(robotPose.getRotation().getMeasure()
                                 .plus(TurretConstants.kTurretAngularOffset).in(Radians))));
 
@@ -365,12 +367,20 @@ public class CommandFactory {
 
     private Translation2d GetHubAimPoint(Alliance alliance) {
 
-        // Weird bias on blue side during testing
         Translation2d hubPosition = GetHubPosition(alliance);
         Distance aimOffsetX = alliance == Alliance.Blue ? ShooterConstants.kHubAimPointOffset
                 : ShooterConstants.kHubAimPointOffset.times(-1.0);
 
-        return hubPosition.plus(new Translation2d(aimOffsetX, Meters.of(0.0)));
+        Distance aimOffsetY = alliance == Alliance.Blue ? Inches.of(5.0) : Inches.of(-5.0);
+
+        Angle turretAngle = m_turret.getRotation();
+
+        // Only push target back if the turret is facing the front of the robot as it
+        // requires more power to shoot same distance
+        if (withinRange(TurretConstants.kMinRearFacingAngle, TurretConstants.kMaxRearFacingAngle, turretAngle))
+            return hubPosition.plus(new Translation2d(aimOffsetX, aimOffsetY));
+
+        return hubPosition.plus(new Translation2d(Meters.of(0.0), aimOffsetY));
     }
 
     public TargetSolution GetHubAimSolution() {

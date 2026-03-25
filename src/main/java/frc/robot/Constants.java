@@ -271,8 +271,11 @@ public final class Constants {
                 public static final Angle kTurretAngleTolerance = Degrees.of(2.0);
 
                 public static Angle kNonAimTurretAngle = Degrees.of(0.0);
-                public static int kTurretMotorAmpLimit = 5;
+                public static int kTurretMotorAmpLimit = 10;
                 public static final Angle kTurretTorwardsFront = Degrees.of(180);
+
+                public static final Angle kMinRearFacingAngle = Degrees.of(270);
+                public static final Angle kMaxRearFacingAngle = Degrees.of(90);
 
                 public static final Angle kAngularDistanceToFrontOfRobot = Rotations.of(0.629);
         }
@@ -307,8 +310,8 @@ public final class Constants {
 
                 public static final LinearVelocity kMaxMuzzleVelocity = MetersPerSecond.of(10.0);
 
-                public static final Distance kHubRobotTurretOffset = Inches.of(0.0);
-                public static final Distance kHubAimPointOffset = Inches.of(10.5);
+                public static final Distance kHubRobotTurretOffset = Inches.of(13.5);
+                public static final Distance kHubAimPointOffset = Inches.of(15.5);
 
                 public static final ShootingEntry[] kShootingEntries = {
                                 new ShootingEntry(Inches.of(10.5).plus(kHubRobotTurretOffset), RPM.of(3100), null,
@@ -327,15 +330,15 @@ public final class Constants {
                                                 Inches.of(134.055333),
                                                 Seconds.of(72.4 / 60.0),
                                                 Degrees.of(16)),
-                                new ShootingEntry(Inches.of(102.25).plus(kHubRobotTurretOffset), RPM.of(3800), null,
+                                new ShootingEntry(Inches.of(102.25).plus(kHubRobotTurretOffset), RPM.of(3950), null,
                                                 Inches.of(147.348333),
                                                 Seconds.of(72.4 / 60.0),
                                                 Degrees.of(16)),
-                                new ShootingEntry(Inches.of(132.75).plus(kHubRobotTurretOffset), RPM.of(4200), null,
+                                new ShootingEntry(Inches.of(132.75).plus(kHubRobotTurretOffset), RPM.of(4300), null,
                                                 Inches.of(147.348333),
                                                 Seconds.of(81.0 / 60.0),
                                                 Degrees.of(16)),
-                                new ShootingEntry(Inches.of(176).plus(kHubRobotTurretOffset), RPM.of(4700), null,
+                                new ShootingEntry(Inches.of(176).plus(kHubRobotTurretOffset), RPM.of(4800), null,
                                                 Inches.of(147.348333),
                                                 Seconds.of(88.8 / 60.0),
                                                 Degrees.of(16))
@@ -380,7 +383,7 @@ public final class Constants {
                 public static double kReverseFeedSpeed = -0.1;
 
                 public static final int kAgitationMotorId = 9;
-                public static final double kAgitationSpeed = -0.75;
+                public static final double kAgitationSpeed = -0.85;
                 public static double kReverseAgitationSpeed = 0.1;
 
                 public static final int kRollerMotorId = 12;

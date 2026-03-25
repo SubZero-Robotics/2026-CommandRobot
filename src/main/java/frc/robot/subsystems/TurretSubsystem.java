@@ -160,6 +160,8 @@ public class TurretSubsystem extends SubsystemBase {
         DogLog.log("Turret periodic time (ms)", (end - start) * 1000.0);
         DogLog.log("In periodic turret subsystem", false);
 
+        DogLog.log("Turret Rotation (in Deg)", getRotation().in(Degrees));
+
         // DogLog.log("Turret rotation relative to front of robot",
         // getRotation().in(Degrees));
         // DogLog.log("Turret rotation relative to turret zero", UtilityFunctions
