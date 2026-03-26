@@ -459,7 +459,7 @@ public final class Constants {
                 public static final int kDeployMotorCurrentLimit = (int) (60.0 * (5.0 / 9.0));
                 public static final int kIntakeMotorCurrentLimit = 80;
 
-                public static final AngularVelocity kDefaultIntakeSpeed = RPM.of(-2200);
+                public static final AngularVelocity kDefaultIntakeSpeed = RPM.of(-3200);
         }
 
         public static final class ClimberConstants {
