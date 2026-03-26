@@ -4,21 +4,16 @@
 package frc.robot;
 
 import static edu.wpi.first.units.Units.Degrees;
-import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.RPM;
-import static edu.wpi.first.units.Units.Radians;
 import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.commands.PathPlannerAuto;
 
 import dev.doglog.DogLog;
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.networktables.BooleanSubscriber;
 import edu.wpi.first.networktables.DoubleSubscriber;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
@@ -27,9 +22,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
-import edu.wpi.first.wpilibj2.command.DeferredCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -77,16 +70,16 @@ public class RobotContainer {
                 m_commandFactory.SetSubsystems(m_drive, m_turret, m_shooter);
 
                 NamedCommands.registerCommand("Deploy Intake",
-                                m_commandFactory.DeployIntake());
+                                m_commandFactory.DeployIntake().andThen(m_commandFactory.SpinIntake()));
                 NamedCommands.registerCommand("Retract Intake",
-                                m_commandFactory.RetractIntake());
+                                m_commandFactory.RetractIntake().andThen(m_commandFactory.StopIntakeCommand()));
                 NamedCommands.registerCommand("Aim", m_commandFactory.AutoAimAtHubCommand());
                 NamedCommands.registerCommand("Shoot",
                                 m_commandFactory.ShootCommand().alongWith(m_commandFactory.RunAllStager())
                                                 .finallyDo(() -> {
                                                         m_commandFactory.StopStaging();
                                                         m_commandFactory.StopShoot();
-                                                }).raceWith(new WaitCommand(AutoConstants.kShootTime)));
+                                                }));
 
                 SmartDashboard.putNumber("Wheelspeed in rotations per second", 0.0);
                 SmartDashboard.putNumber("Shooter hood angle in degrees", 0.0);
@@ -98,6 +91,8 @@ public class RobotContainer {
                 m_sendable.addOption("Left Backwards Auto", "Left Backwards Auto");
                 m_sendable.addOption("Left Side Neutral Auto", "Left Side Neutral Auto");
                 m_sendable.addOption("Right Side Neutral Auto", "Right Side Neutral Auto");
+                m_sendable.setDefaultOption("Right Side Center Sweep Auto", "Right Side Center Sweep Auto");
+                m_sendable.setDefaultOption("Left Side Center Sweep Auto", "Left Side Center Sweep Auto");
                 m_sendable.setDefaultOption("Right Forward Auto", "Right Forward Auto");
                 m_sendable.addOption("Simple Shoot Auto", "Simple Shoot Auto");
 

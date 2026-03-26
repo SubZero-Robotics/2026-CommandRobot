@@ -160,7 +160,6 @@ public final class Constants {
 
                 // Auto Names
                 public static final String kExampleAutoName = "Example Auto";
-                public static final Time kShootTime = Seconds.of(3.5);
         }
 
         public static final class NeoMotorConstants {
@@ -456,10 +455,11 @@ public final class Constants {
                 public static final Angle kMaxExtension = Rotations.of((20.0 / 10.0) * 9.0);
                 public static final Angle kMinExtension = Rotations.of(0.0);
 
-                public static final int kDeployMotorCurrentLimit = (int) (60.0 * (5.0 / 9.0));
+                public static final int kDeployMotorCurrentLimit = 20;
                 public static final int kIntakeMotorCurrentLimit = 80;
 
                 public static final AngularVelocity kDefaultIntakeSpeed = RPM.of(-2200);
+                public static final double kIntakeHalfway = 0.5;
         }
 
         public static final class ClimberConstants {
