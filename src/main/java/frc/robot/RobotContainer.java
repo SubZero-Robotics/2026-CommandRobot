@@ -5,8 +5,12 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.RPM;
+
+import java.util.HashMap;
+
 import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.commands.PathPlannerAuto;
+import com.pathplanner.lib.events.EventTrigger;
 
 import dev.doglog.DogLog;
 import edu.wpi.first.math.MathUtil;
@@ -23,6 +27,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -70,12 +75,29 @@ public class RobotContainer {
                 m_commandFactory.SetSubsystems(m_drive, m_turret, m_shooter);
 
                 NamedCommands.registerCommand("Deploy Intake",
-                                m_commandFactory.DeployIntake().andThen(m_commandFactory.SpinIntake()));
+                                m_commandFactory.DeployIntake().andThen(m_commandFactory.SpinIntake())
+                                                .andThen(new PrintCommand("Deployed Intake and Spun It")));
+                new EventTrigger("Deploy Intake")
+                                .onTrue(m_commandFactory.DeployIntake().andThen(m_commandFactory.SpinIntake())
+                                                .andThen(new PrintCommand("Deployed Intake and Spun It")));
+
                 NamedCommands.registerCommand("Retract Intake",
                                 m_commandFactory.RetractIntake().andThen(m_commandFactory.StopIntakeCommand()));
+                new EventTrigger("Retract Intake")
+                                .onTrue(m_commandFactory.RetractIntake().andThen(m_commandFactory.StopIntakeCommand())
+                                                .andThen(new PrintCommand("Retracted Intake and Stopped Spinning It")));
+
                 NamedCommands.registerCommand("Aim", m_commandFactory.AutoAimAtHubCommand());
+                new EventTrigger("Aim").onTrue(m_commandFactory.AutoAimAtHubCommand());
+
                 NamedCommands.registerCommand("Shoot",
                                 m_commandFactory.ShootCommand().alongWith(m_commandFactory.RunAllStager())
+                                                .finallyDo(() -> {
+                                                        m_commandFactory.StopStaging();
+                                                        m_commandFactory.StopShoot();
+                                                }));
+                new EventTrigger("Shoot")
+                                .onTrue(m_commandFactory.ShootCommand().alongWith(m_commandFactory.RunAllStager())
                                                 .finallyDo(() -> {
                                                         m_commandFactory.StopStaging();
                                                         m_commandFactory.StopShoot();

@@ -237,7 +237,7 @@ public final class Constants {
                 public static final int kSmartCurrentLimit = 40;
 
                 public static final Angle kShootingMinAngle = Degrees.of(170);
-                public static final Angle kShootingMaxAngle = Degrees.of(82);
+                public static final Angle kShootingMaxAngle = Degrees.of(80);
 
                 public static final Angle kFeedMinAngle = Degrees.of(180);
                 public static final Angle kFeedMaxAngle = Degrees.of(280);
@@ -458,7 +458,7 @@ public final class Constants {
                 public static final int kDeployMotorCurrentLimit = 20;
                 public static final int kIntakeMotorCurrentLimit = 80;
 
-                public static final AngularVelocity kDefaultIntakeSpeed = RPM.of(-3200);
+                public static final AngularVelocity kDefaultIntakeSpeed = RPM.of(-4500);
                 public static final double kIntakeHalfway = 0.5;
         }
 
