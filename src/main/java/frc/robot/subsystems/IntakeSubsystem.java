@@ -187,4 +187,14 @@ public class IntakeSubsystem extends SubsystemBase {
         // DogLog.log("Max limit one", m_maxLimitSwitch1.isPressed());
         // DogLog.log("Max limit two", m_maxLimitSwitch2.isPressed());
     }
+
+    // Number between zero and one where zero is min distance and one is the maximum distance
+    public void sendIntake(double length) {
+        if (length > 1.0) {
+            System.out.println("Attempting to extend intake beyond maximum.");
+            return;
+        }
+
+        m_intakeClosedLoopController.setSetpoint(length * IntakeConstants.kMaxExtension.in(Rotations), null);
+    }
 }
