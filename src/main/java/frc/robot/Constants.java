@@ -383,7 +383,7 @@ public final class Constants {
 
         public static final class Fixtures {
                 public static final Translation2d kBlueAllianceHub = new Translation2d(Inches.of(182.11),
-                                Inches.of(154.84));
+                                Inches.of(158.84));
                 public static final Translation2d kRedAllianceHub = new Translation2d(Inches.of(651.22 - 182.11),
                                 Inches.of(158.84));
 
