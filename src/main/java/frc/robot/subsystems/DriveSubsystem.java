@@ -472,12 +472,14 @@ public class DriveSubsystem extends SubsystemBase {
                 estimation.m_timestamp, estimation.m_stdDevs);
     }
 
+    // Field-relative speeds. Uses the pose estimator's heading (field frame) rather than the raw
+    // gyro, which is 180 degrees off the field frame on the red alliance.
     public ChassisSpeeds getChassisSpeeds() {
 
         return ChassisSpeeds.fromRobotRelativeSpeeds(
                 DriveConstants.kDriveKinematics.toChassisSpeeds(m_frontLeft.getState(), m_frontRight.getState(),
                         m_rearLeft.getState(), m_rearRight.getState()),
-                new Rotation2d(getHeading()));
+                getPose().getRotation());
 
     }
 
