@@ -130,5 +130,7 @@ public class ShooterSubsystem extends SubsystemBase {
     @Override
     public void periodic() {
         DogLog.log("Motor velocity setpoint", m_shooterClosedLoopController.getSetpoint());
+        DogLog.log("Shooter target velocity (RPM)", m_targetVelocity.in(RPM));
+        DogLog.log("Shooter measured velocity (RPM)", m_shooterRelativeEncoder.getVelocity());
     }
 }

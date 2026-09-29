@@ -96,6 +96,9 @@ public class CommandFactory {
 
         DogLog.log("Turret Rotation in deg", m_turret.getRotation().in(Degrees));
         DogLog.log("RPM target", m_wheelVelocity.in(RPM));
+        // Turret-to-hub distance used for the table lookup (to the lead-adjusted virtual target when moving)
+        DogLog.log("Hub aim distance (m)", m_solution.distance().in(Meters));
+        DogLog.log("Lead angle phi (deg)", m_solution.phi().in(Degrees));
         DogLog.log("In periodic command factor", false);
     }
 

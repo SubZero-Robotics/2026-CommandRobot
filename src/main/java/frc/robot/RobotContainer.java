@@ -274,7 +274,7 @@ public class RobotContainer {
                 // commandedShooterAngle = Degrees.of(SmartDashboard.getNumber("Shooter hood
                 // angle in degrees", 0.0));
 
-                // DogLog.log("At Shooter Velocity Target", m_shooter.AtWheelVelocityTarget());
+                DogLog.log("At Shooter Velocity Target", m_shooter.AtWheelVelocityTarget());
 
                 // System.out.println(m_drive.getRobotLocation());
         }
