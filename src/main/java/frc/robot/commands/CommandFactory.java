@@ -622,8 +622,9 @@ public class CommandFactory {
                     .of(vy.in(MetersPerSecond) * Math.sin(turretAngle.in(Radians))
                             + vx.in(MetersPerSecond) * Math.cos(turretAngle.in(Radians)));
 
+            // Component perpendicular to the line to the hub: v dot (-sin, cos)
             LinearVelocity tangentialVelocityFromHub = MetersPerSecond
-                    .of(vx.in(MetersPerSecond) * Math.sin(turretAngle.in(Radians))
+                    .of(-vx.in(MetersPerSecond) * Math.sin(turretAngle.in(Radians))
                             + vy.in(MetersPerSecond) * Math.cos(turretAngle.in(Radians)));
 
             Distance sideDistance = tangentialVelocityFromHub.times(timeOfFlight);
