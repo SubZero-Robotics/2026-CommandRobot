@@ -628,9 +628,12 @@ public class CommandFactory {
                             + vy.in(MetersPerSecond) * Math.cos(turretAngle.in(Radians)));
 
             Distance sideDistance = tangentialVelocityFromHub.times(timeOfFlight);
-            distance = distance.minus(radialVelocityTorwardsHub.times(timeOfFlight));
+            Distance radialDistance = distance.minus(radialVelocityTorwardsHub.times(timeOfFlight));
 
-            phi = Radians.of(Math.atan(sideDistance.in(Meters) / distance.in(Meters)));
+            phi = Radians.of(Math.atan2(sideDistance.in(Meters), radialDistance.in(Meters)));
+
+            // Shoot as if stationary at the virtual target, so look up the full distance to it
+            distance = Meters.of(Math.hypot(radialDistance.in(Meters), sideDistance.in(Meters)));
 
             int transformedFirstEntryIndex = getFirstEntryIndex(distance);
 
