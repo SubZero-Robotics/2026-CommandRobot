@@ -272,17 +272,10 @@ public class CommandFactory {
 
         Pose2d robotPose = m_drive.getPose();
 
-        Distance turretX = TurretConstants.kTurretCenterDistanceFromRobotCenter
-                .times(Math.cos(robotPose.getRotation().getMeasure()
-                        .plus(TurretConstants.kAngularDistanceToFrontOfRobot).in(Radians)))
-                .plus(robotPose.getTranslation().getMeasureX());
-
-        Distance turretY = TurretConstants.kTurretCenterDistanceFromRobotCenter
-                .times(Math.sin(robotPose.getRotation().getMeasure()
-                        .plus(TurretConstants.kAngularDistanceToFrontOfRobot).in(Radians)))
-                .plus(robotPose.getTranslation().getMeasureY());
-
-        Translation2d turretTranslation = new Translation2d(turretX, turretY);
+        // Turret center on the field: its mounting offset on the chassis rotated by the robot heading.
+        // (kAngularDistanceToFrontOfRobot is the turret encoder's zero offset, not where the turret sits.)
+        Translation2d turretTranslation = robotPose.getTranslation()
+                .plus(TurretConstants.kTurretOffset.rotateBy(robotPose.getRotation()));
 
         Translation2d translationToHub = hubPosition.minus(turretTranslation);
 
