@@ -160,11 +160,11 @@ public class RobotContainer {
                 m_driverController.rightBumper().whileTrue(m_commandFactory.AimCommand(false))
                                 .onFalse(m_commandFactory.StopAimCommand());
 
-                m_driverController.rightTrigger().whileTrue(m_commandFactory.RunAllStager())
-                                .onTrue(Commands.waitUntil(m_shooter::AtWheelVelocityTarget).andThen(
-                                                m_commandFactory.ShootCommand().until(
-                                                                () -> m_driverController.rightTrigger()
-                                                                                .getAsBoolean() == false)))
+                // Spin the flywheel right away, but only start feeding balls once it is up to speed
+                m_driverController.rightTrigger()
+                                .whileTrue(m_commandFactory.ShootCommand().alongWith(
+                                                Commands.waitUntil(m_shooter::AtWheelVelocityTarget)
+                                                                .andThen(m_commandFactory.RunAllStager())))
                                 .onFalse(m_commandFactory.StopShootCommand()
                                                 .alongWith(m_commandFactory.StopStagingCommand()));
 
