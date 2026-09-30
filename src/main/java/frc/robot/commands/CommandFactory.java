@@ -94,7 +94,11 @@ public class CommandFactory {
         DogLog.log("In periodic command factor", true);
         m_solution = GetHubAimSolution();
 
-        m_wheelVelocity = m_solution.wheelSpeed();
+        // While aiming, Aim() owns the wheel speed (e.g. the neutral-zone feed speed). Overwriting it here
+        // would let the shoot command read the hub speed whenever it runs before the aim command.
+        if (!m_isAiming) {
+            m_wheelVelocity = m_solution.wheelSpeed();
+        }
 
         DogLog.log("Turret Rotation in deg", m_turret.getRotation().in(Degrees));
         DogLog.log("RPM target", m_wheelVelocity.in(RPM));
