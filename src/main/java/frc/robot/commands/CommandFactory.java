@@ -179,9 +179,8 @@ public class CommandFactory {
                 MoveTurretToHeading(absHeading, true);
                 break;
             }
-            case OpponentSide: {
-                System.out.println("Why are you here???");
-            }
+            case OpponentSide:
+                // Nothing to aim at from the opponent's side
             default:
                 break;
         }
@@ -328,7 +327,6 @@ public class CommandFactory {
             Angle angle = Radians.of(Math.atan2(dy, dx));
 
             MoveTurretToHeading(angle, true);
-            System.out.println(angle);
         }).finallyDo(m_drive::disableFaceHeading);
     }
 

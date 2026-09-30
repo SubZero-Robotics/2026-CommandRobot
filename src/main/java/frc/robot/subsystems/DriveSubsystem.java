@@ -181,13 +181,10 @@ public class DriveSubsystem extends SubsystemBase {
     public void moveToAngle(Angle angle) {
         m_isManualRotate = false;
         m_targetAutoAngle = angle;
-
-        System.out.println("Is Manual Rotate is False in moveToAngle()");
     }
 
     public void moveByAngle(Angle angle) {
         m_isManualRotate = false;
-        System.out.println("Is Manual Rotate is False in moveByAngle()");
         m_targetAutoAngle = getHeading().plus(angle);
     }
 
@@ -200,7 +197,6 @@ public class DriveSubsystem extends SubsystemBase {
             return RangeType.Within;
         } else {
             m_isManualRotate = false;
-            System.out.println("Is Manual Rotate is False in faceCardinalHeadingRange");
             m_targetAutoAngle = getClosestAngle(minAngle, maxAngle, robotAngle);
             return m_targetAutoAngle.isEquivalent(minAngle) ? RangeType.CloseMin : RangeType.CloseMax;
         }
@@ -222,7 +218,6 @@ public class DriveSubsystem extends SubsystemBase {
             m_targetAutoAngle = Radians.of(Math.atan2(yFixtureDist, xFixtureDist));
 
             m_isManualRotate = false;
-            System.out.println("Is Manual Rotate is False in facePose()");
         });
     }
 

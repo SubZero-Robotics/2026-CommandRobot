@@ -106,15 +106,9 @@ public class TurretSubsystem extends SubsystemBase {
 
         // System.out.println(angle + "is commanded angle for turret");
 
-        if (angle.gt(TurretConstants.kMaxAngle)) {
-            System.out
-                    .println("Angle " + angle.in(Degrees) + "is bigger than maximum angle " +
-                            TurretConstants.kMaxAngle.in(Degrees) + ".");
-            return;
-        } else if (angle.lt(TurretConstants.kMinAngle)) {
-            System.out.println(
-                    "Angle " + angle.in(Degrees) + "is to smaller than minimum angle " +
-                            TurretConstants.kMinAngle.in(Degrees) + ".");
+        // Outside the limits: ignore the command and log it (printing here would run every loop)
+        if (angle.gt(TurretConstants.kMaxAngle) || angle.lt(TurretConstants.kMinAngle)) {
+            DogLog.log("Turret command rejected (deg)", angle.in(Degrees));
             return;
         }
 
