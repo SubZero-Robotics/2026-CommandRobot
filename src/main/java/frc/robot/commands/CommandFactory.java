@@ -76,6 +76,8 @@ public class CommandFactory {
     public void StopAim() {
         m_isAiming = false;
         m_shooter.MoveHoodToPosition(ShooterConstants.kDefaultHoodPosition);
+        // Hand rotation back to the driver if Aim was still turning the drivetrain
+        m_drive.disableFaceHeading();
     }
 
     public void SetSubsystems(DriveSubsystem drive, TurretSubsystem turret, ShooterSubsystem shooter) {
