@@ -223,8 +223,23 @@ public final class Constants {
 
         public static final class TurretConstants {
                 public static final int kMotorId = 18; // Was 20
-                public static final Angle kMinAngle = Rotations.of(0.1);
-                public static final Angle kMaxAngle = Rotations.of(0.854);
+
+                // The turret's absolute encoder reads 0 with the turret facing the robot's back-left diagonal.
+                // This is how far the turret turns counter-clockwise from there to face the robot's front
+                // (225 degrees if the zero were exactly diagonal). Robot-relative turret angles in this code
+                // are measured counter-clockwise from the front: encoder angle = robot-relative angle + this.
+                public static final Angle kAngularDistanceToFrontOfRobot = Rotations.of(0.629);
+
+                // How far the turret can turn counter-clockwise from its zero. There is no hard stop at zero.
+                // TODO: measure (turn the turret by hand while disabled and read "Turret raw encoder (deg)")
+                public static final Angle kTurretTravel = Degrees.of(230);
+                public static final Angle kTurretLimitMargin = Degrees.of(5);
+
+                // Encoder angles the turret may be commanded to, measured counter-clockwise from its zero.
+                // Previous operating angles (2026 season): kMinAngle 0.1 rot (36 deg), kMaxAngle 0.854 rot
+                // (307.4 deg). The old max let the code command the unreachable front-left.
+                public static final Angle kMinAngle = kTurretLimitMargin;
+                public static final Angle kMaxAngle = kTurretTravel.minus(kTurretLimitMargin);
 
                 public static final int kPositionBufferLength = 300;
                 public static final Time kEncoderReadingDelay = Seconds.of(0.005);
@@ -275,9 +290,8 @@ public final class Constants {
 
                 public static Angle kNonAimTurretAngle = Degrees.of(0.0);
                 public static int kTurretMotorAmpLimit = 10;
+                // Robot-relative 180 degrees: this points the turret straight back, despite the name
                 public static final Angle kTurretTorwardsFront = Degrees.of(180);
-
-                public static final Angle kAngularDistanceToFrontOfRobot = Rotations.of(0.629);
         }
 
         public static final class ShooterConstants {
