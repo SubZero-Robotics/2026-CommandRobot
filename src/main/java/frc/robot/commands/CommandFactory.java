@@ -148,6 +148,11 @@ public class CommandFactory {
     private void Aim(boolean isFeedingLeftSide) {
         Fixtures.FieldLocations location = m_drive.getRobotLocation();
 
+        // No alliance from the Driver Station yet; switching on null would throw
+        if (location == null) {
+            return;
+        }
+
         switch (location) {
             case AllianceSide: {
 
