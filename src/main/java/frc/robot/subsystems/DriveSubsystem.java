@@ -258,8 +258,9 @@ public class DriveSubsystem extends SubsystemBase {
                     });
         }
 
+        // angleDiff is signed (-180 to 180], so this works whichever side the heading approaches from
         if (!m_isManualRotate
-                && UtilityFunctions.WrapAngle(UtilityFunctions.WrapAngle(getHeading()).minus(m_targetAutoAngle))
+                && UtilityFunctions.angleDiff(getHeading(), m_targetAutoAngle)
                         .abs(Degrees) < DriveConstants.kTurnToAngleTolerance.in(Degrees)) {
             m_isManualRotate = true;
         }
