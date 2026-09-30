@@ -253,13 +253,16 @@ public final class Constants {
                 public static final int kSmartCurrentLimit = 40;
 
                 // Robot-relative range the turret can reach (0 deg = front, counter-clockwise): the encoder
-                // limits shifted by kAngularDistanceToFrontOfRobot. About 138.6 deg (just past back-left),
-                // through the back and the right side, to 358.6 deg (just right of the front). These follow
-                // kTurretTravel automatically once it is measured.
-                public static final Angle kReachableMinAngle = kMinAngle.minus(kAngularDistanceToFrontOfRobot)
-                                .plus(Rotations.of(1.0));
-                public static final Angle kReachableMaxAngle = kMaxAngle.minus(kAngularDistanceToFrontOfRobot)
-                                .plus(Rotations.of(1.0));
+                // limits shifted by kAngularDistanceToFrontOfRobot. About 139.6 deg (just past back-left),
+                // through the back and the right side, to 357.6 deg (just right of the front). These follow
+                // kTurretTravel automatically once it is measured. kWindowInset keeps the edges strictly inside
+                // the limits: an edge placed exactly on a limit can round to just past it (e.g. 225.00000000000003)
+                // and TurretSubsystem.moveToAngle would drop the command.
+                public static final Angle kWindowInset = Degrees.of(1.0);
+                public static final Angle kReachableMinAngle = kMinAngle.plus(kWindowInset)
+                                .minus(kAngularDistanceToFrontOfRobot).plus(Rotations.of(1.0));
+                public static final Angle kReachableMaxAngle = kMaxAngle.minus(kWindowInset)
+                                .minus(kAngularDistanceToFrontOfRobot).plus(Rotations.of(1.0));
 
                 // Shooting windows are robot-relative (0 deg = front, counter-clockwise) and must stay inside
                 // the reachable range. Previous operating angles (2026 season): hub windows 311-351 deg and
