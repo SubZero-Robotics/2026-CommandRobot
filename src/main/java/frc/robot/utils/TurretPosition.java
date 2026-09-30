@@ -1,7 +1,7 @@
 package frc.robot.utils;
 
-import edu.wpi.first.units.measure.Angle;
-import edu.wpi.first.units.measure.AngularVelocity;
+import org.wpilib.units.measure.Angle;
+import org.wpilib.units.measure.AngularVelocity;
 
 public record TurretPosition(Angle angle, AngularVelocity velocity,
                 double timestamp) {

@@ -1,11 +1,11 @@
-package frc.robot.subsystems;
+package frc.robot.mechanisms;
 
 import com.revrobotics.AbsoluteEncoder;
 import com.revrobotics.PersistMode;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.ResetMode;
 import com.revrobotics.spark.FeedbackSensor;
-import com.revrobotics.spark.SparkBase.ControlType;
+import com.revrobotics.spark.SparkLowLevel.ControlType;
 import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
@@ -15,18 +15,20 @@ import dev.doglog.DogLog;
 
 import com.revrobotics.spark.config.SparkMaxConfig;
 
-import static edu.wpi.first.units.Units.Degrees;
-import static edu.wpi.first.units.Units.RPM;
-import static edu.wpi.first.units.Units.Rotations;
-import edu.wpi.first.units.measure.Angle;
-import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Constants.NumericalConstants;
-import frc.robot.Constants.ShooterConstants;
+import static org.wpilib.units.Units.Degrees;
+import static org.wpilib.units.Units.RPM;
+import static org.wpilib.units.Units.Rotations;
+import org.wpilib.units.measure.Angle;
+import org.wpilib.units.measure.AngularVelocity;
+import org.wpilib.command3.Mechanism;
+import org.wpilib.command3.Scheduler;
+import frc.robot.constants.CANConstants;
+import frc.robot.constants.NumericalConstants;
+import frc.robot.constants.ShooterConstants;
 
-public class ShooterSubsystem extends SubsystemBase {
+public class ShooterSubsystem implements Mechanism {
 
-    SparkMax m_shooterMotor = new SparkMax(ShooterConstants.kShooterMotorId, MotorType.kBrushless);
+    SparkMax m_shooterMotor = new SparkMax(CANConstants.kCanPort, ShooterConstants.kShooterMotorId, MotorType.kBrushless);
     // SparkMax m_hoodMotor = new SparkMax(ShooterConstants.kHoodMotorId,
     // MotorType.kBrushless);
 
@@ -62,12 +64,14 @@ public class ShooterSubsystem extends SubsystemBase {
 
         // .6 rotations = 30 degrees
         // 1 rotation = 50 degrees
-        m_hoodConfig.absoluteEncoder.positionConversionFactor(1);
-        m_hoodConfig.encoder.positionConversionFactor(1);
+        // REVLib 2027 removed conversion factors. The hood used a factor of 1, which is the
+        // native unit, so no conversion is needed.
 
         m_shooterMotor.configure(m_shooterConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
         // m_hoodMotor.configure(m_hoodConfig, ResetMode.kResetSafeParameters,
         // PersistMode.kPersistParameters);
+
+        Scheduler.getDefault().addPeriodic(this::periodic);
     }
 
     // Position between 0 and .55. Disabled hood motor
@@ -115,14 +119,14 @@ public class ShooterSubsystem extends SubsystemBase {
     }
 
     public boolean AtWheelVelocityTarget() {
-        return RPM.of(m_shooterClosedLoopController.getSetpoint()).minus(RPM.of(m_shooterRelativeEncoder.getVelocity()))
+        return RPM.of(m_shooterClosedLoopController.getSetpoint().get())
+                .minus(RPM.of(m_shooterRelativeEncoder.getVelocity().get()))
                 .abs(RPM) < ShooterConstants.kShooterVelocityTolerance.in(RPM);
 
         // return true;
     }
 
-    @Override
     public void periodic() {
-        DogLog.log("Motor velocity setpoint", m_shooterClosedLoopController.getSetpoint());
+        DogLog.log("Motor velocity setpoint", m_shooterClosedLoopController.getSetpoint().get());
     }
 }

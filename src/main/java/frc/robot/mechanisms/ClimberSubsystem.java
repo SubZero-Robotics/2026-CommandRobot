@@ -1,37 +1,41 @@
-package frc.robot.subsystems;
+package frc.robot.mechanisms;
 
-import static edu.wpi.first.units.Units.Radians;
-import static edu.wpi.first.units.Units.Rotations;
+import static org.wpilib.units.Units.Radians;
+import static org.wpilib.units.Units.Rotations;
 
 import com.revrobotics.spark.SparkLimitSwitch;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
-import edu.wpi.first.units.measure.Angle;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import org.wpilib.units.measure.Angle;
+import org.wpilib.command3.Command;
+import org.wpilib.command3.Mechanism;
+import org.wpilib.command3.Scheduler;
 
 import com.revrobotics.RelativeEncoder;
-import frc.robot.Constants.ClimberConstants;
+import frc.robot.constants.CANConstants;
+import frc.robot.constants.ClimberConstants;
 
-public class ClimberSubsystem extends SubsystemBase {
-    SparkMax m_climbMotor = new SparkMax(ClimberConstants.kMotorCanId, MotorType.kBrushless);
+public class ClimberSubsystem implements Mechanism {
+    SparkMax m_climbMotor = new SparkMax(CANConstants.kCanPort, ClimberConstants.kMotorCanId, MotorType.kBrushless);
 
     RelativeEncoder m_relativeEncoder = m_climbMotor.getEncoder();
 
     private final SparkLimitSwitch m_minLimitSwitch = m_climbMotor.getReverseLimitSwitch();
     private final SparkLimitSwitch m_maxLimitSwitch = m_climbMotor.getForwardLimitSwitch();
 
+    public ClimberSubsystem() {
+        Scheduler.getDefault().addPeriodic(this::periodic);
+    }
+
     public double GetPosition() {
-        return m_relativeEncoder.getPosition();
+        return m_relativeEncoder.getPosition().get();
     }
 
     public void climbUp() {
 
         // if (!atMax()) {
         if (true) {
-            m_climbMotor.set(ClimberConstants.kUpVelocity);
+            m_climbMotor.setThrottle(ClimberConstants.kUpVelocity);
         } else {
             Stop();
         }
@@ -41,7 +45,7 @@ public class ClimberSubsystem extends SubsystemBase {
 
         // if (!atMin()) { // TODO: Put this back
         if (true) {
-            m_climbMotor.set(ClimberConstants.kDownVelocity);
+            m_climbMotor.setThrottle(ClimberConstants.kDownVelocity);
         } else {
             Stop();
         }
@@ -56,20 +60,19 @@ public class ClimberSubsystem extends SubsystemBase {
     }
 
     public void Stop() {
-        m_climbMotor.set(0.0);
+        m_climbMotor.setThrottle(0.0);
     }
 
     public Command ZeroCommand() {
-        return new InstantCommand(() -> {
+        return Command.noRequirements(coroutine -> {
             m_relativeEncoder.setPosition(0);
-        });
+        }).named("Zero Climber");
     }
 
-    @Override
     public void periodic() {
-        if (m_minLimitSwitch.isPressed()) {
+        if (m_minLimitSwitch.isPressed().get()) {
             m_relativeEncoder.setPosition(ClimberConstants.kLimitMinExtension);
-        } else if (m_maxLimitSwitch.isPressed()) {
+        } else if (m_maxLimitSwitch.isPressed().get()) {
             m_relativeEncoder.setPosition(ClimberConstants.kLimitMinExtension);
         }
 

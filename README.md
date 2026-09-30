@@ -7,6 +7,7 @@ A repository containing robot code for 5690's 2026 season.
 - [2026 Season Robot Code](#2026-season-robot-code)
   - [Table of Contents](#table-of-contents)
   - [Introduction](#introduction)
+  - [2027 Port Notes](#2027-port-notes)
   - [Can IDs](#can-ids)
   - [Network Map](#network-map)
   - [Button Bindings](#button-bindings)
@@ -22,6 +23,17 @@ A repository containing robot code for 5690's 2026 season.
 ## Introduction
 
 This is a guide to using and updating 5690's season code for our 2026 Command Robot. 
+
+## 2027 Port Notes
+
+This branch ports the 2026 code to WPILib `2027.0.0-alpha-7` for Systemcore, using the Commands v3 project layout. It does not change robot behavior beyond what the new APIs require.
+
+- **Versions:** GradleRIO `2027.0.0-alpha-7` (Java 25, Gradle 9.4.1), Commands v3, REVLib `2027.0.0-alpha-8`, Phoenix 6 `26.70.0-alpha-2`, and DogLog `2027.3.0`.
+- **Layout:** `Robot` extends `OpModeRobot` and holds what used to be in `RobotContainer`. Subsystems are Commands v3 mechanisms in `mechanisms/`, constants are in `constants/`, and the teleop and auto opmodes are in `opmodes/`. The button bindings are active while the `DriverTeleop` opmode is selected.
+- **Autos:** each auto that was in the SendableChooser is now an autonomous opmode, picked on the Driver Station.
+- **CAN bus:** every device uses `CANConstants.kCanPort`, which is set to Systemcore port `CAN_S0`. Change it if the bus is wired to a different port.
+- **REV units:** REVLib 2027 removed SPARK conversion factors. The swerve module converts between native units and meters/radians in code, and its PID and feed forward gains are scaled to match the old conversion factors.
+- **Not yet available:** PathPlannerLib and PhotonLib have no WPILib alpha-7 builds. The PathPlanner autos and the PhotonVision pose updates are commented out with TODOs until those libraries are released for alpha-7. The `.path` and `.auto` files are unchanged.
 
 ## Can IDs
 

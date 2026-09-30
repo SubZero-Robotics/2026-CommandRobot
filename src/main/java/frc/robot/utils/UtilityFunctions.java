@@ -1,9 +1,9 @@
 package frc.robot.utils;
 
-import static edu.wpi.first.units.Units.Degrees;
-import static edu.wpi.first.units.Units.Radians;
-import edu.wpi.first.units.measure.Angle;
-import frc.robot.Constants.NumericalConstants;
+import static org.wpilib.units.Units.Degrees;
+import static org.wpilib.units.Units.Radians;
+import org.wpilib.units.measure.Angle;
+import frc.robot.constants.NumericalConstants;
 
 public final class UtilityFunctions {
     public static Angle WrapAngle(Angle angle) {

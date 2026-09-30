@@ -1,16 +1,16 @@
 package frc.robot.utils;
 
-import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.networktables.GenericEntry;
-import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
-import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
+import org.wpilib.math.controller.PIDController;
+import org.wpilib.tunable.TunableDouble;
+import org.wpilib.tunable.Tunables;
 
+// Shuffleboard was removed in WPILib 2027, so the P, I, and D values are published as
+// tunables under the given name instead of in a Shuffleboard tab.
 public class ShuffleboardPid extends PIDController {
 
-    private ShuffleboardTab m_tab;
-    private GenericEntry m_pEntry;
-    private GenericEntry m_iEntry;
-    private GenericEntry m_dEntry;
+    private TunableDouble m_pEntry;
+    private TunableDouble m_iEntry;
+    private TunableDouble m_dEntry;
 
     private double m_curP;
     private double m_curI;
@@ -23,18 +23,16 @@ public class ShuffleboardPid extends PIDController {
         m_curI = initialI;
         m_curD = initialD;
 
-        m_tab = Shuffleboard.getTab(name);
-
-        m_pEntry = m_tab.add("P", initialP).getEntry();
-        m_iEntry = m_tab.add("I", initialI).getEntry();
-        m_dEntry = m_tab.add("D", initialD).getEntry();
+        m_pEntry = Tunables.addDouble(name + "/P", initialP);
+        m_iEntry = Tunables.addDouble(name + "/I", initialI);
+        m_dEntry = Tunables.addDouble(name + "/D", initialD);
     }
 
     // Must be called every periodic loop
     public void periodic() {
-        double entryP = m_pEntry.getDouble(Double.NaN);
-        double entryI = m_iEntry.getDouble(Double.NaN);
-        double entryD = m_dEntry.getDouble(Double.NaN);
+        double entryP = m_pEntry.get();
+        double entryI = m_iEntry.get();
+        double entryD = m_dEntry.get();
 
         if (entryP != m_curP) {
             super.setP(entryP);
@@ -54,6 +52,6 @@ public class ShuffleboardPid extends PIDController {
 
     @Override
     public String toString() {
-        return m_pEntry.getDouble(0.0) + ", " + m_iEntry.getDouble(0.0) + ", " + m_dEntry.getDouble(0.0);
+        return m_pEntry.get() + ", " + m_iEntry.get() + ", " + m_dEntry.get();
     }
 }

@@ -6,37 +6,41 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import org.photonvision.EstimatedRobotPose;
-import org.photonvision.PhotonCamera;
-import org.photonvision.PhotonPoseEstimator;
-import org.photonvision.targeting.PhotonTrackedTarget;
+// TODO: Restore the PhotonVision code when PhotonLib publishes a WPILib 2027 alpha-7 build.
+// PhotonLib's only 2027 build targets WPILib alpha-5 and uses the removed AprilTagFieldLayout.
+// import org.photonvision.EstimatedRobotPose;
+// import org.photonvision.PhotonCamera;
+// import org.photonvision.PhotonPoseEstimator;
+// import org.photonvision.targeting.PhotonTrackedTarget;
 
 import dev.doglog.DogLog;
-import edu.wpi.first.math.Matrix;
-import edu.wpi.first.math.VecBuilder;
-import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.math.geometry.Translation3d;
-import edu.wpi.first.math.numbers.N1;
-import edu.wpi.first.math.numbers.N3;
-import frc.robot.Constants.VisionConstants;
-import edu.wpi.first.units.measure.*;
-import edu.wpi.first.wpilibj.Timer;
+import org.wpilib.math.linalg.Matrix;
+import org.wpilib.math.linalg.VecBuilder;
+import org.wpilib.math.geometry.Rotation3d;
+import org.wpilib.math.geometry.Transform3d;
+import org.wpilib.math.geometry.Translation3d;
+import org.wpilib.math.numbers.N1;
+import org.wpilib.math.numbers.N3;
+import frc.robot.constants.VisionConstants;
+import org.wpilib.units.measure.*;
+import org.wpilib.system.Timer;
 
-import static edu.wpi.first.units.Units.*;
+import static org.wpilib.units.Units.*;
 
 public class Vision {
 
     // PhotonCamera m_camera1 = new PhotonCamera(VisionConstants.kCameraName1);
-    PhotonCamera m_camera2 = new PhotonCamera(VisionConstants.kCameraName2);
+    // TODO: Restore the PhotonVision code when PhotonLib publishes a WPILib 2027 alpha-7 build.
+    // PhotonCamera m_camera2 = new PhotonCamera(VisionConstants.kCameraName2);
 
     Optional<Function<Double, TurretPosition>> m_turretPositionSupplier;
     Supplier<AngularVelocity> m_robotAngularVelocitySupplier;
 
-    PhotonPoseEstimator m_poseEstimatorOne = new PhotonPoseEstimator(VisionConstants.kTagLayout,
-            VisionConstants.kRobotToCamOne);
-    PhotonPoseEstimator m_poseEstimatorTwo = new PhotonPoseEstimator(VisionConstants.kTagLayout,
-            VisionConstants.kRobotToCamTwo);
+    // TODO: Restore the PhotonVision code when PhotonLib publishes a WPILib 2027 alpha-7 build.
+    // PhotonPoseEstimator m_poseEstimatorOne = new PhotonPoseEstimator(VisionConstants.kTagLayout,
+    //         VisionConstants.kRobotToCamOne);
+    // PhotonPoseEstimator m_poseEstimatorTwo = new PhotonPoseEstimator(VisionConstants.kTagLayout,
+    //         VisionConstants.kRobotToCamTwo);
 
     Consumer<VisionEstimation> m_visionConsumer;
     private Matrix<N3, N1> curStdDevs;
@@ -73,136 +77,138 @@ public class Vision {
         // }
 
         DogLog.log("In periodic vision subsystem", true);
-        double start = Timer.getFPGATimestamp();
+        double start = Timer.getTimestamp();
 
-        Optional<EstimatedRobotPose> visionEstimationCameraTwo = Optional.empty();
-        for (var result : m_camera2.getAllUnreadResults()) {
-            Transform3d cameraTransform;
+        // TODO: Restore the PhotonVision code when PhotonLib publishes a WPILib 2027 alpha-7 build.
+        // Optional<EstimatedRobotPose> visionEstimationCameraTwo = Optional.empty();
+        // for (var result : m_camera2.getAllUnreadResults()) {
+        //     Transform3d cameraTransform;
 
-            cameraTransform = getTurretCameraTransform(result.getTimestampSeconds());
+        //     cameraTransform = getTurretCameraTransform(result.getTimestampSeconds());
 
-            if (cameraTransform == null) {
-                // System.out.println("Turret exceeded max velocity valid for reading april
-                // tags.");
-                break;
-            }
+        //     if (cameraTransform == null) {
+        //         // System.out.println("Turret exceeded max velocity valid for reading april
+        //         // tags.");
+        //         break;
+        //     }
 
-            m_poseEstimatorTwo.setRobotToCameraTransform(cameraTransform);
-            visionEstimationCameraTwo = m_poseEstimatorTwo.estimateCoprocMultiTagPose(result);
+        //     m_poseEstimatorTwo.setRobotToCameraTransform(cameraTransform);
+        //     visionEstimationCameraTwo = m_poseEstimatorTwo.estimateCoprocMultiTagPose(result);
 
-            if (visionEstimationCameraTwo.isEmpty()) {
-                visionEstimationCameraTwo = m_poseEstimatorTwo.estimateLowestAmbiguityPose(result);
-            }
+        //     if (visionEstimationCameraTwo.isEmpty()) {
+        //         visionEstimationCameraTwo = m_poseEstimatorTwo.estimateLowestAmbiguityPose(result);
+        //     }
 
-            updateEstimationStdDevs(visionEstimationCameraTwo, result.getTargets(), m_poseEstimatorTwo);
+        //     updateEstimationStdDevs(visionEstimationCameraTwo, result.getTargets(), m_poseEstimatorTwo);
 
-            // final var tmp = visionEstimationCameraTwo;
+        //     // final var tmp = visionEstimationCameraTwo;
 
-            visionEstimationCameraTwo.ifPresent(estimation -> {
-                // System.out.println(tmp + ", " + cameraTransform);
-                m_visionConsumer.accept(new VisionEstimation(estimation.estimatedPose.toPose2d(),
-                        estimation.timestampSeconds, getCurrentStdDevs()));
-            });
-        }
+        //     visionEstimationCameraTwo.ifPresent(estimation -> {
+        //         // System.out.println(tmp + ", " + cameraTransform);
+        //         m_visionConsumer.accept(new VisionEstimation(estimation.estimatedPose.toPose2d(),
+        //                 estimation.timestampSeconds, getCurrentStdDevs()));
+        //     });
+        // }
 
-        double end = Timer.getFPGATimestamp();
+        double end = Timer.getTimestamp();
 
         DogLog.log("Vision periodic loop time (ms)", (end - start) * 1000.0);
         DogLog.log("In periodic vision subsystem", false);
     }
 
-    private void updateEstimationStdDevs(
-            Optional<EstimatedRobotPose> estimatedPose, List<PhotonTrackedTarget> targets,
-            PhotonPoseEstimator poseEstimator) {
-        if (estimatedPose.isEmpty()) {
-            // No pose input. Default to single-tag std devs
-            curStdDevs = VisionConstants.kSingleTagStdDevs;
+    // TODO: Restore the PhotonVision code when PhotonLib publishes a WPILib 2027 alpha-7 build.
+    // private void updateEstimationStdDevs(
+    //         Optional<EstimatedRobotPose> estimatedPose, List<PhotonTrackedTarget> targets,
+    //         PhotonPoseEstimator poseEstimator) {
+    //     if (estimatedPose.isEmpty()) {
+    //         // No pose input. Default to single-tag std devs
+    //         curStdDevs = VisionConstants.kSingleTagStdDevs;
 
-        } else {
-            // Pose present. Start running Heuristic
-            var estStdDevs = VisionConstants.kSingleTagStdDevs;
-            int numTags = 0;
-            double avgDist = 0;
+    //     } else {
+    //         // Pose present. Start running Heuristic
+    //         var estStdDevs = VisionConstants.kSingleTagStdDevs;
+    //         int numTags = 0;
+    //         double avgDist = 0;
 
-            // Precalculation - see how many tags we found, and calculate an
-            // average-distance metric
-            for (var tgt : targets) {
-                var tagPose = poseEstimator.getFieldTags().getTagPose(tgt.getFiducialId());
-                if (tagPose.isEmpty())
-                    continue;
-                numTags++;
-                avgDist += tagPose
-                        .get()
-                        .toPose2d()
-                        .getTranslation()
-                        .getDistance(estimatedPose.get().estimatedPose.toPose2d().getTranslation());
-            }
+    //         // Precalculation - see how many tags we found, and calculate an
+    //         // average-distance metric
+    //         for (var tgt : targets) {
+    //             var tagPose = poseEstimator.getFieldTags().getTagPose(tgt.getFiducialId());
+    //             if (tagPose.isEmpty())
+    //                 continue;
+    //             numTags++;
+    //             avgDist += tagPose
+    //                     .get()
+    //                     .toPose2d()
+    //                     .getTranslation()
+    //                     .getDistance(estimatedPose.get().estimatedPose.toPose2d().getTranslation());
+    //         }
 
-            if (numTags == 0) {
-                // No tags visible. Default to single-tag std devs
-                curStdDevs = VisionConstants.kSingleTagStdDevs;
-            } else {
-                // One or more tags visible, run the full heuristic.
-                avgDist /= numTags;
-                // Decrease std devs if multiple targets are visible
-                if (numTags > 1)
-                    estStdDevs = VisionConstants.kMultiTagStdDevs;
-                // Increase std devs based on (average) distance
-                if (numTags == 1 && avgDist > 4)
-                    estStdDevs = VecBuilder.fill(Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE);
-                else
-                    estStdDevs = estStdDevs.times(1 + (avgDist * avgDist / 30));
-                curStdDevs = estStdDevs;
-            }
-        }
-    }
+    //         if (numTags == 0) {
+    //             // No tags visible. Default to single-tag std devs
+    //             curStdDevs = VisionConstants.kSingleTagStdDevs;
+    //         } else {
+    //             // One or more tags visible, run the full heuristic.
+    //             avgDist /= numTags;
+    //             // Decrease std devs if multiple targets are visible
+    //             if (numTags > 1)
+    //                 estStdDevs = VisionConstants.kMultiTagStdDevs;
+    //             // Increase std devs based on (average) distance
+    //             if (numTags == 1 && avgDist > 4)
+    //                 estStdDevs = VecBuilder.fill(Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE);
+    //             else
+    //                 estStdDevs = estStdDevs.times(1 + (avgDist * avgDist / 30));
+    //             curStdDevs = estStdDevs;
+    //         }
+    //     }
+    // }
 
-    private void updateEstimationStdDevsLessStable(
-            Optional<EstimatedRobotPose> estimatedPose, List<PhotonTrackedTarget> targets,
-            PhotonPoseEstimator poseEstimator) {
-        if (estimatedPose.isEmpty()) {
-            // No pose input. Default to single-tag std devs
-            curStdDevs = VisionConstants.kSingleTagStdDevs;
+    // private void updateEstimationStdDevsLessStable(
+    //         Optional<EstimatedRobotPose> estimatedPose, List<PhotonTrackedTarget> targets,
+    //         PhotonPoseEstimator poseEstimator) {
+    //     if (estimatedPose.isEmpty()) {
+    //         // No pose input. Default to single-tag std devs
+    //         curStdDevs = VisionConstants.kSingleTagStdDevs;
 
-        } else {
-            // Pose present. Start running Heuristic
-            var estStdDevs = VisionConstants.kSingleTagStdDevs;
-            int numTags = 0;
-            double avgDist = 0;
+    //     } else {
+    //         // Pose present. Start running Heuristic
+    //         var estStdDevs = VisionConstants.kSingleTagStdDevs;
+    //         int numTags = 0;
+    //         double avgDist = 0;
 
-            // Precalculation - see how many tags we found, and calculate an
-            // average-distance metric
-            for (var tgt : targets) {
-                var tagPose = poseEstimator.getFieldTags().getTagPose(tgt.getFiducialId());
-                if (tagPose.isEmpty())
-                    continue;
-                numTags++;
-                avgDist += tagPose
-                        .get()
-                        .toPose2d()
-                        .getTranslation()
-                        .getDistance(estimatedPose.get().estimatedPose.toPose2d().getTranslation());
-            }
+    //         // Precalculation - see how many tags we found, and calculate an
+    //         // average-distance metric
+    //         for (var tgt : targets) {
+    //             var tagPose = poseEstimator.getFieldTags().getTagPose(tgt.getFiducialId());
+    //             if (tagPose.isEmpty())
+    //                 continue;
+    //             numTags++;
+    //             avgDist += tagPose
+    //                     .get()
+    //                     .toPose2d()
+    //                     .getTranslation()
+    //                     .getDistance(estimatedPose.get().estimatedPose.toPose2d().getTranslation());
+    //         }
 
-            if (numTags == 0) {
-                // No tags visible. Default to single-tag std devs
-                curStdDevs = VisionConstants.kSingleTagStdDevs;
-            } else {
-                // One or more tags visible, run the full heuristic.
-                avgDist /= numTags;
-                // Decrease std devs if multiple targets are visible
-                if (numTags > 1)
-                    estStdDevs = VisionConstants.kMultiTagStdDevs;
-                // Increase std devs based on (average) distance
-                if (numTags == 1 && avgDist > 4)
-                    estStdDevs = VecBuilder.fill(Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE);
-                else
-                    // Less stable, so simply doubles the standard deviation to trust camera less
-                    estStdDevs = estStdDevs.times(1 + (avgDist * avgDist / 30)).times(2.0);
-                curStdDevs = estStdDevs;
-            }
-        }
-    }
+    //         if (numTags == 0) {
+    //             // No tags visible. Default to single-tag std devs
+    //             curStdDevs = VisionConstants.kSingleTagStdDevs;
+    //         } else {
+    //             // One or more tags visible, run the full heuristic.
+    //             avgDist /= numTags;
+    //             // Decrease std devs if multiple targets are visible
+    //             if (numTags > 1)
+    //                 estStdDevs = VisionConstants.kMultiTagStdDevs;
+    //             // Increase std devs based on (average) distance
+    //             if (numTags == 1 && avgDist > 4)
+    //                 estStdDevs = VecBuilder.fill(Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE);
+    //             else
+    //                 // Less stable, so simply doubles the standard deviation to trust camera less
+    //                 estStdDevs = estStdDevs.times(1 + (avgDist * avgDist / 30)).times(2.0);
+    //             curStdDevs = estStdDevs;
+    //         }
+    //     }
+    // }
 
     private Transform3d getTurretCameraTransform(double estimationTime) {
         if (m_turretPositionSupplier.isEmpty())

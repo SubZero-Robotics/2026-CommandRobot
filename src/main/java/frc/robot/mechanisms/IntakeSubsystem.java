@@ -1,35 +1,35 @@
-package frc.robot.subsystems;
+package frc.robot.mechanisms;
 
-import static edu.wpi.first.units.Units.*;
+import static org.wpilib.units.Units.*;
 
 import com.revrobotics.AbsoluteEncoder;
 import com.revrobotics.PersistMode;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.ResetMode;
 import com.revrobotics.spark.FeedbackSensor;
-import com.revrobotics.spark.SparkBase.ControlType;
+import com.revrobotics.spark.SparkLowLevel.ControlType;
 import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
-import com.revrobotics.spark.SparkRelativeEncoder;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
 import dev.doglog.DogLog;
-import edu.wpi.first.networktables.NetworkTable;
-import edu.wpi.first.networktables.NetworkTableEntry;
-import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.units.measure.Angle;
-import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Constants.IntakeConstants;
+import org.wpilib.networktables.NetworkTable;
+import org.wpilib.networktables.NetworkTableEntry;
+import org.wpilib.networktables.NetworkTableInstance;
+import org.wpilib.units.measure.Angle;
+import org.wpilib.units.measure.AngularVelocity;
+import org.wpilib.command3.Mechanism;
+import org.wpilib.command3.Scheduler;
+import frc.robot.constants.CANConstants;
+import frc.robot.constants.IntakeConstants;
 import com.revrobotics.spark.SparkLimitSwitch;
 
-public class IntakeSubsystem extends SubsystemBase {
-    private final SparkMax m_intakeMotor = new SparkMax(IntakeConstants.kIntakeMotorId, MotorType.kBrushless);
-    private final SparkMax m_deployMotor1 = new SparkMax(IntakeConstants.kDeployMotor1Id, MotorType.kBrushless);
-    private final SparkMax m_deployMotor2 = new SparkMax(IntakeConstants.kDeployMotor2Id, MotorType.kBrushless);
+public class IntakeSubsystem implements Mechanism {
+    private final SparkMax m_intakeMotor = new SparkMax(CANConstants.kCanPort, IntakeConstants.kIntakeMotorId, MotorType.kBrushless);
+    private final SparkMax m_deployMotor1 = new SparkMax(CANConstants.kCanPort, IntakeConstants.kDeployMotor1Id, MotorType.kBrushless);
+    private final SparkMax m_deployMotor2 = new SparkMax(CANConstants.kCanPort, IntakeConstants.kDeployMotor2Id, MotorType.kBrushless);
 
     private final SparkClosedLoopController m_intakeClosedLoopController = m_intakeMotor.getClosedLoopController();
     private final SparkClosedLoopController m_deploy1ClosedLoopController = m_deployMotor1.getClosedLoopController();
@@ -74,6 +74,8 @@ public class IntakeSubsystem extends SubsystemBase {
                 PersistMode.kPersistParameters);
         m_intakeMotor.configure(m_intakeConfig, ResetMode.kResetSafeParameters,
                 PersistMode.kPersistParameters);
+
+        Scheduler.getDefault().addPeriodic(this::periodic);
     }
 
     public void spinIntake(AngularVelocity velocity) {
@@ -85,8 +87,8 @@ public class IntakeSubsystem extends SubsystemBase {
     }
 
     public void deployIntake() {
-        Angle deploy1Position = Rotations.of(m_deploy1RelativeEncoder.getPosition());
-        Angle deploy2Position = Rotations.of(m_deploy2RelativeEncoder.getPosition());
+        Angle deploy1Position = Rotations.of(m_deploy1RelativeEncoder.getPosition().get());
+        Angle deploy2Position = Rotations.of(m_deploy2RelativeEncoder.getPosition().get());
 
         if (deploy1Position.lt(IntakeConstants.kMaxExtension)) {
             // m_deploy1ClosedLoopController.setSetpoint(IntakeConstants.kDeployRotations.in(Rotations),
@@ -109,8 +111,8 @@ public class IntakeSubsystem extends SubsystemBase {
     }
 
     public void retractIntake() {
-        Angle deploy1Position = Rotations.of(m_deploy1RelativeEncoder.getPosition());
-        Angle deploy2Position = Rotations.of(m_deploy2RelativeEncoder.getPosition());
+        Angle deploy1Position = Rotations.of(m_deploy1RelativeEncoder.getPosition().get());
+        Angle deploy2Position = Rotations.of(m_deploy2RelativeEncoder.getPosition().get());
 
         if (deploy1Position.gt(IntakeConstants.kMinExtension)) {
             m_deploy1ClosedLoopController.setSetpoint(IntakeConstants.kRetractRotations.in(Rotations),
@@ -127,21 +129,20 @@ public class IntakeSubsystem extends SubsystemBase {
         }
     }
 
-    @Override
     public void periodic() {
-        if (m_minLimitSwitch1.isPressed()) {
+        if (m_minLimitSwitch1.isPressed().get()) {
             m_deploy1RelativeEncoder.setPosition(IntakeConstants.kMinExtension.in(Rotations));
         }
 
-        if (m_minLimitSwitch2.isPressed()) {
+        if (m_minLimitSwitch2.isPressed().get()) {
             m_deploy2RelativeEncoder.setPosition(IntakeConstants.kMinExtension.in(Rotations));
         }
 
-        if (m_maxLimitSwitch1.isPressed()) {
+        if (m_maxLimitSwitch1.isPressed().get()) {
             m_deploy1RelativeEncoder.setPosition(IntakeConstants.kMaxExtension.in(Rotations));
         }
 
-        if (m_maxLimitSwitch2.isPressed()) {
+        if (m_maxLimitSwitch2.isPressed().get()) {
             m_deploy2RelativeEncoder.setPosition(IntakeConstants.kMaxExtension.in(Rotations));
         }
 

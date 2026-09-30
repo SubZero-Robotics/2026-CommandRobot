@@ -1,13 +1,13 @@
 package frc.robot.utils;
 
-import static edu.wpi.first.units.Units.Meters;
-import static edu.wpi.first.units.Units.Radians;
+import static org.wpilib.units.Units.Meters;
+import static org.wpilib.units.Units.Radians;
 
-import edu.wpi.first.units.measure.Angle;
-import edu.wpi.first.units.measure.Distance;
-import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
-import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
-import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
+import org.wpilib.units.measure.Angle;
+import org.wpilib.units.measure.Distance;
+import org.wpilib.smartdashboard.Mechanism2d;
+import org.wpilib.smartdashboard.MechanismRoot2d;
+import org.wpilib.smartdashboard.MechanismLigament2d;
 
 public class SubsystemSimulation {
     private Mechanism2d m_mech;

@@ -1,58 +1,59 @@
 // Copyright (c) FIRST and other WPILib contributors.
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
-package frc.robot.subsystems;
+package frc.robot.mechanisms;
 
-import edu.wpi.first.hal.FRCNetComm.tInstances;
-import edu.wpi.first.hal.FRCNetComm.tResourceType;
-import edu.wpi.first.hal.HAL;
-import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
-import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
-import edu.wpi.first.math.kinematics.SwerveModulePosition;
-import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.units.measure.Angle;
-import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
-import edu.wpi.first.wpilibj.RobotController;
-import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.smartdashboard.Field2d;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import org.wpilib.hardware.hal.HAL;
+import org.wpilib.math.estimator.SwerveDrivePoseEstimator;
+import org.wpilib.math.geometry.Pose2d;
+import org.wpilib.math.geometry.Rotation2d;
+import org.wpilib.math.geometry.Translation2d;
+import org.wpilib.math.kinematics.ChassisVelocities;
+import org.wpilib.math.kinematics.SwerveDriveKinematics;
+import org.wpilib.math.kinematics.SwerveDriveOdometry;
+import org.wpilib.math.kinematics.SwerveModulePosition;
+import org.wpilib.math.kinematics.SwerveModuleVelocity;
+import org.wpilib.units.measure.Angle;
+import org.wpilib.units.measure.AngularVelocity;
+import org.wpilib.driverstation.MatchState;
+import org.wpilib.driverstation.Alliance;
+import org.wpilib.system.RobotController;
+import org.wpilib.system.Timer;
+import org.wpilib.smartdashboard.Field2d;
+import org.wpilib.telemetry.Telemetry;
 import frc.robot.Robot;
+import frc.robot.utils.CommandUtils;
 import frc.robot.utils.ShuffleboardPid;
 import frc.robot.utils.TurretPosition;
 import frc.robot.utils.UtilityFunctions;
 import frc.robot.utils.VisionEstimation;
 import frc.robot.utils.Vision;
-import frc.robot.Constants.DriveConstants;
-import frc.robot.Constants.Fixtures;
-import frc.robot.Constants.NumericalConstants;
-import frc.robot.Constants.OIConstants;
-import frc.robot.Constants.DriveConstants.RangeType;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.RunCommand;
+import frc.robot.constants.CANConstants;
+import frc.robot.constants.DriveConstants;
+import frc.robot.constants.Fixtures;
+import frc.robot.constants.NumericalConstants;
+import frc.robot.constants.OIConstants;
+import frc.robot.constants.DriveConstants.RangeType;
+import org.wpilib.command3.Command;
+import org.wpilib.command3.Mechanism;
+import org.wpilib.command3.Scheduler;
+import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.hardware.Pigeon2;
 import com.ctre.phoenix6.sim.Pigeon2SimState;
-import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.config.PIDConstants;
-import com.pathplanner.lib.config.RobotConfig;
-import com.pathplanner.lib.controllers.PPHolonomicDriveController;
+// TODO: Restore when PathPlannerLib publishes a WPILib 2027 alpha-7 / Commands v3 build
+// import com.pathplanner.lib.auto.AutoBuilder;
+// import com.pathplanner.lib.config.PIDConstants;
+// import com.pathplanner.lib.config.RobotConfig;
+// import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 
 import dev.doglog.DogLog;
 
-import static edu.wpi.first.units.Units.*;
+import static org.wpilib.units.Units.*;
 
 import java.util.Optional;
 import java.util.function.Function;
 
-public class DriveSubsystem extends SubsystemBase {
+public class DriveSubsystem implements Mechanism {
 
     // Create MAXSwerveModules
     private final MAXSwerveModule m_frontLeft = new MAXSwerveModule(
@@ -78,13 +79,13 @@ public class DriveSubsystem extends SubsystemBase {
     private boolean m_isManualRotate = true;
     private Angle m_targetAutoAngle = Radians.of(0.0);
 
-    private double m_latestTime = Timer.getFPGATimestamp();
+    private double m_latestTime = Timer.getTimestamp();
 
     private ShuffleboardPid m_pidController = new ShuffleboardPid(DriveConstants.kAutoRotationP,
             DriveConstants.kAutoRotationI, DriveConstants.kAutoRotationD, "Auto Rotate PID");
 
     // The gyro sensor
-    private final Pigeon2 pidgey = new Pigeon2(DriveConstants.kPidgeyCanId, "rio");
+    private final Pigeon2 pidgey = new Pigeon2(DriveConstants.kPidgeyCanId, new CANBus(CANConstants.kCanPort));
     private final Pigeon2SimState m_simPidgey = pidgey.getSimState();
 
     private final Field2d m_field = new Field2d();
@@ -119,63 +120,67 @@ public class DriveSubsystem extends SubsystemBase {
         m_vision = new Vision(Optional.of(turretPositionSupplier), this::addVisionMeasurement,
                 this::getAngularVelocity);
 
+        Scheduler.getDefault().addPeriodic(this::periodic);
+
         // Usage reporting for MAXSwerve template
-        HAL.report(tResourceType.kResourceType_RobotDrive, tInstances.kRobotDriveSwerve_MaxSwerve);
+        HAL.reportUsage("RobotDrive", "MAXSwerve");
 
-        RobotConfig config;
-        try {
-            config = RobotConfig.fromGUISettings();
-        } catch (Exception e) {
-            e.printStackTrace();
-
-            // TO DO: Find a better solution to ensure config is initialized when
-            // AutoBuilder.configure() is reached
-            return;
-        }
-
-        AutoBuilder.configure(
-                () -> getPose(), // Robot pose supplier
-                (Pose2d pose) -> resetOdometry(pose), // Method to reset odometry (will be called if your auto has a
-                                                      // starting pose)
-                () -> getRobotRelativeSpeeds(), // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
-                (speeds, feedforwards) -> drive(speeds, "Path planner"), // Method that will drive the robot given ROBOT
-                                                                         // RELATIVE
-                // ChassisSpeeds. Also optionally outputs individual module
-                // feedforwards
-                new PPHolonomicDriveController( // PPHolonomicController is the built in path following controller for
-                        // holonomic drive trains
-                        new PIDConstants(5.0, 0.0, 0.0), // Translation PID constants
-                        new PIDConstants(5.0, 0.0, 0.0) // Rotation PID constants
-                ),
-                config,
-                () -> {
-                    // Boolean supplier that controls when the path will be mirrored for the red
-                    // alliance
-                    // This will flip the path being followed to the red side of the field.
-                    // THE ORIGIN WILL REMAIN ON THE BLUE SIDE
-                    var alliance = DriverStation.getAlliance();
-                    if (alliance.isPresent()) {
-                        return alliance.get() == DriverStation.Alliance.Red;
-                    }
-
-                    return false;
-                });
+        // TODO: Restore when PathPlannerLib publishes a WPILib 2027 alpha-7 / Commands v3 build.
+        // PathPlannerLib's only 2027 build targets WPILib alpha-5 and Commands v2.
+        // RobotConfig config;
+        // try {
+        //     config = RobotConfig.fromGUISettings();
+        // } catch (Exception e) {
+        //     e.printStackTrace();
+        //
+        //     // TO DO: Find a better solution to ensure config is initialized when
+        //     // AutoBuilder.configure() is reached
+        //     return;
+        // }
+        //
+        // AutoBuilder.configure(
+        //         () -> getPose(), // Robot pose supplier
+        //         (Pose2d pose) -> resetOdometry(pose), // Method to reset odometry (will be called if your auto has a
+        //                                               // starting pose)
+        //         () -> getRobotRelativeSpeeds(), // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
+        //         (speeds, feedforwards) -> drive(speeds, "Path planner"), // Method that will drive the robot given ROBOT
+        //                                                                  // RELATIVE
+        //         // ChassisSpeeds. Also optionally outputs individual module
+        //         // feedforwards
+        //         new PPHolonomicDriveController( // PPHolonomicController is the built in path following controller for
+        //                 // holonomic drive trains
+        //                 new PIDConstants(5.0, 0.0, 0.0), // Translation PID constants
+        //                 new PIDConstants(5.0, 0.0, 0.0) // Rotation PID constants
+        //         ),
+        //         config,
+        //         () -> {
+        //             // Boolean supplier that controls when the path will be mirrored for the red
+        //             // alliance
+        //             // This will flip the path being followed to the red side of the field.
+        //             // THE ORIGIN WILL REMAIN ON THE BLUE SIDE
+        //             var alliance = MatchState.getAlliance();
+        //             if (alliance.isPresent()) {
+        //                 return alliance.get() == Alliance.RED;
+        //             }
+        //
+        //             return false;
+        //         });
     }
 
-    ChassisSpeeds getRobotRelativeSpeeds() {
+    ChassisVelocities getRobotRelativeSpeeds() {
         var fl = m_frontLeft.getState();
         var fr = m_frontRight.getState();
         var rl = m_rearLeft.getState();
         var rr = m_rearRight.getState();
 
-        return DriveConstants.kDriveKinematics.toChassisSpeeds(fl, fr, rl, rr);
+        return DriveConstants.kDriveKinematics.toChassisVelocities(fl, fr, rl, rr);
     }
 
     public Command moveToAngleCommand(Angle angle) {
-        return new InstantCommand(
+        return CommandUtils.runOnce(
                 () -> {
                     moveToAngle(angle);
-                });
+                }).named("Move To Angle");
     }
 
     public void moveToAngle(Angle angle) {
@@ -207,7 +212,7 @@ public class DriveSubsystem extends SubsystemBase {
     }
 
     public Command facePose(Pose2d fixture) {
-        return new RunCommand(() -> {
+        return CommandUtils.runRepeatedly(() -> {
             Pose2d robotPose = getPose();
 
             double xFixtureDist = fixture.getX() - robotPose.getX();
@@ -223,21 +228,20 @@ public class DriveSubsystem extends SubsystemBase {
 
             m_isManualRotate = false;
             System.out.println("Is Manual Rotate is False in facePose()");
-        });
+        }).named("Face Pose");
     }
 
     public void disableFaceHeading() {
         m_isManualRotate = true;
     }
 
-    @Override
     public void periodic() {
         DogLog.log("In periodic drive subsystem", true);
         // Update the odometry in the periodic block
-        double start = Timer.getFPGATimestamp();
+        double start = Timer.getTimestamp();
 
         if (Robot.isSimulation()) {
-            ChassisSpeeds chassisSpeed = DriveConstants.kDriveKinematics.toChassisSpeeds(
+            ChassisVelocities chassisSpeed = DriveConstants.kDriveKinematics.toChassisVelocities(
                     m_frontLeft.getState(), m_frontRight.getState(), m_rearLeft.getState(),
                     m_rearRight.getState());
 
@@ -245,7 +249,7 @@ public class DriveSubsystem extends SubsystemBase {
 
             m_simPidgey.setSupplyVoltage(RobotController.getBatteryVoltage());
             m_simPidgey.setRawYaw(
-                    getGyroHeading().in(Degrees) + Radians.of(chassisSpeed.omegaRadiansPerSecond).in(Degrees)
+                    getGyroHeading().in(Degrees) + Radians.of(chassisSpeed.omega).in(Degrees)
                             * DriveConstants.kPeriodicInterval.in(Seconds));
 
             m_odometry.update(
@@ -276,9 +280,9 @@ public class DriveSubsystem extends SubsystemBase {
 
         m_pidController.periodic();
 
-        SmartDashboard.putData(m_field);
+        Telemetry.log("Field", m_field);
 
-        double end = Timer.getFPGATimestamp();
+        double end = Timer.getTimestamp();
 
         DogLog.log("Drivetrain periodic time (ms)", (end - start) * 1000.0);
 
@@ -348,7 +352,7 @@ public class DriveSubsystem extends SubsystemBase {
         // getHeading()).in(Radians) + ", Current: "
         // + getHeading().in(Radians));
 
-        final double latestTime = Timer.getFPGATimestamp();
+        final double latestTime = Timer.getTimestamp();
         final double timeElapsed = latestTime - m_latestTime < 0.20 ? latestTime - m_latestTime
                 : DriveConstants.kPeriodicInterval.in(Seconds);
 
@@ -381,13 +385,11 @@ public class DriveSubsystem extends SubsystemBase {
         // SwerveDriveKinematics.desaturateWheelSpeeds(
         // swerveModuleStates, DriveConstants.kMaxSpeed.magnitude());
 
-        var speeds = ChassisSpeeds.discretize(
-                fieldRelative
-                        ? ChassisSpeeds.fromFieldRelativeSpeeds(xSpeedDelivered, ySpeedDelivered,
-                                rotDelivered,
-                                new Rotation2d(getHeading()))
-                        : new ChassisSpeeds(xSpeedDelivered, ySpeedDelivered, rotDelivered),
-                timeElapsed);
+        var speeds = (fieldRelative
+                ? new ChassisVelocities(xSpeedDelivered, ySpeedDelivered, rotDelivered)
+                        .toRobotRelative(new Rotation2d(getHeading()))
+                : new ChassisVelocities(xSpeedDelivered, ySpeedDelivered, rotDelivered))
+                .discretize(timeElapsed);
 
         drive(speeds, "Joystick runner");
 
@@ -397,13 +399,13 @@ public class DriveSubsystem extends SubsystemBase {
         // m_rearRight.setDesiredState(swerveModuleStates[3]);
     }
 
-    public void drive(ChassisSpeeds speeds, String caller) {
-        var states = DriveConstants.kDriveKinematics.toSwerveModuleStates(speeds);
+    public void drive(ChassisVelocities speeds, String caller) {
+        var states = DriveConstants.kDriveKinematics.toSwerveModuleVelocities(speeds);
 
         DogLog.log("First commanded motor speeds", states[0]);
         DogLog.log("Caller", caller);
 
-        SwerveDriveKinematics.desaturateWheelSpeeds(states, DriveConstants.kMaxSpeed.magnitude());
+        states = SwerveDriveKinematics.desaturateWheelVelocities(states, DriveConstants.kMaxSpeed.magnitude());
 
         m_frontLeft.setDesiredState(states[0]);
         m_frontRight.setDesiredState(states[1]);
@@ -415,10 +417,10 @@ public class DriveSubsystem extends SubsystemBase {
      * Sets the wheels into an X formation to prevent movement.
      */
     public void setX() {
-        m_frontLeft.setDesiredState(new SwerveModuleState(0, Rotation2d.fromDegrees(45)));
-        m_frontRight.setDesiredState(new SwerveModuleState(0, Rotation2d.fromDegrees(-45)));
-        m_rearLeft.setDesiredState(new SwerveModuleState(0, Rotation2d.fromDegrees(-45)));
-        m_rearRight.setDesiredState(new SwerveModuleState(0, Rotation2d.fromDegrees(45)));
+        m_frontLeft.setDesiredState(new SwerveModuleVelocity(0, Rotation2d.fromDegrees(45)));
+        m_frontRight.setDesiredState(new SwerveModuleVelocity(0, Rotation2d.fromDegrees(-45)));
+        m_rearLeft.setDesiredState(new SwerveModuleVelocity(0, Rotation2d.fromDegrees(-45)));
+        m_rearRight.setDesiredState(new SwerveModuleVelocity(0, Rotation2d.fromDegrees(45)));
     }
 
     /**
@@ -426,8 +428,8 @@ public class DriveSubsystem extends SubsystemBase {
      *
      * @param desiredStates The desired SwerveModule states.
      */
-    public void setModuleStates(SwerveModuleState[] desiredStates) {
-        SwerveDriveKinematics.desaturateWheelSpeeds(
+    public void setModuleStates(SwerveModuleVelocity[] desiredStates) {
+        desiredStates = SwerveDriveKinematics.desaturateWheelVelocities(
                 desiredStates, DriveConstants.kMaxSpeed.magnitude());
         m_frontLeft.setDesiredState(desiredStates[0]);
         m_frontRight.setDesiredState(desiredStates[1]);
@@ -472,12 +474,11 @@ public class DriveSubsystem extends SubsystemBase {
                 estimation.m_timestamp, estimation.m_stdDevs);
     }
 
-    public ChassisSpeeds getChassisSpeeds() {
+    public ChassisVelocities getChassisSpeeds() {
 
-        return ChassisSpeeds.fromRobotRelativeSpeeds(
-                DriveConstants.kDriveKinematics.toChassisSpeeds(m_frontLeft.getState(), m_frontRight.getState(),
-                        m_rearLeft.getState(), m_rearRight.getState()),
-                new Rotation2d(getHeading()));
+        return DriveConstants.kDriveKinematics.toChassisVelocities(m_frontLeft.getState(), m_frontRight.getState(),
+                m_rearLeft.getState(), m_rearRight.getState())
+                .toFieldRelative(new Rotation2d(getHeading()));
 
     }
 
@@ -486,13 +487,13 @@ public class DriveSubsystem extends SubsystemBase {
     }
 
     public Fixtures.FieldLocations getRobotLocation() {
-        Optional<Alliance> alliance = DriverStation.getAlliance();
+        Optional<Alliance> alliance = MatchState.getAlliance();
         Pose2d robotPose = getPose();
 
         double x = robotPose.getX();
 
         if (alliance.isPresent()) {
-            if (alliance.get() == Alliance.Blue) {
+            if (alliance.get() == Alliance.BLUE) {
                 if (x > Fixtures.kBlueSideNeutralBorder.in(Meters) && x < Fixtures.kRedSideNeutralBorder.in(Meters)) {
                     return Fixtures.FieldLocations.NeutralSide;
                 } else if (x < Fixtures.kBlueSideNeutralBorder.in(Meters)) {
@@ -500,7 +501,7 @@ public class DriveSubsystem extends SubsystemBase {
                 } else {
                     return Fixtures.FieldLocations.OpponentSide;
                 }
-            } else if (alliance.get() == Alliance.Red) {
+            } else if (alliance.get() == Alliance.RED) {
                 if (x < Fixtures.kRedSideNeutralBorder.in(Meters) && x > Fixtures.kBlueSideNeutralBorder.in(Meters)) {
                     return Fixtures.FieldLocations.NeutralSide;
                 } else if (x > Fixtures.kRedSideNeutralBorder.in(Meters)) {

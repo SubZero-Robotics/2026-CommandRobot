@@ -1,11 +1,11 @@
 package frc.robot.utils;
 
-import static edu.wpi.first.units.Units.Degrees;
-import static edu.wpi.first.units.Units.RPM;
-import static edu.wpi.first.units.Units.Radians;
-import edu.wpi.first.units.measure.Angle;
-import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.wpilibj.Timer;
+import static org.wpilib.units.Units.Degrees;
+import static org.wpilib.units.Units.RPM;
+import static org.wpilib.units.Units.Radians;
+import org.wpilib.units.measure.Angle;
+import org.wpilib.units.measure.AngularVelocity;
+import org.wpilib.system.Timer;
 
 public class PositionBuffer {
 
@@ -19,7 +19,7 @@ public class PositionBuffer {
 
     public void pushElement(Angle angle, AngularVelocity velocity, double delay) {
         try {
-            m_positions.push(new TurretPosition(angle, velocity, Timer.getFPGATimestamp() - delay));
+            m_positions.push(new TurretPosition(angle, velocity, Timer.getTimestamp() - delay));
         } catch (Exception e) {
             System.out.println("Ring Buffer Exception: " + e.getMessage());
         }
