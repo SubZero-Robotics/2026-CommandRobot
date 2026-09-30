@@ -7,6 +7,7 @@ import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.RPM;
 import static edu.wpi.first.units.Units.Radians;
+import static edu.wpi.first.units.Units.Seconds;
 import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.commands.PathPlannerAuto;
 
@@ -161,9 +162,12 @@ public class RobotContainer {
                                 .onFalse(m_commandFactory.StopAimCommand());
 
                 // Spin the flywheel right away, but only start feeding balls once it is up to speed
+                // (or after kMaxSpinUpWait, so the trigger never does nothing)
                 m_driverController.rightTrigger()
                                 .whileTrue(m_commandFactory.ShootCommand().alongWith(
                                                 Commands.waitUntil(m_shooter::AtWheelVelocityTarget)
+                                                                .withTimeout(ShooterConstants.kMaxSpinUpWait
+                                                                                .in(Seconds))
                                                                 .andThen(m_commandFactory.RunAllStager())))
                                 .onFalse(m_commandFactory.StopShootCommand()
                                                 .alongWith(m_commandFactory.StopStagingCommand()));
