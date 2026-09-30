@@ -4,22 +4,17 @@
 package frc.robot;
 
 import static edu.wpi.first.units.Units.Degrees;
-import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.RPM;
-import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.Seconds;
 import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.commands.PathPlannerAuto;
 
 import dev.doglog.DogLog;
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.networktables.BooleanSubscriber;
 import edu.wpi.first.networktables.DoubleSubscriber;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
@@ -28,8 +23,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -148,7 +141,7 @@ public class RobotContainer {
 
                 // m_driverController.a().whileTrue(m_aimFactory.RunAllStager());
 
-                // m_driverController.y().onTrue(new InstantCommand(() -> {
+                // m_driverController.y().onTrue(Commands.runOnce(() -> {
                 // double shooterVelocity = m_shooterVelocityGetter.get();
                 // m_aimFactory.ShootAtVelocity(RPM.of(shooterVelocity));
                 // System.out.println("Shooting at velocity of " + shooterVelocity + " RPM.");
@@ -172,7 +165,7 @@ public class RobotContainer {
                                 .onFalse(m_commandFactory.StopShootCommand()
                                                 .alongWith(m_commandFactory.StopStagingCommand()));
 
-                m_driverController.a().onTrue(new InstantCommand(m_drive::ZeroGyro));
+                m_driverController.a().onTrue(Commands.runOnce(m_drive::ZeroGyro));
 
                 m_driverController.x().whileTrue(m_commandFactory.MoveTurretToFront());
                 m_driverController.y().onTrue(m_commandFactory.ReverseStager())
@@ -201,7 +194,7 @@ public class RobotContainer {
                 // m_driverController.povDown()
                 // .whileTrue(m_commandFactory.ClimbUpCommand().finallyDo(m_commandFactory::StopClimb));
 
-                // m_driverController.x().onTrue(new InstantCommand(() -> {
+                // m_driverController.x().onTrue(Commands.runOnce(() -> {
                 // // double hoodAngle = m_hoodAngleGetter.get();
                 // // m_aimFactory.MoveHoodToAngle(Degrees.of(hoodAngle));
                 // }));
@@ -235,23 +228,6 @@ public class RobotContainer {
         public void teleopPeriodic() {
                 DogLog.log("In Teleop Periodic Robotcontainer", true);
                 m_turret.addDriveHeading(UtilityFunctions.WrapAngle(m_drive.getHeading()));
-
-                // double solutionStart = Timer.getFPGATimestamp();
-                // TargetSolution solution = m_commandFactory.GetHubAimSolution();
-                // double solutionEnd = Timer.getFPGATimestamp();
-
-                // Pose2d robotPose = m_drive.getPose();
-
-                // Distance xDist = Meters.of(solution.distance().in(Meters)
-                // * Math.cos(solution.hubAngle().minus(solution.phi()).in(Radians)))
-                // .plus(robotPose.getMeasureX());
-                // Distance yDist = Meters.of(solution.distance().in(Meters)
-                // * Math.sin(solution.hubAngle().minus(solution.phi()).in(Radians)))
-                // .plus(robotPose.getMeasureY());
-
-                // Pose2d targetPose = new Pose2d(xDist, yDist, new Rotation2d());
-
-                // m_field.getObject("targetPose").setPose(targetPose);
 
                 double start = Timer.getFPGATimestamp();
                 m_commandFactory.periodic();

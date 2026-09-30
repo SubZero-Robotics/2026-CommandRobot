@@ -9,7 +9,6 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.LinearVelocity;
-import edu.wpi.first.wpilibj.motorcontrol.Spark;
 import edu.wpi.first.units.measure.Distance;
 import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkFlex;
@@ -19,7 +18,6 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
-import static edu.wpi.first.units.Units.Radian;
 import static edu.wpi.first.units.Units.Radians;
 
 import com.revrobotics.AbsoluteEncoder;
@@ -95,10 +93,10 @@ public class MAXSwerveModule {
 
     if (Robot.isReal())
       return new SwerveModuleState(m_drivingEncoder.getVelocity(),
-          new Rotation2d(m_turningEncoder.getPosition() - m_chassisAngularOffset));
+          new Rotation2d(m_turningEncoder.getPosition()).minus(Rotation2d.fromRadians(m_chassisAngularOffset)));
 
     return new SwerveModuleState(m_simDriverEncoderVelocity,
-        new Rotation2d(m_simCurrentAngle.in(Radian) - m_chassisAngularOffset));
+        new Rotation2d(m_simCurrentAngle).minus(Rotation2d.fromRadians(m_chassisAngularOffset)));
   }
 
   /**
@@ -113,10 +111,10 @@ public class MAXSwerveModule {
     if (Robot.isReal())
       return new SwerveModulePosition(
           m_drivingEncoder.getPosition(),
-          new Rotation2d(m_turningEncoder.getPosition() - m_chassisAngularOffset));
+          new Rotation2d(m_turningEncoder.getPosition()).minus(Rotation2d.fromRadians(m_chassisAngularOffset)));
 
     return new SwerveModulePosition(m_simDriverEncoderPosition,
-        new Rotation2d(m_simCurrentAngle.in(Radian) - m_chassisAngularOffset));
+        new Rotation2d(m_simCurrentAngle).minus(Rotation2d.fromRadians(m_chassisAngularOffset)));
   }
 
   /**

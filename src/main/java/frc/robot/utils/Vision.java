@@ -14,9 +14,9 @@ import org.photonvision.targeting.PhotonTrackedTarget;
 import dev.doglog.DogLog;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import frc.robot.Constants.VisionConstants;
@@ -209,32 +209,26 @@ public class Vision {
             return VisionConstants.kRobotToCamTwo;
 
         TurretPosition turretPosition = m_turretPositionSupplier.get().apply(estimationTime);
+        if (turretPosition == null) {
+            return null;
+        }
+        return calculateTurretCameraTransform(turretPosition, m_robotAngularVelocitySupplier.get());
+    }
 
+    /** Pure calculation; the caller retains the missing-supplier fallback transform. */
+    static Transform3d calculateTurretCameraTransform(TurretPosition turretPosition,
+            AngularVelocity robotAngularVelocity) {
         // Getting the net velocity of the turret relative to the field
-        if (turretPosition == null || turretPosition.velocity().plus(
-                m_robotAngularVelocitySupplier.get()).abs(DegreesPerSecond) > VisionConstants.kMaxTurretVisionSpeed
-                        .in(DegreesPerSecond)) {
+        if (turretPosition == null || !turretPosition.isWithinVisionSpeed(
+                robotAngularVelocity, VisionConstants.kMaxTurretVisionSpeed)) {
             return null;
         }
 
-        Distance cameraX = VisionConstants.kTurretCameraDistanceToCenter
-                .times(Math.cos(turretPosition.angle().minus(VisionConstants.kCameraTwoYaw).in(Radians)))
-                .plus(VisionConstants.kTurretCenterOfRotation.getMeasureX());
-
-        Distance cameraY = VisionConstants.kTurretCameraDistanceToCenter
-                .times(Math.sin(turretPosition.angle().minus(VisionConstants.kCameraTwoYaw).in(Radians)))
-                .plus(VisionConstants.kTurretCenterOfRotation.getMeasureY());
-
-        Translation3d cameraPosition = new Translation3d(cameraX, cameraY,
-                VisionConstants.kCameraTwoZ);
-
         Rotation3d cameraRotation = new Rotation3d(VisionConstants.kCameraTwoRoll, VisionConstants.kCameraTwoPitch,
                 turretPosition.angle());
-
-        // System.out.println(cameraX + ", " + cameraY + ", " +
-        // turretPosition.angle().in(Degrees));
-
-        return new Transform3d(cameraPosition, cameraRotation);
+        return RobotGeometry.turretCameraTransform(VisionConstants.kTurretCenterOfRotation,
+                VisionConstants.kTurretCameraDistanceToCenter, VisionConstants.kCameraTwoZ,
+                new Rotation2d(VisionConstants.kCameraTwoYaw), cameraRotation);
     }
 
     private Matrix<N3, N1> getCurrentStdDevs() {

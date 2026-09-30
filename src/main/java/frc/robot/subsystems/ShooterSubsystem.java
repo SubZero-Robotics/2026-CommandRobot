@@ -1,6 +1,7 @@
 package frc.robot.subsystems;
 
-import com.revrobotics.AbsoluteEncoder;
+import edu.wpi.first.math.MathUtil;
+
 import com.revrobotics.PersistMode;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.ResetMode;
@@ -17,7 +18,6 @@ import com.revrobotics.spark.config.SparkMaxConfig;
 
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.RPM;
-import static edu.wpi.first.units.Units.Rotations;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -121,8 +121,8 @@ public class ShooterSubsystem extends SubsystemBase {
             return false;
         }
 
-        return m_targetVelocity.minus(RPM.of(m_shooterRelativeEncoder.getVelocity()))
-                .abs(RPM) < ShooterConstants.kShooterVelocityTolerance.in(RPM);
+        return MathUtil.isNear(m_targetVelocity.in(RPM), m_shooterRelativeEncoder.getVelocity(),
+                ShooterConstants.kShooterVelocityTolerance.in(RPM));
 
         // return true;
     }

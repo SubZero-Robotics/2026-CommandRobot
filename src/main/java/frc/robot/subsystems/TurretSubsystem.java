@@ -3,7 +3,6 @@ package frc.robot.subsystems;
 import com.revrobotics.AbsoluteEncoder;
 import com.revrobotics.PersistMode;
 import com.revrobotics.ResetMode;
-import com.revrobotics.sim.SparkMaxSim;
 import com.revrobotics.spark.FeedbackSensor;
 import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkClosedLoopController;
@@ -15,7 +14,7 @@ import dev.doglog.DogLog;
 
 import com.revrobotics.spark.config.SparkMaxConfig;
 
-import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.math.interpolation.TimeInterpolatableBuffer;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.RPM;
@@ -24,9 +23,7 @@ import static edu.wpi.first.units.Units.Seconds;
 
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.LinearVelocity;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
@@ -34,9 +31,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Robot;
-import frc.robot.Constants.NumericalConstants;
 import frc.robot.Constants.TurretConstants;
-import frc.robot.utils.PositionBuffer;
 import frc.robot.utils.TurretPosition;
 import frc.robot.utils.UtilityFunctions;
 
@@ -47,7 +42,8 @@ public class TurretSubsystem extends SubsystemBase {
     private final AbsoluteEncoder m_absoluteEncoder = m_turretMotor.getAbsoluteEncoder();
     private final SparkClosedLoopController m_turretClosedLoopController = m_turretMotor.getClosedLoopController();
 
-    private final PositionBuffer m_positionBuffer = new PositionBuffer(TurretConstants.kPositionBufferLength);
+    private final TimeInterpolatableBuffer<TurretPosition> m_positionBuffer = TimeInterpolatableBuffer.createBuffer(
+            TurretConstants.kPositionHistoryDuration.in(Seconds));
 
     private SparkMaxConfig m_config = new SparkMaxConfig();
 
@@ -76,9 +72,9 @@ public class TurretSubsystem extends SubsystemBase {
         m_config.smartCurrentLimit(TurretConstants.kTurretMotorAmpLimit);
         m_turretMotor.configure(m_config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
-        m_positionBuffer.pushElement(UtilityFunctions.WrapAngle(Rotations.of(m_absoluteEncoder.getPosition())),
-                RPM.of(m_absoluteEncoder.getVelocity()),
-                TurretConstants.kEncoderReadingDelay.in(Seconds));
+        TurretPosition position = new TurretPosition(getRotation(), RPM.of(m_absoluteEncoder.getVelocity()),
+                Timer.getFPGATimestamp() - TurretConstants.kEncoderReadingDelay.in(Seconds));
+        m_positionBuffer.addSample(position.timestamp(), position);
 
         m_simLigament = m_mechRoot.append(m_simLigament);
 
@@ -101,7 +97,7 @@ public class TurretSubsystem extends SubsystemBase {
     }
 
     public void moveToAngle(Angle angle) {
-        angle = angle.plus(TurretConstants.kAngularDistanceToFrontOfRobot);
+        angle = UtilityFunctions.addRotation(angle, TurretConstants.kAngularDistanceToFrontOfRobot);
         angle = UtilityFunctions.WrapAngle(angle);
 
         // System.out.println(angle + "is commanded angle for turret");
@@ -120,10 +116,11 @@ public class TurretSubsystem extends SubsystemBase {
     public Angle getRotation() {
         if (Robot.isReal())
             return UtilityFunctions.WrapAngle(
-                    Rotations.of(m_absoluteEncoder.getPosition())
-                            .minus(TurretConstants.kAngularDistanceToFrontOfRobot));
+                    UtilityFunctions.subtractRotation(Rotations.of(m_absoluteEncoder.getPosition()),
+                            TurretConstants.kAngularDistanceToFrontOfRobot));
 
-        return UtilityFunctions.WrapAngle(m_targetAngle.minus(TurretConstants.kAngularDistanceToFrontOfRobot));
+        return UtilityFunctions.WrapAngle(UtilityFunctions.subtractRotation(
+                m_targetAngle, TurretConstants.kAngularDistanceToFrontOfRobot));
     }
 
     public void addDriveHeading(Angle angle) {
@@ -131,7 +128,7 @@ public class TurretSubsystem extends SubsystemBase {
     }
 
     public TurretPosition getRotationAtTime(double timestamp) {
-        return m_positionBuffer.getAngleAtTime(timestamp);
+        return m_positionBuffer.getSample(timestamp).orElse(null);
         // return new TurretPosition(getRotation(), RotationsPerSecond.of(0.0),
         // timestamp);
 
@@ -144,10 +141,9 @@ public class TurretSubsystem extends SubsystemBase {
         DogLog.log("In periodic turret subsystem", true);
         double start = Timer.getFPGATimestamp();
 
-        m_positionBuffer.pushElement(
-                UtilityFunctions.WrapAngle(getRotation()),
-                RPM.of(m_absoluteEncoder.getVelocity()),
-                TurretConstants.kEncoderReadingDelay.in(Seconds));
+        TurretPosition position = new TurretPosition(getRotation(), RPM.of(m_absoluteEncoder.getVelocity()),
+                Timer.getFPGATimestamp() - TurretConstants.kEncoderReadingDelay.in(Seconds));
+        m_positionBuffer.addSample(position.timestamp(), position);
 
         double end = Timer.getFPGATimestamp();
 
@@ -165,9 +161,6 @@ public class TurretSubsystem extends SubsystemBase {
 
     // Connected to another periodic loop that runs quicker than 0.02 seconds
     public void pushCurrentEncoderReading() {
-        // m_positionBuffer.pushElement(UtilityFunctions.WrapAngle(Rotations.of(m_absoluteEncoder.getPosition())),
-        // RPM.of(m_absoluteEncoder.getVelocity()),
-        // TurretConstants.kEncoderReadingDelay.in(Seconds));
     }
 
     public LinearVelocity getMuzzleVelocityAtHoodAngle() {
@@ -177,11 +170,12 @@ public class TurretSubsystem extends SubsystemBase {
     @Override
     public void simulationPeriodic() {
         m_simLigament.setAngle(
-                m_targetAngle.plus(robotRotation).minus(TurretConstants.kAngularDistanceToFrontOfRobot).in(Degrees));
-        m_min1.setAngle(TurretConstants.kReachableMinAngle.plus(robotRotation).in(Degrees));
-        m_max1.setAngle(TurretConstants.kReachableMaxAngle.plus(robotRotation).in(Degrees));
-        m_min2.setAngle(TurretConstants.kFeedMinAngle.plus(robotRotation).in(Degrees));
-        m_max2.setAngle(TurretConstants.kFeedMaxAngle.plus(robotRotation).in(Degrees));
+                UtilityFunctions.subtractRotation(UtilityFunctions.addRotation(m_targetAngle, robotRotation),
+                        TurretConstants.kAngularDistanceToFrontOfRobot).in(Degrees));
+        m_min1.setAngle(UtilityFunctions.addRotation(TurretConstants.kReachableMinAngle, robotRotation).in(Degrees));
+        m_max1.setAngle(UtilityFunctions.addRotation(TurretConstants.kReachableMaxAngle, robotRotation).in(Degrees));
+        m_min2.setAngle(UtilityFunctions.addRotation(TurretConstants.kFeedMinAngle, robotRotation).in(Degrees));
+        m_max2.setAngle(UtilityFunctions.addRotation(TurretConstants.kFeedMaxAngle, robotRotation).in(Degrees));
         m_robotHeading.setAngle(robotRotation.in(Degrees));
         SmartDashboard.putData("Turret Rotation", m_simMech);
     }

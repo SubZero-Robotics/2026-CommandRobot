@@ -241,7 +241,7 @@ public final class Constants {
                 public static final Angle kMinAngle = kTurretLimitMargin;
                 public static final Angle kMaxAngle = kTurretTravel.minus(kTurretLimitMargin);
 
-                public static final int kPositionBufferLength = 300;
+                public static final Time kPositionHistoryDuration = Seconds.of(6.0);
                 public static final Time kEncoderReadingDelay = Seconds.of(0.005);
 
                 public static final Time kEncoderReadInterval = Seconds.of(0.05);
@@ -292,12 +292,10 @@ public final class Constants {
                 public static final Translation2d kTurretOffset = new Translation2d(Inches.of(-6.25),
                                 Inches.of(6.151));
 
-                public static final Angle kTurretAngularOffset = Radians
-                                .of(Math.atan2(kTurretOffset.getY(), kTurretOffset.getX()));
+                public static final Angle kTurretAngularOffset = kTurretOffset.getAngle().getMeasure();
 
                 public static final Distance kTurretCenterDistanceFromRobotCenter = Meters
-                                .of(Math.sqrt(Math.pow(kTurretOffset.getX(), 2.0)
-                                                + Math.pow(kTurretOffset.getY(), 2.0)));
+                                .of(kTurretOffset.getNorm());
 
                 public static final Angle kTurretAngleTolerance = Degrees.of(2.0);
 

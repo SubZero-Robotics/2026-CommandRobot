@@ -1,7 +1,7 @@
 package frc.robot.utils;
 
 import static edu.wpi.first.units.Units.Meters;
-import static edu.wpi.first.units.Units.Radians;
+import static edu.wpi.first.units.Units.Degrees;
 
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Distance;
@@ -17,13 +17,13 @@ public class SubsystemSimulation {
     public SubsystemSimulation(String name, Distance width, Distance height, Distance startDistance) {
         m_mech = new Mechanism2d(width.in(Meters), height.in(Meters));
         m_root = m_mech.getRoot(name, width.in(Meters) / 2, 0.0);
-        m_root.append(new MechanismLigament2d(name, startDistance.in(Meters), Math.PI));
+        m_root.append(new MechanismLigament2d(name, startDistance.in(Meters), 180.0));
     }
 
     // Simulation for arm
     public SubsystemSimulation(String name, Distance width, Distance height, Distance length, Angle startAngle) {
         m_mech = new Mechanism2d(width.in(Meters), height.in(Meters));
         m_root = m_mech.getRoot(name, width.in(Meters) / 2, 0.0);
-        m_root.append(new MechanismLigament2d(name, length.in(Meters), startAngle.in(Radians)));
+        m_root.append(new MechanismLigament2d(name, length.in(Meters), startAngle.in(Degrees)));
     }
 }

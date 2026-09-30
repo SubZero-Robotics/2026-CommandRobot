@@ -6,6 +6,7 @@ package frc.robot.subsystems;
 import edu.wpi.first.hal.FRCNetComm.tInstances;
 import edu.wpi.first.hal.FRCNetComm.tResourceType;
 import edu.wpi.first.hal.HAL;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -25,6 +26,7 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Robot;
 import frc.robot.utils.ShuffleboardPid;
+import frc.robot.utils.RobotGeometry;
 import frc.robot.utils.TurretPosition;
 import frc.robot.utils.UtilityFunctions;
 import frc.robot.utils.VisionEstimation;
@@ -36,7 +38,7 @@ import frc.robot.Constants.OIConstants;
 import frc.robot.Constants.DriveConstants.RangeType;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import com.ctre.phoenix6.hardware.Pigeon2;
 import com.ctre.phoenix6.sim.Pigeon2SimState;
@@ -115,6 +117,7 @@ public class DriveSubsystem extends SubsystemBase {
      * Creates a new DriveSubsystem.
      */
     public DriveSubsystem(Function<Double, TurretPosition> turretPositionSupplier) {
+        m_pidController.enableContinuousInput(-Math.PI, Math.PI);
 
         m_vision = new Vision(Optional.of(turretPositionSupplier), this::addVisionMeasurement,
                 this::getAngularVelocity);
@@ -172,10 +175,7 @@ public class DriveSubsystem extends SubsystemBase {
     }
 
     public Command moveToAngleCommand(Angle angle) {
-        return new InstantCommand(
-                () -> {
-                    moveToAngle(angle);
-                });
+        return Commands.runOnce(() -> moveToAngle(angle));
     }
 
     public void moveToAngle(Angle angle) {
@@ -185,19 +185,20 @@ public class DriveSubsystem extends SubsystemBase {
 
     public void moveByAngle(Angle angle) {
         m_isManualRotate = false;
-        m_targetAutoAngle = getHeading().plus(angle);
+        m_targetAutoAngle = UtilityFunctions.addRotation(getHeading(), angle);
     }
 
     public RangeType faceCardinalHeadingRange(Angle minAngle, Angle maxAngle) {
         Angle robotAngle = getHeading();
         // System.out.println(robotAngle);
 
-        if (withinRange(minAngle, maxAngle, robotAngle)) {
+        // The heading range runs counterclockwise from max to min.
+        if (UtilityFunctions.withinArc(maxAngle, minAngle, robotAngle)) {
             m_isManualRotate = true;
             return RangeType.Within;
         } else {
             m_isManualRotate = false;
-            m_targetAutoAngle = getClosestAngle(minAngle, maxAngle, robotAngle);
+            m_targetAutoAngle = UtilityFunctions.closestAngle(robotAngle, true, minAngle, maxAngle);
             return m_targetAutoAngle.isEquivalent(minAngle) ? RangeType.CloseMin : RangeType.CloseMax;
         }
     }
@@ -206,16 +207,11 @@ public class DriveSubsystem extends SubsystemBase {
         return new RunCommand(() -> {
             Pose2d robotPose = getPose();
 
-            double xFixtureDist = fixture.getX() - robotPose.getX();
-            double yFixtureDist = fixture.getY() - robotPose.getY();
-
-            double totalDistance = Math.hypot(xFixtureDist, yFixtureDist);
-
-            // Floating point value correction
-            if (Math.abs(totalDistance) < NumericalConstants.kEpsilon)
+            Translation2d displacement = fixture.getTranslation().minus(robotPose.getTranslation());
+            if (displacement.getNorm() <= NumericalConstants.kEpsilon) {
                 return;
-
-            m_targetAutoAngle = Radians.of(Math.atan2(yFixtureDist, xFixtureDist));
+            }
+            m_targetAutoAngle = RobotGeometry.bearing(displacement).getMeasure();
 
             m_isManualRotate = false;
         });
@@ -240,8 +236,8 @@ public class DriveSubsystem extends SubsystemBase {
 
             m_simPidgey.setSupplyVoltage(RobotController.getBatteryVoltage());
             m_simPidgey.setRawYaw(
-                    getGyroHeading().in(Degrees) + Radians.of(chassisSpeed.omegaRadiansPerSecond).in(Degrees)
-                            * DriveConstants.kPeriodicInterval.in(Seconds));
+                    getGyroHeading().plus(RadiansPerSecond.of(chassisSpeed.omegaRadiansPerSecond)
+                            .times(DriveConstants.kPeriodicInterval)).in(Degrees));
 
             m_odometry.update(
                     new Rotation2d(getGyroHeading()),
@@ -253,10 +249,10 @@ public class DriveSubsystem extends SubsystemBase {
                     });
         }
 
-        // angleDiff is signed (-180 to 180], so this works whichever side the heading approaches from
+        // Circular tolerance works whichever side the heading approaches from.
         if (!m_isManualRotate
-                && UtilityFunctions.angleDiff(getHeading(), m_targetAutoAngle)
-                        .abs(Degrees) < DriveConstants.kTurnToAngleTolerance.in(Degrees)) {
+                && MathUtil.isNear(m_targetAutoAngle.in(Radians), getHeading().in(Radians),
+                        DriveConstants.kTurnToAngleTolerance.in(Radians), -Math.PI, Math.PI)) {
             m_isManualRotate = true;
         }
 
@@ -338,12 +334,6 @@ public class DriveSubsystem extends SubsystemBase {
     public void drive(double xSpeed, double ySpeed, double rot, boolean fieldRelative) {
         // Convert the commanded speeds into the correct units for the drivetrain
 
-        // if (!m_isManualRotate)
-        // System.out
-        // .println("Setpoint: " + getOptimalAngle(m_targetAutoAngle,
-        // getHeading()).in(Radians) + ", Current: "
-        // + getHeading().in(Radians));
-
         final double latestTime = Timer.getFPGATimestamp();
         final double timeElapsed = latestTime - m_latestTime < 0.20 ? latestTime - m_latestTime
                 : DriveConstants.kPeriodicInterval.in(Seconds);
@@ -354,8 +344,9 @@ public class DriveSubsystem extends SubsystemBase {
             m_isManualRotate = true;
         }
 
-        final double pidCalculation = m_pidController.calculate(getHeading().in(Radians),
-                getOptimalAngle(m_targetAutoAngle, getHeading()).in(Radians));
+        final double pidCalculation = m_pidController.calculate(
+                MathUtil.angleModulus(getHeading().in(Radians)),
+                MathUtil.angleModulus(m_targetAutoAngle.in(Radians)));
 
         final double xSpeedDelivered = xSpeed * DriveConstants.kMaxSpeed.magnitude();
         final double ySpeedDelivered = ySpeed * DriveConstants.kMaxSpeed.magnitude();
@@ -516,34 +507,4 @@ public class DriveSubsystem extends SubsystemBase {
         return DegreesPerSecond.of(pidgey.getAngularVelocityZDevice().getValueAsDouble());
     }
 
-    private static Angle getOptimalAngle(Angle target, Angle robotHeading) {
-        Angle wrappedRobotAngle = UtilityFunctions.WrapAngle(robotHeading);
-
-        Angle delta = target.minus(wrappedRobotAngle);
-
-        // Ensuring that the angle is always positive to ensure it is wrapped correctly
-        if (delta.lt(Radians.of(0.0)))
-            delta = delta.plus(Radians.of(2 * Math.PI));
-
-        // Wrapping the delta to make it at most 180 deg
-        if (delta.gt(Radians.of(Math.PI)))
-            delta = delta.minus(Radians.of(2.0 * Math.PI));
-
-        return delta.plus(robotHeading);
-    }
-
-    private static boolean withinRange(Angle min, Angle max, Angle angle) {
-        angle = UtilityFunctions.WrapAngle(angle);
-        min = getOptimalAngle(angle, min);
-        max = getOptimalAngle(angle, max);
-        return angle.gt(max) && angle.lt(min);
-    }
-
-    private static Angle getClosestAngle(Angle t1, Angle t2, Angle angle) {
-        t1 = UtilityFunctions.WrapAngle(t1);
-        t2 = UtilityFunctions.WrapAngle(t2);
-        angle = UtilityFunctions.WrapAngle(angle);
-
-        return t1.minus(angle).abs(Rotations) < t2.minus(angle).abs(Rotations) ? t1 : t2;
-    }
 }
