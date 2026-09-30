@@ -252,12 +252,21 @@ public final class Constants {
 
                 public static final int kSmartCurrentLimit = 40;
 
-                public static final Angle kHubMinAngle1 = Degrees.of(311);
-                public static final Angle kHubMaxAngle1 = Degrees.of(351);
+                // Robot-relative range the turret can reach (0 deg = front, counter-clockwise): the encoder
+                // limits shifted by kAngularDistanceToFrontOfRobot. About 138.6 deg (just past back-left),
+                // through the back and the right side, to 358.6 deg (just right of the front). These follow
+                // kTurretTravel automatically once it is measured.
+                public static final Angle kReachableMinAngle = kMinAngle.minus(kAngularDistanceToFrontOfRobot)
+                                .plus(Rotations.of(1.0));
+                public static final Angle kReachableMaxAngle = kMaxAngle.minus(kAngularDistanceToFrontOfRobot)
+                                .plus(Rotations.of(1.0));
 
-                public static final Angle kHubMinAngle2 = Degrees.of(180);
-                public static final Angle kHubMaxAngle2 = Degrees.of(224);
-
+                // Shooting windows are robot-relative (0 deg = front, counter-clockwise) and must stay inside
+                // the reachable range. Previous operating angles (2026 season): hub windows 311-351 deg and
+                // 180-224 deg, which left two dead zones (224-311 on the right, and 351-180 across the front,
+                // left and back-left).
+                // Feed window, used only when the hood is above kTurretAngleRestrictiveShooterAngle (inactive
+                // while the hood is disabled)
                 public static final Angle kFeedMinAngle = Degrees.of(180);
                 public static final Angle kFeedMaxAngle = Degrees.of(224);
 
@@ -270,8 +279,9 @@ public final class Constants {
                                 kFeedMinAngle, kFeedMaxAngle
                 };
 
+                // One window covering everything the turret can reach, so the only dead zone is on the left side
                 public static final Angle[] kUnrestrictedAngles = new Angle[] {
-                                kHubMinAngle1, kHubMaxAngle1, kHubMinAngle2, kHubMaxAngle2
+                                kReachableMinAngle, kReachableMaxAngle
                 };
 
                 public static final Angle kOvershootAmount = Degrees.of(10.0);
