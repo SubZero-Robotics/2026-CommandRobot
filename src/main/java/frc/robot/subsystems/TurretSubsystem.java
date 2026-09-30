@@ -158,6 +158,9 @@ public class TurretSubsystem extends SubsystemBase {
         double end = Timer.getFPGATimestamp();
 
         DogLog.log("Turret periodic time (ms)", (end - start) * 1000.0);
+        // Raw absolute encoder, 0 = facing back-left. Use it to measure kTurretTravel; a reading near 360
+        // means the turret is clockwise of zero, where the position loop would turn it the wrong way.
+        DogLog.log("Turret raw encoder (deg)", Rotations.of(m_absoluteEncoder.getPosition()).in(Degrees));
         DogLog.log("In periodic turret subsystem", false);
 
         // DogLog.log("Turret rotation relative to front of robot",
