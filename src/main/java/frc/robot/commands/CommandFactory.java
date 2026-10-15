@@ -74,7 +74,7 @@ public class CommandFactory {
         return new RunCommand(() -> {
             Aim(isFeedingLeftSide);
             m_isAiming = true;
-        }, m_turret, m_shooter);
+        }, m_turret);
     }
 
     public void StopAim() {
