@@ -74,7 +74,7 @@ public class CommandFactory {
         return new RunCommand(() -> {
             Aim(isFeedingLeftSide);
             m_isAiming = true;
-        }, m_turret, m_shooter);
+        }, m_turret);
     }
 
     public void StopAim() {
@@ -106,6 +106,16 @@ public class CommandFactory {
 
         DogLog.log("Turret Distance To Hub (in meters)",
                 Math.hypot(GetTurretDistanceToHub().getX(), GetTurretDistanceToHub().getY()));
+
+        // Shoot-on-the-move test logs
+        ChassisSpeeds fieldSpeeds = m_drive.getChassisSpeeds();
+        DogLog.log("SOTM Test/Gyro heading (deg)", m_drive.getGyroHeading().in(Degrees));
+        DogLog.log("SOTM Test/Pose heading (deg)", m_drive.getPose().getRotation().getDegrees());
+        DogLog.log("SOTM Test/Field vx (mps)", fieldSpeeds.vxMetersPerSecond);
+        DogLog.log("SOTM Test/Field vy (mps)", fieldSpeeds.vyMetersPerSecond);
+        DogLog.log("SOTM Test/Phi (deg)", m_solution.phi().in(Degrees));
+        DogLog.log("SOTM Test/Solution distance (m)", m_solution.distance().in(Meters));
+        DogLog.log("SOTM Test/At wheel velocity target", m_shooter.AtWheelVelocityTarget());
     }
 
     public void AimTurretToFront() {
@@ -295,17 +305,8 @@ public class CommandFactory {
     }
 
     private Translation2d GetTurretTranslation(Pose2d robotPose) {
-        Distance turretX = robotPose.getTranslation().getMeasureX()
-                .plus(TurretConstants.kTurretCenterDistanceFromRobotCenter
-                        .times(Math.cos(robotPose.getRotation().getMeasure()
-                                .plus(TurretConstants.kTurretAngularOffset).in(Radians))));
-
-        Distance turretY = robotPose.getTranslation().getMeasureY()
-                .minus(TurretConstants.kTurretCenterDistanceFromRobotCenter
-                        .times(Math.sin(robotPose.getRotation().getMeasure()
-                                .plus(TurretConstants.kTurretAngularOffset).in(Radians))));
-
-        return new Translation2d(turretX, turretY);
+        // Robot-relative turret offset rotated into the field frame by the robot heading
+        return robotPose.getTranslation().plus(TurretConstants.kTurretOffset.rotateBy(robotPose.getRotation()));
     }
 
     private Pose2d GetTurretPose(Pose2d robotPose) {
@@ -738,6 +739,9 @@ public class CommandFactory {
             distance = distance.minus(radialVelocityTowardsHub.times(timeOfFlight));
 
             phi = Radians.of(Math.atan2(sideDistance.in(Meters), distance.in(Meters)));
+
+            // The ball travels the full lead path, so look up the table at its length
+            distance = Meters.of(Math.hypot(sideDistance.in(Meters), distance.in(Meters)));
 
             int transformedFirstEntryIndex = getFirstEntryIndex(distance);
 

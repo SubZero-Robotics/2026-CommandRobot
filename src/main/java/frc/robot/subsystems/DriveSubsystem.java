@@ -313,6 +313,13 @@ public class DriveSubsystem extends SubsystemBase {
 
     public void ZeroGyro() {
         pidgey.setYaw(NumericalConstants.kNoRotation);
+
+        // Also point the pose heading alliance-forward (0 deg blue, 180 deg red), keeping the translation
+        Rotation2d allianceForward = DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red
+                ? Rotation2d.k180deg
+                : Rotation2d.kZero;
+        m_poseEstimator.resetPosition(Rotation2d.kZero, getModulePositions(),
+                new Pose2d(getPose().getTranslation(), allianceForward));
     }
 
     /**
@@ -474,12 +481,14 @@ public class DriveSubsystem extends SubsystemBase {
                 estimation.m_timestamp, estimation.m_stdDevs);
     }
 
+    // Field-relative speeds. Uses the pose estimator's heading (field frame) rather than the raw
+    // gyro, which is 180 degrees off the field frame on the red alliance.
     public ChassisSpeeds getChassisSpeeds() {
 
         return ChassisSpeeds.fromRobotRelativeSpeeds(
                 DriveConstants.kDriveKinematics.toChassisSpeeds(m_frontLeft.getState(), m_frontRight.getState(),
                         m_rearLeft.getState(), m_rearRight.getState()),
-                new Rotation2d(getHeading()));
+                getPose().getRotation());
 
     }
 

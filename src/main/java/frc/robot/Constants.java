@@ -357,7 +357,7 @@ public final class Constants {
                 public static final AngularVelocity kNonAimShooterVelocity = RPM.of(2000);
                 public static final Angle kNonAimHoodAngle = Degrees.of(15.0);
                 public static final AngularVelocity kFeedingWheelVelocity = RPM.of(4000);
-                public static final Angle kHoodFeedingPosition = Degrees.of(25.0);
+                public static final Angle kHoodFeedingPosition = Degrees.of(17.0);
                 public static final Measure<AngleUnit> kTurretAngleRestrictiveShooterAngle = Degrees.of(30);
 
                 public static final Angle kHoodStartingAngle = Degrees.of(1.0);
@@ -365,6 +365,9 @@ public final class Constants {
                 public static final Angle kDefaultHoodPosition = Degrees.of(3.0);
 
                 public static final Time kRampTime = Seconds.of(0.4);
+
+                // Longest RT waits for the wheel to reach speed before feeding anyway
+                public static final Time kMaxSpinUpWait = Seconds.of(1.0);
 
                 // Absolute encoder wraps backwards, so it doesn't read -0.001, it reads 0.999.
                 // This is the min rotational amount where we can reasonably assume that the
