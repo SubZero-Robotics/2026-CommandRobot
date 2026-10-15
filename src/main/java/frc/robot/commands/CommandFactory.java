@@ -305,17 +305,8 @@ public class CommandFactory {
     }
 
     private Translation2d GetTurretTranslation(Pose2d robotPose) {
-        Distance turretX = robotPose.getTranslation().getMeasureX()
-                .plus(TurretConstants.kTurretCenterDistanceFromRobotCenter
-                        .times(Math.cos(robotPose.getRotation().getMeasure()
-                                .plus(TurretConstants.kTurretAngularOffset).in(Radians))));
-
-        Distance turretY = robotPose.getTranslation().getMeasureY()
-                .minus(TurretConstants.kTurretCenterDistanceFromRobotCenter
-                        .times(Math.sin(robotPose.getRotation().getMeasure()
-                                .plus(TurretConstants.kTurretAngularOffset).in(Radians))));
-
-        return new Translation2d(turretX, turretY);
+        // Robot-relative turret offset rotated into the field frame by the robot heading
+        return robotPose.getTranslation().plus(TurretConstants.kTurretOffset.rotateBy(robotPose.getRotation()));
     }
 
     private Pose2d GetTurretPose(Pose2d robotPose) {
