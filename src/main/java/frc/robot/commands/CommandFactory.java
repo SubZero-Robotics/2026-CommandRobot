@@ -106,6 +106,16 @@ public class CommandFactory {
 
         DogLog.log("Turret Distance To Hub (in meters)",
                 Math.hypot(GetTurretDistanceToHub().getX(), GetTurretDistanceToHub().getY()));
+
+        // Shoot-on-the-move test logs
+        ChassisSpeeds fieldSpeeds = m_drive.getChassisSpeeds();
+        DogLog.log("SOTM Test/Gyro heading (deg)", m_drive.getGyroHeading().in(Degrees));
+        DogLog.log("SOTM Test/Pose heading (deg)", m_drive.getPose().getRotation().getDegrees());
+        DogLog.log("SOTM Test/Field vx (mps)", fieldSpeeds.vxMetersPerSecond);
+        DogLog.log("SOTM Test/Field vy (mps)", fieldSpeeds.vyMetersPerSecond);
+        DogLog.log("SOTM Test/Phi (deg)", m_solution.phi().in(Degrees));
+        DogLog.log("SOTM Test/Solution distance (m)", m_solution.distance().in(Meters));
+        DogLog.log("SOTM Test/At wheel velocity target", m_shooter.AtWheelVelocityTarget());
     }
 
     public void AimTurretToFront() {
