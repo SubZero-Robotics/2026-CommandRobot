@@ -67,6 +67,7 @@ public class RobotContainer {
                         ShooterConstants.kShooterStartVelocity);
 
         BooleanSubscriber m_zeroGyroGetter = DogLog.tunable("Zero Gyro", false);
+        boolean m_lastZeroGyro = false;
 
         SendableChooser<String> m_sendable = new SendableChooser<>();
 
@@ -289,9 +290,12 @@ public class RobotContainer {
                 m_commandFactory.periodic();
                 double end = Timer.getFPGATimestamp();
 
-                if (m_zeroGyroGetter.get()) {
+                // Zero once when the toggle turns on (ZeroGyro resets the pose, so not every loop)
+                boolean zeroGyro = m_zeroGyroGetter.get();
+                if (zeroGyro && !m_lastZeroGyro) {
                         m_drive.ZeroGyro();
                 }
+                m_lastZeroGyro = zeroGyro;
 
                 DogLog.log("Drivetrain command",
                                 m_drive.getCurrentCommand() == null ? "null" : m_drive.getCurrentCommand().toString());
