@@ -104,6 +104,7 @@ public class ShooterSubsystem extends SubsystemBase {
     }
 
     public void Stop() {
+        m_targetVelocity = NumericalConstants.kNoRotations;
         m_shooterClosedLoopController.setSetpoint(0, ControlType.kVelocity);
     }
 
@@ -119,7 +120,12 @@ public class ShooterSubsystem extends SubsystemBase {
     }
 
     public boolean AtWheelVelocityTarget() {
-        return RPM.of(m_shooterClosedLoopController.getSetpoint()).minus(RPM.of(m_shooterRelativeEncoder.getVelocity()))
+        // A stopped wheel with a zero target is not ready to shoot
+        if (m_targetVelocity.lte(NumericalConstants.kNoRotations)) {
+            return false;
+        }
+
+        return m_targetVelocity.minus(RPM.of(m_shooterRelativeEncoder.getVelocity()))
                 .abs(RPM) < ShooterConstants.kShooterVelocityTolerance.in(RPM);
 
         // return true;

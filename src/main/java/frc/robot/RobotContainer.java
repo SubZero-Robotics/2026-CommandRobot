@@ -5,6 +5,7 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.RPM;
+import static edu.wpi.first.units.Units.Seconds;
 
 import java.util.HashMap;
 
@@ -180,11 +181,13 @@ public class RobotContainer {
 
                 m_driverController.rightBumper().whileTrue(m_commandFactory.AimCommand(false));
 
-                m_driverController.rightTrigger().whileTrue(m_commandFactory.RunAllStager())
-                                .onTrue(Commands.waitUntil(m_shooter::AtWheelVelocityTarget).andThen(
-                                                m_commandFactory.ShootCommand().until(
-                                                                () -> m_driverController.rightTrigger()
-                                                                                .getAsBoolean() == false)))
+                // Spin the wheel right away, but only feed once it is at speed (or after kMaxSpinUpWait)
+                m_driverController.rightTrigger()
+                                .whileTrue(m_commandFactory.ShootCommand().alongWith(
+                                                Commands.waitUntil(m_shooter::AtWheelVelocityTarget)
+                                                                .withTimeout(ShooterConstants.kMaxSpinUpWait
+                                                                                .in(Seconds))
+                                                                .andThen(m_commandFactory.RunAllStager())))
                                 .onFalse(m_commandFactory.StopShootCommand()
                                                 .alongWith(m_commandFactory.StopStagingCommand()));
 

@@ -366,6 +366,9 @@ public final class Constants {
 
                 public static final Time kRampTime = Seconds.of(0.4);
 
+                // Longest RT waits for the wheel to reach speed before feeding anyway
+                public static final Time kMaxSpinUpWait = Seconds.of(1.0);
+
                 // Absolute encoder wraps backwards, so it doesn't read -0.001, it reads 0.999.
                 // This is the min rotational amount where we can reasonably assume that the
                 // hood has just gone backwards a little too far, beyond the zero of the encoder
