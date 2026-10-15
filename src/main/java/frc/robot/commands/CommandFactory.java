@@ -740,6 +740,9 @@ public class CommandFactory {
 
             phi = Radians.of(Math.atan2(sideDistance.in(Meters), distance.in(Meters)));
 
+            // The ball travels the full lead path, so look up the table at its length
+            distance = Meters.of(Math.hypot(sideDistance.in(Meters), distance.in(Meters)));
+
             int transformedFirstEntryIndex = getFirstEntryIndex(distance);
 
             firstEntry = ShooterConstants.kShootingEntries[transformedFirstEntryIndex];
