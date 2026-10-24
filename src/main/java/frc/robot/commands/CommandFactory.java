@@ -58,6 +58,9 @@ public class CommandFactory {
 
     private Translation2d m_lockedTag;
 
+    // Turret range limit the last out-of-range aim was parked on, or null when in range
+    private Angle m_lastTurretLimit = null;
+
     private StagingSubsystem m_stager = new StagingSubsystem();
     private IntakeSubsystem m_intake = new IntakeSubsystem();
     private ClimberSubsystem m_climber = new ClimberSubsystem();
@@ -460,10 +463,27 @@ public class CommandFactory {
         Angle[] currentRange = getCurrentTurretRange();
 
         if (withinAngles(currentRange, robotRelativeTurretAngle)) {
+            m_lastTurretLimit = null;
             m_turret.moveToAngle(robotRelativeTurretAngle);
         } else {
             // Gets which ray the robot is closest to
             Angle closest = getClosestAngle(robotRelativeTurretAngle, currentRange);
+
+            // Near the middle of the blocked zone the closest ray flips every loop, which swings the
+            // turret between both ends and turns the robot both ways. Keep the last ray unless the
+            // other one is clearly closer.
+            if (m_lastTurretLimit != null
+                    && UtilityFunctions.angleDiff(closest, m_lastTurretLimit).abs(Degrees) > 1e-6) {
+                double toClosest = UtilityFunctions.angleDiff(robotRelativeTurretAngle, closest).abs(Degrees);
+                double toLast = UtilityFunctions.angleDiff(robotRelativeTurretAngle, m_lastTurretLimit)
+                        .abs(Degrees);
+
+                if (toLast - toClosest < TurretConstants.kTurretLimitHysteresis.in(Degrees)) {
+                    closest = m_lastTurretLimit;
+                }
+            }
+
+            m_lastTurretLimit = closest;
 
             // The overshoot is negative if the robot has to move in a negative direction;
             // same for positive

@@ -257,6 +257,9 @@ public final class Constants {
 
                 public static final Angle kOvershootAmount = Degrees.of(10.0);
 
+                // How much closer the other range limit must be before an out-of-range aim switches to it
+                public static final Angle kTurretLimitHysteresis = Degrees.of(20.0);
+
                 public static final Translation2d kTurretOffset = new Translation2d(Inches.of(-6.25),
                                 Inches.of(6.151));
 
