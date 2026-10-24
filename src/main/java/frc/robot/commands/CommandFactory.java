@@ -99,6 +99,7 @@ public class CommandFactory {
         m_wheelVelocity = m_solution.wheelSpeed();
 
         LogAimGeometry();
+        LogLeadTarget(m_solution);
 
         DogLog.log("Turret Rotation in deg", m_turret.getRotation().in(Degrees));
         DogLog.log("RPM target", m_wheelVelocity.in(RPM));
@@ -350,6 +351,18 @@ public class CommandFactory {
         } else {
             m_drive.getField().getObject("Aim Geometry/Locked AprilTag").setPoses(List.of());
         }
+    }
+
+    // Where the turret is actually aiming: along the led heading (hub angle minus phi), at the
+    // distance the table is looked up at. Moves with the robot's velocity, unlike the hub aim point.
+    private void LogLeadTarget(TargetSolution solution) {
+        Rotation2d leadHeading = new Rotation2d(solution.hubAngle().minus(solution.phi()));
+        Translation2d leadTarget = GetTurretTranslation()
+                .plus(new Translation2d(solution.distance().in(Meters), leadHeading));
+        Pose2d leadTargetPose = PoseFromTranslation(leadTarget);
+
+        DogLog.log("Aim Geometry/SOTM Target Pose", leadTargetPose);
+        m_drive.getField().getObject("Aim Geometry/SOTM Target").setPose(leadTargetPose);
     }
 
     public Translation2d GetTurretDistanceToHub() {
