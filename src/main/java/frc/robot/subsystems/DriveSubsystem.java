@@ -87,6 +87,9 @@ public class DriveSubsystem extends SubsystemBase {
     private final Pigeon2 pidgey = new Pigeon2(DriveConstants.kPidgeyCanId, "rio");
     private final Pigeon2SimState m_simPidgey = pidgey.getSimState();
 
+    // Simulated raw yaw (before the Pigeon's setYaw offset), integrated from the chassis speed
+    private double m_simRawYawDegrees = 0.0;
+
     private final Field2d m_field = new Field2d();
 
     private final Vision m_vision;
@@ -246,9 +249,11 @@ public class DriveSubsystem extends SubsystemBase {
             // System.out.println(chassisSpeed);
 
             m_simPidgey.setSupplyVoltage(RobotController.getBatteryVoltage());
-            m_simPidgey.setRawYaw(
-                    getGyroHeading().in(Degrees) + Radians.of(chassisSpeed.omegaRadiansPerSecond).in(Degrees)
-                            * DriveConstants.kPeriodicInterval.in(Seconds));
+            // Integrate the raw yaw ourselves. Feeding back getGyroHeading() (which includes the setYaw
+            // offset) added that offset to the raw yaw every loop, so after A the sim robot spun forever.
+            m_simRawYawDegrees += Radians.of(chassisSpeed.omegaRadiansPerSecond).in(Degrees)
+                    * DriveConstants.kPeriodicInterval.in(Seconds);
+            m_simPidgey.setRawYaw(m_simRawYawDegrees);
 
             m_odometry.update(
                     new Rotation2d(getGyroHeading()),
