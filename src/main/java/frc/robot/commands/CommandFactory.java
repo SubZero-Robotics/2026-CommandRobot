@@ -35,7 +35,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import frc.robot.Constants;
-import frc.robot.Robot;
 import frc.robot.Constants.Fixtures;
 import frc.robot.Constants.IntakeConstants;
 import frc.robot.Constants.NumericalConstants;
@@ -468,14 +467,10 @@ public class CommandFactory {
     }
 
     public void MoveTurretToHeading(Angle heading, boolean moveDrivetrain) {
-        // Weird bug with red side position data
-        Angle offset = DriverStation.getAlliance().get() == Alliance.Red && Robot.isReal()
-                ? Constants.NumericalConstants.kHalfRotation
-                : Constants.NumericalConstants.kNoRotation;
-
-        heading = heading.plus(offset);
-
-        Angle robotHeading = UtilityFunctions.WrapAngle(m_drive.getHeading());
+        // The heading is field-relative, so compare it with the pose heading. The gyro is zeroed facing
+        // away from the driver, which is 180 deg off the field on red (the old "red side" +180 hack, which
+        // only ran on the real robot, so red in sim aimed backwards).
+        Angle robotHeading = UtilityFunctions.WrapAngle(m_drive.getPose().getRotation().getMeasure());
 
         Angle robotRelativeTurretAngle = UtilityFunctions.WrapAngle(heading.minus(robotHeading));
 
@@ -515,7 +510,8 @@ public class CommandFactory {
 
                 closest = closest.plus(overshoot);
 
-                Angle driveTarget = heading.minus(closest);
+                // The drivetrain turns to gyro headings, so move the field-relative target into the gyro frame
+                Angle driveTarget = heading.minus(closest).minus(robotHeading).plus(m_drive.getHeading());
 
                 // System.out.println();
                 m_drive.moveToAngle(driveTarget);
