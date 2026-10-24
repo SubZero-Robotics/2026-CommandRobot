@@ -257,6 +257,9 @@ public final class Constants {
 
                 public static final Angle kOvershootAmount = Degrees.of(10.0);
 
+                // How much closer the other range limit must be before an out-of-range aim switches to it
+                public static final Angle kTurretLimitHysteresis = Degrees.of(20.0);
+
                 public static final Translation2d kTurretOffset = new Translation2d(Inches.of(-6.25),
                                 Inches.of(6.151));
 
@@ -275,6 +278,9 @@ public final class Constants {
 
                 public static final Angle kMinRearFacingAngle = Degrees.of(270);
                 public static final Angle kMaxRearFacingAngle = Degrees.of(90);
+
+                // Buffer around the front/rear line before the hub aim point push switches on or off
+                public static final Angle kFrontFacingHysteresis = Degrees.of(10.0);
 
                 public static final Angle kAngularDistanceToFrontOfRobot = Rotations.of(0.629);
         }

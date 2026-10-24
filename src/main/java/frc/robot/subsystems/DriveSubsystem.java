@@ -87,6 +87,9 @@ public class DriveSubsystem extends SubsystemBase {
     private final Pigeon2 pidgey = new Pigeon2(DriveConstants.kPidgeyCanId, "rio");
     private final Pigeon2SimState m_simPidgey = pidgey.getSimState();
 
+    // Simulated raw yaw (before the Pigeon's setYaw offset), integrated from the chassis speed
+    private double m_simRawYawDegrees = 0.0;
+
     private final Field2d m_field = new Field2d();
 
     private final Vision m_vision;
@@ -246,9 +249,11 @@ public class DriveSubsystem extends SubsystemBase {
             // System.out.println(chassisSpeed);
 
             m_simPidgey.setSupplyVoltage(RobotController.getBatteryVoltage());
-            m_simPidgey.setRawYaw(
-                    getGyroHeading().in(Degrees) + Radians.of(chassisSpeed.omegaRadiansPerSecond).in(Degrees)
-                            * DriveConstants.kPeriodicInterval.in(Seconds));
+            // Integrate the raw yaw ourselves. Feeding back getGyroHeading() (which includes the setYaw
+            // offset) added that offset to the raw yaw every loop, so after A the sim robot spun forever.
+            m_simRawYawDegrees += Radians.of(chassisSpeed.omegaRadiansPerSecond).in(Degrees)
+                    * DriveConstants.kPeriodicInterval.in(Seconds);
+            m_simPidgey.setRawYaw(m_simRawYawDegrees);
 
             m_odometry.update(
                     new Rotation2d(getGyroHeading()),
@@ -261,7 +266,7 @@ public class DriveSubsystem extends SubsystemBase {
         }
 
         if (!m_isManualRotate
-                && UtilityFunctions.WrapAngle(UtilityFunctions.WrapAngle(getHeading()).minus(m_targetAutoAngle))
+                && UtilityFunctions.angleDiff(getHeading(), m_targetAutoAngle)
                         .abs(Degrees) < DriveConstants.kTurnToAngleTolerance.in(Degrees)) {
             m_isManualRotate = true;
         }
@@ -530,17 +535,10 @@ public class DriveSubsystem extends SubsystemBase {
     }
 
     private static Angle getOptimalAngle(Angle target, Angle robotHeading) {
-        Angle wrappedRobotAngle = UtilityFunctions.WrapAngle(robotHeading);
-
-        Angle delta = target.minus(wrappedRobotAngle);
-
-        // Ensuring that the angle is always positive to ensure it is wrapped correctly
-        if (delta.lt(Radians.of(0.0)))
-            delta = delta.plus(Radians.of(2 * Math.PI));
-
-        // Wrapping the delta to make it at most 180 deg
-        if (delta.gt(Radians.of(Math.PI)))
-            delta = delta.minus(Radians.of(2.0 * Math.PI));
+        // Shortest turn from the heading to the target, whatever turn either one is on. The old version only
+        // handled targets within one turn of 0 to 360 deg, so a target several turns away (e.g. built from the
+        // gyro after the robot had spun a full turn) gave a delta over 180 deg and the robot spun forever.
+        Angle delta = UtilityFunctions.angleDiff(target, robotHeading);
 
         return delta.plus(robotHeading);
     }
