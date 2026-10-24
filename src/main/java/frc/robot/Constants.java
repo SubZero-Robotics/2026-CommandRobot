@@ -279,6 +279,9 @@ public final class Constants {
                 public static final Angle kMinRearFacingAngle = Degrees.of(270);
                 public static final Angle kMaxRearFacingAngle = Degrees.of(90);
 
+                // Buffer around the front/rear line before the hub aim point push switches on or off
+                public static final Angle kFrontFacingHysteresis = Degrees.of(10.0);
+
                 public static final Angle kAngularDistanceToFrontOfRobot = Rotations.of(0.629);
         }
 

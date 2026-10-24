@@ -61,6 +61,9 @@ public class CommandFactory {
     // Turret range limit the last out-of-range aim was parked on, or null when in range
     private Angle m_lastTurretLimit = null;
 
+    // Whether the hub is toward the front of the robot, which pushes the hub aim point back
+    private boolean m_isFrontFacingHub = true;
+
     private StagingSubsystem m_stager = new StagingSubsystem();
     private IntakeSubsystem m_intake = new IntakeSubsystem();
     private ClimberSubsystem m_climber = new ClimberSubsystem();
@@ -97,6 +100,7 @@ public class CommandFactory {
 
     public void periodic() {
         DogLog.log("In periodic command factor", true);
+        UpdateFrontFacingHub();
         m_solution = GetHubAimSolution();
 
         m_wheelVelocity = m_solution.wheelSpeed();
@@ -390,14 +394,30 @@ public class CommandFactory {
 
         Distance aimOffsetY = alliance == Alliance.Blue ? Inches.of(5.0) : Inches.of(-5.0);
 
-        Angle turretAngle = m_turret.getRotation();
-
         // Only push target back if the turret is facing the front of the robot as it
         // requires more power to shoot same distance
-        if (withinRange(TurretConstants.kMinRearFacingAngle, TurretConstants.kMaxRearFacingAngle, turretAngle))
+        if (m_isFrontFacingHub)
             return hubPosition.plus(new Translation2d(aimOffsetX, aimOffsetY));
 
         return hubPosition.plus(new Translation2d(Meters.of(0.0), aimOffsetY));
+    }
+
+    // Decides whether the hub is in front of the robot, from where the hub is rather than the angle the
+    // turret was last told to go to. Using the turret angle made a loop: the push moved the aim point,
+    // which moved the turret across 90/270 deg, which removed the push. The buffer stops it chattering
+    // when the hub sits right on the line.
+    private void UpdateFrontFacingHub() {
+        Translation2d toHub = GetHubPosition(DriverStation.getAlliance().orElse(Alliance.Blue))
+                .minus(GetTurretTranslation());
+        Angle robotRelativeHubAngle = UtilityFunctions.WrapAngle(
+                Radians.of(toHub.getAngle().minus(m_drive.getPose().getRotation()).getRadians()));
+        Angle buffer = m_isFrontFacingHub ? TurretConstants.kFrontFacingHysteresis
+                : TurretConstants.kFrontFacingHysteresis.times(-1.0);
+
+        m_isFrontFacingHub = withinRange(TurretConstants.kMinRearFacingAngle.minus(buffer),
+                TurretConstants.kMaxRearFacingAngle.plus(buffer), robotRelativeHubAngle);
+
+        DogLog.log("Aim Geometry/Front facing hub", m_isFrontFacingHub);
     }
 
     public TargetSolution GetHubAimSolution() {
