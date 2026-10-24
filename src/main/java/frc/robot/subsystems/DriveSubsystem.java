@@ -266,7 +266,7 @@ public class DriveSubsystem extends SubsystemBase {
         }
 
         if (!m_isManualRotate
-                && UtilityFunctions.WrapAngle(UtilityFunctions.WrapAngle(getHeading()).minus(m_targetAutoAngle))
+                && UtilityFunctions.angleDiff(getHeading(), m_targetAutoAngle)
                         .abs(Degrees) < DriveConstants.kTurnToAngleTolerance.in(Degrees)) {
             m_isManualRotate = true;
         }
@@ -535,17 +535,10 @@ public class DriveSubsystem extends SubsystemBase {
     }
 
     private static Angle getOptimalAngle(Angle target, Angle robotHeading) {
-        Angle wrappedRobotAngle = UtilityFunctions.WrapAngle(robotHeading);
-
-        Angle delta = target.minus(wrappedRobotAngle);
-
-        // Ensuring that the angle is always positive to ensure it is wrapped correctly
-        if (delta.lt(Radians.of(0.0)))
-            delta = delta.plus(Radians.of(2 * Math.PI));
-
-        // Wrapping the delta to make it at most 180 deg
-        if (delta.gt(Radians.of(Math.PI)))
-            delta = delta.minus(Radians.of(2.0 * Math.PI));
+        // Shortest turn from the heading to the target, whatever turn either one is on. The old version only
+        // handled targets within one turn of 0 to 360 deg, so a target several turns away (e.g. built from the
+        // gyro after the robot had spun a full turn) gave a delta over 180 deg and the robot spun forever.
+        Angle delta = UtilityFunctions.angleDiff(target, robotHeading);
 
         return delta.plus(robotHeading);
     }
